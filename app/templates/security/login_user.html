@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h2>Login</h2>
+    <form method="POST" action="{{ url_for_security('login') }}">
+        {{ login_user_form.hidden_tag() }}
+        <label for="email">Email:</label>
+        {{ login_user_form.email(class="form-control") }}
+        <br>
+        <label for="password">Senha:</label>
+        {{ login_user_form.password(class="form-control") }}
+        <br>
+        <label for="remember">Lembrar-me:</label>
+        {{ login_user_form.remember }}
+        <br>
+        <button type="submit">Entrar</button>
+    </form>
+
+    <p><a href="{{ url_for_security('forgot_password') }}">Esqueci minha senha</a></p>
+    <p><a href="{{ url_for_security('register') }}">Registrar-se</a></p>
+{% endblock %}

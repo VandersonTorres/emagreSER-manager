@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Pacientes</h2>
+<a href="{{ url_for('admin.add_pacient') }}">+ Adicionar Paciente</a>
+<ul>
+    {% for pacient in pacients %}
+    <li>{{ pacient.name }} - <a href="{{ url_for('admin.edit_pacients', id=pacient.id) }}">Editar</a></li>
+    {% endfor %}
+</ul>
+{% endblock %}
