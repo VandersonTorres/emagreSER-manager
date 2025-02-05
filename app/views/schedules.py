@@ -1,6 +1,7 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash
+from flask import Blueprint, flash, redirect, render_template, request, url_for
 from flask_security import roles_required
-from app.models import Schedules, Pacients, db
+
+from app.models import Pacients, Schedules, db
 
 schedules_bp = Blueprint("schedules", __name__)
 
@@ -16,10 +17,11 @@ def list_schedules():
 @roles_required("admin")
 def schedule_action():
     if request.method == "POST":
-        pacient_id = request.form["pacient_id"]
+        pacient_name = request.form["pacient_name"]
         date_time = request.form["date_time"]
+        specialist = request.form["specialist"]
 
-        schedule = Schedules(pacient_id=pacient_id, date_time=date_time)
+        schedule = Schedules(pacient_name=pacient_name, date_time=date_time, specialist=specialist)
         db.session.add(schedule)
         db.session.commit()
 

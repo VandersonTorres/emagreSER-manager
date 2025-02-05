@@ -1,25 +1,29 @@
 {% extends "base.html" %}
 {% block content %}
-<h2>Consultas Agendadas</h2>
-<a href="{{ url_for('schedules.schedule_action') }}">+ Novo Agendamento</a>
-<table>
-    <tr>
-        <th>Paciente</th>
-        <th>Data</th>
-        <th>Status</th>
-        <th>Ações</th>
-    </tr>
-    {% for agendamento in agendamentos %}
-    <tr>
-        <td>{{ agendamento.pacient.name }}</td>
-        <td>{{ agendamento.date_time }}</td>
-        <td>{{ agendamento.status }}</td>
-        <td>
-            <form method="POST" action="{{ url_for('schedules.delete_schedule', id=schedule.id) }}">
-                <button type="submit">Cancelar</button>
-            </form>
-        </td>
-    </tr>
-    {% endfor %}
-</table>
+    <h2>Consultas Agendadas</h2>
+    <a href="{{ url_for('schedules.schedule_action') }}">+ Novo Agendamento</a>
+    {% if schedules %}
+        <table>
+            <tr>
+                <th>Paciente</th>
+                <th>Data</th>
+                <th>Status</th>
+                <th>Ações</th>
+            </tr>
+            {% for schedule in schedules %}
+            <tr>
+                <td>{{ schedule.pacient.name }}</td>
+                <td>{{ schedule.date_time }}</td>
+                <td>{{ schedule.status }}</td>
+                <td>
+                    <form method="POST" action="{{ url_for('schedules.delete_schedule', id=schedule.id) }}">
+                        <button type="submit">Cancelar</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </table>
+    {% else %}
+        <h3>Nenhum agendamento foi encontrado.</h3>
+    {% endif %}
 {% endblock %}

@@ -70,8 +70,12 @@ class Schedules(db.Model):
     __tablename__ = "schedules"
 
     id = db.Column(db.Integer, primary_key=True)
-    pacient_id = db.Column(db.Integer, db.ForeignKey("pacients.id"), nullable=False)
+    pacient_name = db.Column(db.Integer, db.ForeignKey("pacients.name"), nullable=False)
     date_time = db.Column(db.DateTime, nullable=False)
+    specialist = db.Column(db.String, nullable=False)
     status = db.Column(db.String, default="pendente")
 
     # pacient = db.relationship("Pacients", backref="schedules")
+
+    def __repr__(self):
+        return f"<Schedule {self.pacient_name} | {self.specialist} | {self.date_time}>"

@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block content %}
+    <h2>Pacientes</h2>
+    <a href="{{ url_for('admin.add_pacient') }}">+ Adicionar Paciente</a>
+    {% if pacients %}
+        <ul>
+            {% for pacient in pacients %}
+                <li>
+                    {{ pacient.name }} -
+                    <a href="{{ url_for('admin.edit_pacients', id=pacient.id) }}">Editar</a>
+                    <br>
+                    <a href="{{ url_for('admin.delete_pacients', id=pacient.id) }}">Remover</a>
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <h3>Ainda não existem pacientes cadastrados no sistema</h3>
+    {% endif %}
+{% endblock %}
