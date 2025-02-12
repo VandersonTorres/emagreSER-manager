@@ -3,22 +3,23 @@ import uuid
 
 from flask import (
     Blueprint,
+    current_app,
     flash,
     jsonify,
     redirect,
     render_template,
     request,
-    url_for,
-    current_app,
     send_from_directory,
+    url_for,
 )
 from flask_security import roles_required
 from flask_security.utils import hash_password
-from werkzeug.utils import secure_filename
+from sqlalchemy.exc import IntegrityError
 from twilio.rest import Client
+from werkzeug.utils import secure_filename
 
-from app.models import Pacients, User, Diet, db
 from app.forms import DietForm
+from app.models import Diet, Pacients, User, db
 
 admin_bp = Blueprint("admin", __name__)
 
@@ -59,39 +60,59 @@ def add_pacient():
     if request.method == "POST":
         name = request.form["name"]
         cpf = request.form["cpf"]
-        tel_number = request.form["tel_number"]
+        tel_number = request.form["phone"]
+        try:
+            # Add the pacient
+            pacient = Pacients(name=name, cpf=cpf, tel_number=tel_number)
+            db.session.add(pacient)
+            db.session.commit()
+            flash("Paciente cadastrado com sucesso!", "success")
+            return redirect(url_for("admin.list_pacients"))
+        except IntegrityError as e:
+            db.session.rollback()
+            if "pacients.name" in str(e):
+                error_message = "Erro: Já existe um paciente com esse nome cadastrado!"
+            elif "pacients.cpf" in str(e):
+                error_message = "Erro: Já existe um paciente com esse CPF cadastrado!"
 
-        # Add the pacient
-        pacient = Pacients(name=name, cpf=cpf, tel_number=tel_number)
-        db.session.add(pacient)
-        db.session.commit()
-        flash("Paciente cadastrado com sucesso!")
-        return redirect(url_for("admin_bp.list_pacients"))
+            flash(error_message, "danger")
+
     return render_template("admin/add_pacient.html", pacients=pacients)
 
 
 @admin_bp.route("/pacients/edit/<int:id>", methods=["GET", "POST"])
 @roles_required("admin")
-def edit_pacients(id):
+def edit_pacient(id):
     pacient = Pacients.query.get_or_404(id)
     if request.method == "POST":
-        pacient.name = request.form["name"]
-        pacient.cpf = request.form["cpf"]
-        pacient.tel_number = request.form["tel_number"]
-        db.session.commit()
-        flash("Dados do paciente atualizados com sucesso!")
-        return redirect(url_for("admin_bp.list_pacients"))
-    return render_template("admin/edit_pacients.html", pacient=pacient)
+        try:
+            pacient.name = request.form["name"]
+            pacient.cpf = request.form["cpf"]
+            pacient.tel_number = request.form["tel_number"]
+            db.session.commit()
+            flash(f"Dados do paciente '{pacient.name}' atualizados com sucesso!", "success")
+            return redirect(url_for("admin.list_pacients"))
+        except IntegrityError as e:
+            db.session.rollback()
+            if "pacients.name" in str(e):
+                error_message = "Erro: Já existe um paciente com esse nome cadastrado!"
+            elif "pacients.cpf" in str(e):
+                error_message = "Erro: Já existe um paciente com esse CPF cadastrado!"
+
+            flash(error_message, "danger")
+    return render_template("admin/edit_pacient.html", pacient=pacient)
 
 
-@admin_bp.route("/pacients/delete/<int:id>", methods=["POST"])
+@admin_bp.route("/pacients/delete/<int:id>", methods=["GET", "POST"])
 @roles_required("admin")
 def delete_pacient(id):
     pacient = Pacients.query.get_or_404(id)
-    db.session.delete(pacient)
-    db.session.commit()
-    flash("Paciente removido com sucesso!")
-    return redirect(url_for("admin_crud.list_pacients"))
+    if request.method == "POST":
+        db.session.delete(pacient)
+        db.session.commit()
+        flash(f"Paciente '{pacient.name}' removido com sucesso!", "success")
+        return redirect(url_for("admin.list_pacients"))
+    return render_template("admin/delete_pacient.html", pacient=pacient)
 
 
 @admin_bp.route("/diets")
@@ -112,14 +133,21 @@ def add_diet():
             pdf_path = os.path.join(current_app.config["UPLOAD_FOLDER"], pdf_filename)
             form.pdf_file.data.save(pdf_path)
 
-        dieta = Diet(name=form.name.data, description=form.description.data, pdf_file=pdf_filename)
-        db.session.add(dieta)
+        diet = Diet(name=form.name.data, description=form.description.data, pdf_file=pdf_filename)
+        db.session.add(diet)
         db.session.commit()
 
         flash("Dieta cadastrada com sucesso!")
         return redirect(url_for("admin.list_diets"))
-    
+
     return render_template("admin/add_diet.html", form=form)
+
+
+@admin_bp.route("/diets/<int:id>", methods=["GET"])
+@roles_required("admin")
+def view_diet(id):
+    diet = Diet.query.get_or_404(id)
+    return render_template("admin/view_diet.html", diet=diet)
 
 
 @admin_bp.route("/diets/download/<filename>")
@@ -145,6 +173,8 @@ def send_diet(diet_id):
         return jsonify({"error": "Essa dieta não possui um arquivo PDF"}), 400
 
     # Send diet by WhatsApp
-    response = twilio_send_diet(pacient="Paciente", telephone=telephone, diet_name=diet.name, pdf_filename=diet.pdf_file)
+    response = twilio_send_diet(
+        pacient="Paciente", telephone=telephone, diet_name=diet.name, pdf_filename=diet.pdf_file
+    )
 
     return jsonify({"message": response}), 200

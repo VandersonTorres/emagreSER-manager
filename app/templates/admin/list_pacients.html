@@ -1,15 +1,26 @@
 {% extends "base.html" %}
 {% block content %}
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }}">
+                    <strong>{{ message }}</strong>
+                </div>
+            {% endfor %}
+            {% set _ = session.pop('_flashes', None) %}
+        {% endif %}
+    {% endwith %}
+
     <h2>Pacientes</h2>
     <a href="{{ url_for('admin.add_pacient') }}">+ Adicionar Paciente</a>
     {% if pacients %}
         <ul>
             {% for pacient in pacients %}
                 <li>
-                    {{ pacient.name }} -
-                    <a href="{{ url_for('admin.edit_pacients', id=pacient.id) }}">Editar</a>
-                    <br>
-                    <a href="{{ url_for('admin.delete_pacients', id=pacient.id) }}">Remover</a>
+                    {{ pacient.name }} - {{ pacient.tel_number }}
+                    <a href="{{ url_for('admin.edit_pacient', id=pacient.id) }}">Editar</a>
+                    &nbsp;
+                    <a href="{{ url_for('admin.delete_pacient', id=pacient.id) }}">Remover</a>
                 </li>
             {% endfor %}
         </ul>

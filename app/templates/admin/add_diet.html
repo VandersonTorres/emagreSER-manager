@@ -1,16 +1,17 @@
 {% extends "base.html" %}
 {% block content %}
-    <h2>Armazenar nova dieta</h2>
-    <form method="POST" action="{{ url_for('admin.add_diet') }}">
-        <label>Nome:</label>
-        <input type="text" name="diet_name" required>
+    <h2>Adicionar Dieta</h2>
+    <form method="POST" enctype="multipart/form-data" action="{{ url_for('admin.add_diet') }}">
+        {{ form.hidden_tag() }}
+        <label for="name">Nome:</label>
+        {{ form.name() }}
         <br>
-        <label>Descrição:</label>
-        <input type="text" name="diet_description" required>
+        <label for="description">Descrição:</label>
+        {{ form.description() }}
         <br>
-        <label for="file">Arquivo (pdf):</label>
-        <input type="file" id="file" name="file">
+        <label for="pdf_file">Arquivo PDF:</label>
+        {{ form.pdf_file() }}
         <br>
-        <button type="submit">Armazenar</button>
+        <button type="submit">Salvar Dieta</button>
     </form>
 {% endblock %}

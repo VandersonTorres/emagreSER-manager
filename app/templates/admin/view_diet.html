@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h2>{{ diet.name }}</h2>
+    <p><strong>Descrição:</strong> {{ diet.description }}</p>
+
+    {% if diet.pdf_file %}
+        <p><a href="{{ url_for('admin.download_diet', filename=diet.pdf_file) }}" target="_blank">📄 Abrir PDF</a></p>
+    {% endif %}
+
+    <a href="{{ url_for('admin.list_diets') }}">🔙 Voltar</a>
+{% endblock %}

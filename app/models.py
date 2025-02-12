@@ -24,8 +24,8 @@ class Pacients(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(255), unique=True, nullable=False)
-    cpf = db.Column(db.String(14), unique=True, nullable=False)  # 000.000.000-00
-    tel_number = db.Column(db.String(14), unique=True, nullable=False)  # (31)90000-0000
+    cpf = db.Column(db.String(14), unique=True, nullable=False)
+    tel_number = db.Column(db.String(14), nullable=False)
     started_at = db.Column(db.DateTime, default=datetime.now(timezone.utc))
 
     # user = db.relationship("User", backref="pacients", lazy=True)

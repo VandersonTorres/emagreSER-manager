@@ -1,23 +1,11 @@
-emagreSER-manager/
-│── app/
-│   ├── static/   # CSS, JS, imagens
-│   ├── templates/  # HTML files
-│   │   ├── home.html
-│   ├── views/
-│   │   ├── __init__.py
-│   │   ├── admin.py
-│   │   ├── main.py
-│   ├── models.py   # Definição do banco de dados
-│   ├── routes.py   # Rotas do sistema
-│   ├── forms.py    # Formulários Flask-WTF
-│   ├── __init__.py # Inicialização da aplicação
-│── scripts/
-│   ├── __init__.py
-│   ├── create_user.py
-│── venv
-│── database.db  # Banco de Dados SQLite
-│── config.py    # Configurações do sistema
-│── run.py       # Arquivo principal
-│── .gitignore
-│── .pre-commit-config.yaml
-│── README.md# emagreSER-manager
+IN PROGRESS...
+
+INICIALIZAR O SERVIDOR FLASK:
+
+flask --app app run
+
+COMANDOS SQLITE:
+
+flask db migrate -m "Mensagem"  # Alterações no banco
+rm -f instance/app.db           # Apaga o banco SQLite
+flask db upgrade                # Recria o banco
