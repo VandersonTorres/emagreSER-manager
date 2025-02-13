@@ -1,5 +1,16 @@
 {% extends "base.html" %}
 {% block content %}
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+        {% for category, message in messages %}
+            <div class="alert alert-{{ category }}">
+                <strong>{{ message }}</strong>
+            </div>
+        {% endfor %}
+        {% set _ = session.pop('_flashes', None) %}
+    {% endif %}
+    {% endwith %}
+
     <h2>Consultas Agendadas</h2>
     <a href="{{ url_for('schedules.schedule_action') }}">+ Novo Agendamento</a>
     {% if schedules %}
