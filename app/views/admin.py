@@ -150,6 +150,25 @@ def view_diet(id):
     return render_template("admin/view_diet.html", diet=diet)
 
 
+@admin_bp.route("/diets/delete/<int:id>", methods=["GET", "POST"])
+@roles_required("admin")
+def delete_diet(id):
+    diet = Diet.query.get_or_404(id)
+    if request.method == "POST":
+        # Remove the file
+        if diet.pdf_file:
+            pdf_path = os.path.join(current_app.config["UPLOAD_FOLDER"], diet.pdf_file)
+            if os.path.exists(pdf_path):
+                os.remove(pdf_path)
+
+        # Remove from database
+        db.session.delete(diet)
+        db.session.commit()
+        flash(f"Dieta '{diet.name}' removida com sucesso!", "success")
+        return redirect(url_for("admin.list_diets"))
+    return render_template("admin/delete_diet.html", diet=diet)
+
+
 @admin_bp.route("/diets/download/<filename>")
 @roles_required("admin")
 def download_diet(filename):

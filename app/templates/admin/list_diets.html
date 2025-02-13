@@ -16,7 +16,11 @@
     {% if diets %}
         <ul>
             {% for diet in diets %}
-                <li>{{ diet.name }} - <a href="{{ url_for('admin.view_diet', id=diet.id) }}" target="_blank">Ver</a></li>
+                <li>{{ diet.name }} -
+                    <a href="{{ url_for('admin.view_diet', id=diet.id) }}" target="_blank">Ver</a>
+                    &nbsp;
+                    <a href="{{ url_for('admin.delete_diet', id=diet.id) }}">Remover</a>
+                </li>
                 <li>
                     <form method="POST" action="{{ url_for('admin.send_diet', diet_id=diet.id) }}">
                         <input type="text" name="telephone" placeholder="Telefone do paciente">
