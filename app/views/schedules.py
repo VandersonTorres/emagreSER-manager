@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from flask import Blueprint, flash, redirect, render_template, request, url_for
 from flask_security import roles_required
 
@@ -18,8 +20,9 @@ def list_schedules():
 def schedule_action():
     if request.method == "POST":
         pacient_name = request.form["pacient_name"]
-        date_time = request.form["date_time"]
+        date_time_str = request.form["date_time"]
         specialist = request.form["specialist"]
+        date_time = datetime.strptime(date_time_str, "%Y-%m-%dT%H:%M")
 
         schedule = Schedules(pacient_name=pacient_name, date_time=date_time, specialist=specialist)
         db.session.add(schedule)

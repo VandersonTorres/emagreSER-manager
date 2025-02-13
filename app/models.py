@@ -34,24 +34,6 @@ class Pacients(db.Model):
         return f"<Pacient {self.name} | {self.cpf}>"
 
 
-# Pacients Historic model
-class Historic(db.Model):
-    __tablename__ = "historic"
-
-    id = db.Column(db.Integer, primary_key=True)
-    pacient_id = db.Column(db.Integer, db.ForeignKey("pacients.id"), nullable=False)
-    pacient_name = db.Column(db.String, db.ForeignKey("pacients.name"), nullable=False)
-    weight = db.Column(db.Float, nullable=False)
-    height = db.Column(db.Integer, nullable=False)
-    imc = db.Column(db.Float)
-    date = db.Column(db.DateTime, db.ForeignKey("pacients.started_at"), nullable=False)
-
-    # pacient = db.relationship("Pacients", backref="historic")
-
-    def __repr__(self):
-        return f"<Historic {self.pacient_name} - {self.date}>"
-
-
 # Diet model
 class Diet(db.Model):
     __tablename__ = "diets"
@@ -70,12 +52,12 @@ class Schedules(db.Model):
     __tablename__ = "schedules"
 
     id = db.Column(db.Integer, primary_key=True)
-    pacient_name = db.Column(db.Integer, db.ForeignKey("pacients.name"), nullable=False)
+    pacient_name = db.Column(db.String(255), db.ForeignKey("pacients.name"), nullable=False)
     date_time = db.Column(db.DateTime, nullable=False)
     specialist = db.Column(db.String, nullable=False)
     status = db.Column(db.String, default="pendente")
 
-    # pacient = db.relationship("Pacients", backref="schedules")
+    pacient = db.relationship("Pacients", backref="schedules")
 
     def __repr__(self):
         return f"<Schedule {self.pacient_name} | {self.specialist} | {self.date_time}>"
