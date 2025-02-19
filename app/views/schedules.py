@@ -12,7 +12,7 @@ schedules_bp = Blueprint("schedules", __name__)
 @roles_required("admin")
 def list_schedules():
     schedules = Schedules.query.all()
-    return render_template("admin/list_schedules.html", schedules=schedules)
+    return render_template("admin/schedules/list_schedules.html", schedules=schedules)
 
 
 @schedules_bp.route("/schedule_action", methods=["GET", "POST"])
@@ -32,7 +32,7 @@ def schedule_action():
         return redirect(url_for("schedules.list_schedules"))
 
     pacients = Pacients.query.all()
-    return render_template("admin/schedule_action.html", pacients=pacients)
+    return render_template("admin/schedules/schedule_action.html", pacients=pacients)
 
 
 @schedules_bp.route("/schedules/delete/<int:id>", methods=["POST"])

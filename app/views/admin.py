@@ -51,7 +51,7 @@ def create_user():
 @roles_required("admin")
 def list_pacients():
     pacients = Pacients.query.all()
-    return render_template("admin/list_pacients.html", pacients=pacients)
+    return render_template("admin/pacients/list_pacients.html", pacients=pacients)
 
 
 @admin_bp.route("/pacients/add", methods=["GET", "POST"])
@@ -117,7 +117,7 @@ def add_pacient():
 
             flash(error_message, "danger")
 
-    return render_template("admin/add_pacient.html", pacients=pacients)
+    return render_template("admin/pacients/add_pacient.html", pacients=pacients)
 
 
 @admin_bp.route("/pacients/edit/<int:id>", methods=["GET", "POST"])
@@ -140,14 +140,14 @@ def edit_pacient(id):
                 error_message = "Erro: Já existe um paciente com esse CPF cadastrado!"
 
             flash(error_message, "danger")
-    return render_template("admin/edit_pacient.html", form=form, pacient=pacient)
+    return render_template("admin/pacients/edit_pacient.html", form=form, pacient=pacient)
 
 
 @admin_bp.route("/pacients/view/<int:id>", methods=["GET"])
 @roles_required("admin")
 def view_pacient(id):
     pacient = Pacients.query.get_or_404(id)
-    return render_template("admin/view_pacient.html", pacient=pacient)
+    return render_template("admin/pacients/view_pacient.html", pacient=pacient)
 
 
 @admin_bp.route("/pacients/delete/<int:id>", methods=["GET", "POST"])
@@ -159,14 +159,14 @@ def delete_pacient(id):
         db.session.commit()
         flash(f"Paciente '{pacient.name}' removido com sucesso!", "success")
         return redirect(url_for("admin.list_pacients"))
-    return render_template("admin/delete_pacient.html", pacient=pacient)
+    return render_template("admin/pacients/delete_pacient.html", pacient=pacient)
 
 
 @admin_bp.route("/diets")
 @roles_required("admin")
 def list_diets():
     diets = Diet.query.all()
-    return render_template("admin/list_diets.html", diets=diets)
+    return render_template("admin/diets/list_diets.html", diets=diets)
 
 
 @admin_bp.route("/diets/add", methods=["GET", "POST"])
@@ -188,14 +188,14 @@ def add_diet():
         flash("Dieta cadastrada com sucesso!")
         return redirect(url_for("admin.list_diets"))
 
-    return render_template("admin/add_diet.html", form=form)
+    return render_template("admin/diets/add_diet.html", form=form)
 
 
 @admin_bp.route("/diets/<int:id>", methods=["GET"])
 @roles_required("admin")
 def view_diet(id):
     diet = Diet.query.get_or_404(id)
-    return render_template("admin/view_diet.html", diet=diet)
+    return render_template("admin/diets/view_diet.html", diet=diet)
 
 
 @admin_bp.route("/diets/delete/<int:id>", methods=["GET", "POST"])
@@ -214,7 +214,7 @@ def delete_diet(id):
         db.session.commit()
         flash(f"Dieta '{diet.name}' removida com sucesso!", "success")
         return redirect(url_for("admin.list_diets"))
-    return render_template("admin/delete_diet.html", diet=diet)
+    return render_template("admin/diets/delete_diet.html", diet=diet)
 
 
 @admin_bp.route("/diets/download/<filename>")
