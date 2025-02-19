@@ -23,12 +23,57 @@ class Pacients(db.Model):
     __tablename__ = "pacients"
 
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(255), unique=True, nullable=False)
+
+    # Dados pessoais
+    name = db.Column(db.String(100), nullable=False)
+    gender = db.Column(db.String(10), nullable=False)
+    birth_date = db.Column(db.Date, nullable=False)
     cpf = db.Column(db.String(14), unique=True, nullable=False)
-    tel_number = db.Column(db.String(14), nullable=False)
+    tel_number = db.Column(db.String(20), nullable=False)
+    email = db.Column(db.String(100), unique=True, nullable=False)
     started_at = db.Column(db.DateTime, default=datetime.now(timezone.utc))
 
-    # user = db.relationship("User", backref="pacients", lazy=True)
+    # História Clínica
+    medication = db.Column(db.String(3), nullable=False)
+    medications_details = db.Column(db.Text, nullable=True)
+    intestine = db.Column(db.Integer, nullable=False)
+    allergies = db.Column(db.String(3), nullable=False)
+    allergies_details = db.Column(db.Text, nullable=True)
+    water = db.Column(db.Float, nullable=False)
+    heartburn = db.Column(db.String(3), nullable=False)
+
+    # História Comportamental
+    physical_activities = db.Column(db.String(3), nullable=False)
+    physical_details = db.Column(db.Text, nullable=True)
+    hours = db.Column(db.Time, nullable=True)  # Physical activities hours
+    frequency = db.Column(db.Integer, nullable=True)
+    objective = db.Column(db.Text, nullable=False)
+
+    # Avaliação antropométrica
+    data_avaliacao = db.Column(db.Date, nullable=False)
+    idade = db.Column(db.Integer, nullable=False)
+    altura = db.Column(db.Float, nullable=False)
+    peso = db.Column(db.Float, nullable=False)
+    evolucao = db.Column(db.Text, nullable=True)
+    p_max = db.Column(db.Float, nullable=False)
+    p_ide = db.Column(db.Float, nullable=False)
+    p_min = db.Column(db.Float, nullable=False)
+    imc = db.Column(db.Float, nullable=False)
+    nutri_class = db.Column(db.String(20), nullable=False)
+    grau_atv_fisica = db.Column(db.String(20), nullable=False)
+    pa = db.Column(db.Float, nullable=False)
+
+    # Pregas Cutâneas
+    data_medicao = db.Column(db.Date, nullable=False)
+    triciptal = db.Column(db.Float, nullable=False)
+    bicipital = db.Column(db.Float, nullable=False)
+    subscapula = db.Column(db.Float, nullable=False)
+    toracica = db.Column(db.Float, nullable=True)
+    axilar = db.Column(db.Float, nullable=False)
+    supra = db.Column(db.Float, nullable=False)
+    abdominal = db.Column(db.Float, nullable=False)
+    coxa = db.Column(db.Float, nullable=False)
+    panturrilha = db.Column(db.Float, nullable=False)
 
     def __repr__(self):
         return f"<Pacient {self.name} | {self.cpf}>"

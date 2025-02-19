@@ -4,7 +4,12 @@
     <form method="POST" enctype="multipart/form-data" action="{{ url_for('admin.add_diet') }}">
         {{ form.hidden_tag() }}
         <label for="name">Nome:</label>
-        {{ form.name() }}
+        {{ form.name(id="diet-select") }}
+        <br>
+        <div id="other-name-field" style="display: none;">
+            <label for="other_name">Outro (especifique):</label>
+            {{ form.other_name() }}
+        </div>
         <br>
         <label for="description">Descrição:</label>
         {{ form.description() }}
@@ -14,4 +19,22 @@
         <br>
         <button type="submit">Salvar Dieta</button>
     </form>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const selectField = document.getElementById("diet-select");
+            const otherNameField = document.getElementById("other-name-field");
+
+            function toggleOtherField() {
+                if (selectField.value === "outro") {
+                    otherNameField.style.display = "block";
+                } else {
+                    otherNameField.style.display = "none";
+                }
+            }
+
+            selectField.addEventListener("change", toggleOtherField);
+            toggleOtherField();
+        });
+    </script>
 {% endblock %}

@@ -3,15 +3,45 @@
 {% block content %}
     <h2>Editar dados do paciente</h2>
     <form method="POST" action="{{ url_for('admin.edit_pacient', id=pacient.id) }}">
-        <label for="name">Nome:</label>
-        <input type="text" name="name" value="{{ pacient.name }}" required>
+        {{ form.hidden_tag() }}
+
+        <label>Escolha os campos que deseja editar:</label>
         <br>
-        <label for="cpf">CPF:</label>
-        <input type="text" name="cpf" value="{{ pacient.cpf }}" required>
-        <br>
-        <label for="tel_number">Número de telefone:</label>
-        <input type="text" name="tel_number" value="{{ pacient.tel_number }}" required>
+        <!-- Listing of editable fields -->
+        {% for field in form if field.label.field_id not in ["csrf_token", "submit"] %}
+            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+                <!-- Checkbox to select which field will be editable -->
+                <input type="checkbox" id="check_{{ field.id }}" name="edit_fields" value="{{ field.id }}" onclick="toggleField('{{ field.id }}')">
+                <label for="check_{{ field.id }}">{{ field.label.text }}</label>
+
+                <!-- Field hidden, initially -->
+                <div id="field_{{ field.id }}" style="flex-grow: 1; display: none;">
+                    <!-- Show editable field -->
+                    {{ field(class_="form-control", readonly=True) }}
+                </div>
+            </div>
+        {% endfor %}
         <br>
         <button type="submit">Salvar Alterações</button>
     </form>
+    <br>
+    <a href="{{ url_for('admin.list_pacients') }}" class="btn btn-secondary">🔙 Voltar</a>
+
+    <script>
+        function toggleField(fieldId) {
+            let fieldDiv = document.getElementById("field_" + fieldId);
+            let checkbox = document.getElementById("check_" + fieldId);
+            let inputField = fieldDiv.querySelector("input, select, textarea");
+
+            if (checkbox.checked) {
+                // Show and allow edition
+                fieldDiv.style.display = "block";
+                inputField.removeAttribute("readonly");
+            } else {
+                // Hide field and keep the original value
+                fieldDiv.style.display = "none";
+                inputField.setAttribute("readonly", "true");
+            }
+        }
+    </script>
 {% endblock %}

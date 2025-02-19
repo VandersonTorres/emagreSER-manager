@@ -18,6 +18,7 @@
             <tr>
                 <th>Paciente</th>
                 <th>Data</th>
+                <th>Profissional</th>
                 <th>Status</th>
                 <th>Ações</th>
             </tr>
@@ -25,6 +26,7 @@
             <tr>
                 <td>{{ schedule.pacient.name }}</td>
                 <td>{{ schedule.date_time }}</td>
+                <td>{{ schedule.specialist }}</td>
                 <td>{{ schedule.status }}</td>
                 <td>
                     <form method="POST" action="{{ url_for('schedules.delete_schedule', id=schedule.id) }}">

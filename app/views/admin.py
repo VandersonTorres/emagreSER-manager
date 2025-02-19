@@ -1,5 +1,6 @@
 import os
 import uuid
+from datetime import datetime
 
 from flask import (
     Blueprint,
@@ -18,7 +19,7 @@ from sqlalchemy.exc import IntegrityError
 from twilio.rest import Client
 from werkzeug.utils import secure_filename
 
-from app.forms import DietForm
+from app.forms import DietForm, PacientForm
 from app.models import Diet, Pacients, User, db
 
 admin_bp = Blueprint("admin", __name__)
@@ -58,18 +59,57 @@ def list_pacients():
 def add_pacient():
     pacients = Pacients.query.all()  # List of available pacients
     if request.method == "POST":
-        name = request.form["name"]
-        cpf = request.form["cpf"]
-        tel_number = request.form["phone"]
         try:
-            # Add the pacient
-            pacient = Pacients(name=name, cpf=cpf, tel_number=tel_number)
+            pacient = Pacients(
+                name=request.form["name"],
+                gender=request.form["gender"],
+                birth_date=datetime.strptime(request.form.get("birth_date"), "%Y-%m-%d").date(),
+                cpf=request.form["cpf"],
+                tel_number=request.form["phone"],
+                email=request.form["email"],
+                medication=request.form["medication"],
+                medications_details=request.form["medications_details"],
+                intestine=request.form["intestine"],
+                allergies=request.form["allergies"],
+                allergies_details=request.form["allergies_details"],
+                water=request.form["water"],
+                heartburn=request.form["heartburn"],
+                physical_activities=request.form["physical_activities"],
+                physical_details=request.form["physical_details"],
+                hours=datetime.strptime(request.form["hours"], "%H:%M").time(),
+                frequency=request.form["frequency"],
+                objective=request.form["objective"],
+                data_avaliacao=datetime.strptime(request.form.get("data_avaliacao"), "%Y-%m-%d").date(),
+                idade=request.form["idade"],
+                altura=request.form["altura"],
+                peso=request.form["peso"],
+                evolucao=request.form["evolucao"],
+                p_max=request.form["p_max"],
+                p_ide=request.form["p_ide"],
+                p_min=request.form["p_min"],
+                imc=request.form["imc"],
+                nutri_class=request.form["nutri_class"],
+                grau_atv_fisica=request.form["grau_atv_fisica"],
+                pa=request.form["pa"],
+                data_medicao=datetime.strptime(request.form.get("data_medicao"), "%Y-%m-%d").date(),
+                triciptal=request.form["triciptal"],
+                bicipital=request.form["bicipital"],
+                subscapula=request.form["subscapula"],
+                toracica=request.form["toracica"],
+                axilar=request.form["axilar"],
+                supra=request.form["supra"],
+                abdominal=request.form["abdominal"],
+                coxa=request.form["coxa"],
+                panturrilha=request.form["panturrilha"],
+            )
+
             db.session.add(pacient)
             db.session.commit()
             flash("Paciente cadastrado com sucesso!", "success")
             return redirect(url_for("admin.list_pacients"))
         except IntegrityError as e:
             db.session.rollback()
+            error_message = e
             if "pacients.name" in str(e):
                 error_message = "Erro: Já existe um paciente com esse nome cadastrado!"
             elif "pacients.cpf" in str(e):
@@ -84,23 +124,30 @@ def add_pacient():
 @roles_required("admin")
 def edit_pacient(id):
     pacient = Pacients.query.get_or_404(id)
+    form = PacientForm(obj=pacient)
     if request.method == "POST":
         try:
-            pacient.name = request.form["name"]
-            pacient.cpf = request.form["cpf"]
-            pacient.tel_number = request.form["tel_number"]
+            form.populate_obj(pacient)
             db.session.commit()
             flash(f"Dados do paciente '{pacient.name}' atualizados com sucesso!", "success")
             return redirect(url_for("admin.list_pacients"))
         except IntegrityError as e:
             db.session.rollback()
+            error_message = e
             if "pacients.name" in str(e):
                 error_message = "Erro: Já existe um paciente com esse nome cadastrado!"
             elif "pacients.cpf" in str(e):
                 error_message = "Erro: Já existe um paciente com esse CPF cadastrado!"
 
             flash(error_message, "danger")
-    return render_template("admin/edit_pacient.html", pacient=pacient)
+    return render_template("admin/edit_pacient.html", form=form, pacient=pacient)
+
+
+@admin_bp.route("/pacients/view/<int:id>", methods=["GET"])
+@roles_required("admin")
+def view_pacient(id):
+    pacient = Pacients.query.get_or_404(id)
+    return render_template("admin/view_pacient.html", pacient=pacient)
 
 
 @admin_bp.route("/pacients/delete/<int:id>", methods=["GET", "POST"])
@@ -133,7 +180,8 @@ def add_diet():
             pdf_path = os.path.join(current_app.config["UPLOAD_FOLDER"], pdf_filename)
             form.pdf_file.data.save(pdf_path)
 
-        diet = Diet(name=form.name.data, description=form.description.data, pdf_file=pdf_filename)
+        diet_name = form.other_name.data if form.name.data == "outro" else form.name.data
+        diet = Diet(name=diet_name, description=form.description.data, pdf_file=pdf_filename)
         db.session.add(diet)
         db.session.commit()
 

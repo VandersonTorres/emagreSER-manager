@@ -1,0 +1,199 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h2>Detalhes do Paciente</h2>
+
+    <h3>Dados Pessoais</h3>
+    <div class="card">
+        <div class="card-body">
+            <h4 class="card-title">{{ pacient.name }}</h4>
+            <p><strong>Gênero:</strong> {{ pacient.gender }}</p>
+            <p><strong>Data de Nascimento:</strong> {{ pacient.birth_date.strftime('%d/%m/%Y') }}</p>
+            <p><strong>CPF:</strong> {{ pacient.cpf }}</p>
+            <p><strong>Telefone:</strong> {{ pacient.tel_number }}</p>
+            <p><strong>Email:</strong> {{ pacient.email }}</p>
+            <p><strong>Cadastrado em:</strong> {{ pacient.started_at.strftime('%d/%m/%Y %H:%M') }}</p>
+        </div>
+    </div>
+
+    <h3>História Clínica</h3>
+    <table border="1" class="table table-bordered">
+        <tbody>
+            <tr>
+                <td><strong>Uso de Medicação</strong></td>
+                <td>{{ 'Sim' if pacient.medication == 'sim' else 'Não' }}</td>
+            </tr>
+            {% if pacient.medications_details %}
+            <tr>
+                <td><strong>Detalhes da Medicação</strong></td>
+                <td>{{ pacient.medications_details }}</td>
+            </tr>
+            {% endif %}
+            <tr>
+                <td><strong>Função Intestinal</strong></td>
+                <td>{{ pacient.intestine }}</td>
+            </tr>
+            <tr>
+                <td><strong>Possui Alergias</strong></td>
+                <td>{{ 'Sim' if pacient.allergies == 'sim' else 'Não' }}</td>
+            </tr>
+            {% if pacient.allergies_details %}
+            <tr>
+                <td><strong>Detalhes das Alergias</strong></td>
+                <td>{{ pacient.allergies_details }}</td>
+            </tr>
+            {% endif %}
+            <tr>
+                <td><strong>Consumo de Água (litros/dia)</strong></td>
+                <td>{{ pacient.water }}</td>
+            </tr>
+            <tr>
+                <td><strong>Sofre de Azia</strong></td>
+                <td>{{ 'Sim' if pacient.heartburn == 'sim' else 'Não' }}</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h3>História Comportamental</h3>
+    <table border="1" class="table table-bordered">
+        <tbody>
+            <tr>
+                <td><strong>Pratica Atividade Física</strong></td>
+                <td>{{ 'Sim' if pacient.physical_activities == 'sim' else 'Não' }}</td>
+            </tr>
+            {% if pacient.physical_details %}
+            <tr>
+                <td><strong>Detalhes</strong></td>
+                <td>{{ pacient.physical_details }}</td>
+            </tr>
+            {% endif %}
+            {% if pacient.hours %}
+            <tr>
+                <td><strong>Horário das Atividades</strong></td>
+                <td>{{ pacient.hours.strftime('%H:%M') }}</td>
+            </tr>
+            {% endif %}
+            {% if pacient.frequency %}
+            <tr>
+                <td><strong>Frequência Semanal</strong></td>
+                <td>{{ pacient.frequency }} vezes</td>
+            </tr>
+            {% endif %}
+            <tr>
+                <td><strong>Objetivo</strong></td>
+                <td>{{ pacient.objective }}</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h3>Avaliação Antropométrica</h3>
+    <table border="1" class="table table-bordered">
+        <tbody>
+            <tr>
+                <td><strong>Data da Avaliação</strong></td>
+                <td>{{ pacient.data_avaliacao.strftime('%d/%m/%Y') }}</td>
+            </tr>
+            <tr>
+                <td><strong>Idade</strong></td>
+                <td>{{ pacient.idade }} anos</td>
+            </tr>
+            <tr>
+                <td><strong>Altura</strong></td>
+                <td>{{ pacient.altura }} m</td>
+            </tr>
+            <tr>
+                <td><strong>Peso</strong></td>
+                <td>{{ pacient.peso }} kg</td>
+            </tr>
+            {% if pacient.evolucao %}
+            <tr>
+                <td><strong>Evolução</strong></td>
+                <td>{{ pacient.evolucao }}</td>
+            </tr>
+            {% endif %}
+            <tr>
+                <td><strong>Peso Máximo</strong></td>
+                <td>{{ pacient.p_max }} kg</td>
+            </tr>
+            <tr>
+                <td><strong>Peso Ideal</strong></td>
+                <td>{{ pacient.p_ide }} kg</td>
+            </tr>
+            <tr>
+                <td><strong>Peso Mínimo</strong></td>
+                <td>{{ pacient.p_min }} kg</td>
+            </tr>
+            <tr>
+                <td><strong>IMC</strong></td>
+                <td>{{ pacient.imc }}</td>
+            </tr>
+            <tr>
+                <td><strong>Classificação Nutricional</strong></td>
+                <td>{{ pacient.nutri_class }}</td>
+            </tr>
+            <tr>
+                <td><strong>Grau de Atividade Física</strong></td>
+                <td>{{ pacient.grau_atv_fisica }}</td>
+            </tr>
+            <tr>
+                <td><strong>Pressão Arterial</strong></td>
+                <td>{{ pacient.pa }}</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h3>Pregas Cutâneas</h3>
+    <table border="1" class="table table-bordered">
+        <tbody>
+            <tr>
+                <td><strong>Data da Medição</strong></td>
+                <td>{{ pacient.data_medicao.strftime('%d/%m/%Y') }}</td>
+            </tr>
+            <tr>
+                <td><strong>Triciptal</strong></td>
+                <td>{{ pacient.triciptal }} mm</td>
+            </tr>
+            <tr>
+                <td><strong>Bicipital</strong></td>
+                <td>{{ pacient.bicipital }} mm</td>
+            </tr>
+            <tr>
+                <td><strong>Subescapular</strong></td>
+                <td>{{ pacient.subscapula }} mm</td>
+            </tr>
+            {% if pacient.toracica is not none %}
+            <tr>
+                <td><strong>Torácica</strong></td>
+                <td>{{ pacient.toracica }} mm</td>
+            </tr>
+            {% endif %}
+            <tr>
+                <td><strong>Axilar</strong></td>
+                <td>{{ pacient.axilar }} mm</td>
+            </tr>
+            <tr>
+                <td><strong>Supra-ilíaca</strong></td>
+                <td>{{ pacient.supra }} mm</td>
+            </tr>
+            <tr>
+                <td><strong>Abdominal</strong></td>
+                <td>{{ pacient.abdominal }} mm</td>
+            </tr>
+            <tr>
+                <td><strong>Coxa</strong></td>
+                <td>{{ pacient.coxa }} mm</td>
+            </tr>
+            <tr>
+                <td><strong>Panturrilha</strong></td>
+                <td>{{ pacient.panturrilha }} mm</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <br>
+
+    <a href="{{ url_for('admin.list_pacients') }}" class="btn btn-secondary">🔙 Voltar</a>
+    <a href="{{ url_for('admin.edit_pacient', id=pacient.id) }}" class="btn btn-primary">✏️ Editar</a>
+    <a href="{{ url_for('admin.delete_pacient', id=pacient.id) }}" class="btn btn-danger" onclick="return confirm('Tem certeza que deseja remover este paciente?')">🗑️ Remover</a>
+
+{% endblock %}

@@ -6,6 +6,8 @@ flask --app app run
 
 COMANDOS SQLITE:
 
+rm -rf migrations               # Remove as migrações
+rm database.db                  # Apaga o banco SQLite
+flask db init                   # Inicia o banco
 flask db migrate -m "Mensagem"  # Alterações no banco
-rm -f instance/app.db           # Apaga o banco SQLite
 flask db upgrade                # Recria o banco

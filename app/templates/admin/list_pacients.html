@@ -17,7 +17,11 @@
         <ul>
             {% for pacient in pacients %}
                 <li>
-                    {{ pacient.name }} - {{ pacient.tel_number }}
+                    {{ pacient.name }} | CPF: {{ pacient.cpf }} |
+                    Tel: {{ pacient.tel_number }} | E-mail: {{ pacient.email }}
+                    &nbsp;
+                    <a href="{{ url_for('admin.view_pacient', id=pacient.id) }}" target="_blank">Ver Paciente</a>
+                    &nbsp;
                     <a href="{{ url_for('admin.edit_pacient', id=pacient.id) }}">Editar</a>
                     &nbsp;
                     <a href="{{ url_for('admin.delete_pacient', id=pacient.id) }}">Remover</a>
