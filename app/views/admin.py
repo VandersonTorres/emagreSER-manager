@@ -20,31 +20,43 @@ from twilio.rest import Client
 from werkzeug.utils import secure_filename
 
 from app.forms import DietForm, PacientForm
-from app.models import Diet, Pacients, User, db
+from app.models import Diet, Pacients, Role, User, db
 
 admin_bp = Blueprint("admin", __name__)
 
 
-@admin_bp.route("/create_user", methods=["POST"])
+@admin_bp.route("/create_user", methods=["GET", "POST"])
 @roles_required("admin")
 def create_user():
-    data = request.get_json()
-    email = data.get("email")
-    password = data.get("password")
-    if not email or not password:
-        return jsonify({"error": "Email e senha são obrigatórios!"}), 400
+    if request.method == "POST":
+        email = request.form.get("email")
+        password = request.form.get("password")
+        role = request.form.get("role") == "yes"
+        if role:
+            # Check if the role already exists, otherwise create it
+            admin_role = Role.query.filter_by(name="admin").first()
+            if not admin_role:
+                admin_role = Role(name="admin")
+                db.session.add(admin_role)
+                db.session.commit()
+        if not email or not password:
+            return jsonify({"error": "Email e senha são obrigatórios!"}), 400
 
-    # Check if user already exists
-    existing_user = User.query.filter_by(email=email).first()
-    if existing_user:
-        return jsonify({"error": "Usuário já está cadastrado!"}), 400
+        # Check if user already exists
+        existing_user = User.query.filter_by(email=email).first()
+        if existing_user:
+            return jsonify({"error": "Usuário já está cadastrado!"}), 400
 
-    # Create new user
-    user = User(email=email, active=True, password=hash_password(password), fs_uniquifier=uuid.uuid4().hex)
+        # Create new user
+        user = User(email=email, active=True, password=hash_password(password), fs_uniquifier=uuid.uuid4().hex)
+        if role:
+            user.roles.append(admin_role)  # Assign the 'admin' role to the user
 
-    db.session.add(user)
-    db.session.commit()
-    return jsonify({"message": f"Usuário {email} cadastrado com sucesso"}), 201
+        db.session.add(user)
+        db.session.commit()
+        flash(f"Usuário {email} cadastrado com sucesso", "success")
+        return render_template("/home.html")
+    return render_template("/create_user.html")
 
 
 @admin_bp.route("/pacients")
@@ -61,46 +73,46 @@ def add_pacient():
     if request.method == "POST":
         try:
             pacient = Pacients(
-                name=request.form["name"],
-                gender=request.form["gender"],
+                name=request.form.get("name"),
+                gender=request.form.get("gender"),
                 birth_date=datetime.strptime(request.form.get("birth_date"), "%Y-%m-%d").date(),
-                cpf=request.form["cpf"],
-                tel_number=request.form["phone"],
-                email=request.form["email"],
-                medication=request.form["medication"],
-                medications_details=request.form["medications_details"],
-                intestine=request.form["intestine"],
-                allergies=request.form["allergies"],
-                allergies_details=request.form["allergies_details"],
-                water=request.form["water"],
-                heartburn=request.form["heartburn"],
-                physical_activities=request.form["physical_activities"],
-                physical_details=request.form["physical_details"],
-                hours=datetime.strptime(request.form["hours"], "%H:%M").time(),
-                frequency=request.form["frequency"],
-                objective=request.form["objective"],
+                cpf=request.form.get("cpf"),
+                tel_number=request.form.get("phone"),
+                email=request.form.get("email"),
+                medication=request.form.get("medication"),
+                medications_details=request.form.get("medications_details"),
+                intestine=request.form.get("intestine"),
+                allergies=request.form.get("allergies"),
+                allergies_details=request.form.get("allergies_details"),
+                water=request.form.get("water"),
+                heartburn=request.form.get("heartburn"),
+                physical_activities=request.form.get("physical_activities"),
+                physical_details=request.form.get("physical_details"),
+                hours=datetime.strptime(request.form.get("hours"), "%H:%M").time(),
+                frequency=request.form.get("frequency"),
+                objective=request.form.get("objective"),
                 data_avaliacao=datetime.strptime(request.form.get("data_avaliacao"), "%Y-%m-%d").date(),
-                idade=request.form["idade"],
-                altura=request.form["altura"],
-                peso=request.form["peso"],
-                evolucao=request.form["evolucao"],
-                p_max=request.form["p_max"],
-                p_ide=request.form["p_ide"],
-                p_min=request.form["p_min"],
-                imc=request.form["imc"],
-                nutri_class=request.form["nutri_class"],
-                grau_atv_fisica=request.form["grau_atv_fisica"],
-                pa=request.form["pa"],
+                idade=request.form.get("idade"),
+                altura=request.form.get("altura"),
+                peso=request.form.get("peso"),
+                evolucao=request.form.get("evolucao"),
+                p_max=request.form.get("p_max"),
+                p_ide=request.form.get("p_ide"),
+                p_min=request.form.get("p_min"),
+                imc=request.form.get("imc"),
+                nutri_class=request.form.get("nutri_class"),
+                grau_atv_fisica=request.form.get("grau_atv_fisica"),
+                pa=request.form.get("pa"),
                 data_medicao=datetime.strptime(request.form.get("data_medicao"), "%Y-%m-%d").date(),
-                triciptal=request.form["triciptal"],
-                bicipital=request.form["bicipital"],
-                subscapula=request.form["subscapula"],
-                toracica=request.form["toracica"],
-                axilar=request.form["axilar"],
-                supra=request.form["supra"],
-                abdominal=request.form["abdominal"],
-                coxa=request.form["coxa"],
-                panturrilha=request.form["panturrilha"],
+                triciptal=request.form.get("triciptal"),
+                bicipital=request.form.get("bicipital"),
+                subscapula=request.form.get("subscapula"),
+                toracica=request.form.get("toracica"),
+                axilar=request.form.get("axilar"),
+                supra=request.form.get("supra"),
+                abdominal=request.form.get("abdominal"),
+                coxa=request.form.get("coxa"),
+                panturrilha=request.form.get("panturrilha"),
             )
 
             db.session.add(pacient)

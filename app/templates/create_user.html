@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h2>CADASTRAMENTO</h2>
+    <br>
+    <form method="POST" action="{{ url_for('admin.create_user') }}">
+        <label for="email">Email:</label>
+        <input type="text" name="email" required>
+        <br>
+        <label for="password">Senha:</label>
+        <input type="password" name="password" required>
+        <br>
+        <label for="role">Esse usuário deve ser um Adminstrador?</label>
+        <input type="radio" name="role" value="yes" required> Sim
+        <input type="radio" name="role" value="no" required> Não
+        <br><br>
+        <button type="submit">Cadastrar Usuário</button>
+    </form>
+{% endblock %}
