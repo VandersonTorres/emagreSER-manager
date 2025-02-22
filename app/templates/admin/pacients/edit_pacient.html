@@ -7,7 +7,7 @@
 
         <label>Escolha os campos que deseja editar:</label>
         <br>
-        <!-- Listing of editable fields -->
+        <!-- Listing of editable fields (dados do paciente) -->
         {% for field in form if field.label.field_id not in ["csrf_token", "submit"] %}
             <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
                 <!-- Checkbox to select which field will be editable -->
@@ -24,7 +24,38 @@
         <br>
         <button type="submit">Salvar Alterações</button>
     </form>
-    <br>
+
+    <hr>
+    <h3>Avaliações Antropométricas</h3>
+    {% if pacient.anthropometric_evaluations %}
+        <ul>
+            {% for evaluation in pacient.anthropometric_evaluations %}
+                <li>
+                    Data: {{ evaluation.data_avaliacao }} | Peso: {{ evaluation.peso }} kg | IMC: {{ evaluation.imc }}
+                    &nbsp;
+                    <a href="{{ url_for('admin.edit_anthro', pacient_id=pacient.id, evaluation_id=evaluation.id) }}">Editar Avaliação</a>
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>Nenhuma avaliação registrada.</p>
+    {% endif %}
+
+    <hr>
+    <h3>Dados de Pregas Cutâneas</h3>
+    {% if pacient.skinfolds %}
+        <ul>
+            {% for skinfold in pacient.skinfolds %}
+                <li>
+                    Data: {{ skinfold.data_medicao }} | Triciptal: {{ skinfold.triciptal }} | Bicipital: {{ skinfold.bicipital }}
+                    &nbsp;
+                    <a href="{{ url_for('admin.edit_skinfold', pacient_id=pacient.id, skinfold_id=skinfold.id) }}">Editar Pregas Cutâneas</a>
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>Nenhum registro de pregas cutâneas.</p>
+    {% endif %}
     <a href="{{ url_for('admin.list_pacients') }}" class="btn btn-secondary">🔙 Voltar</a>
 
     <script>

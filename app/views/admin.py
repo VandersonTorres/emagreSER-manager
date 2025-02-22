@@ -19,8 +19,8 @@ from sqlalchemy.exc import IntegrityError
 from twilio.rest import Client
 from werkzeug.utils import secure_filename
 
-from app.forms import DietForm, PacientForm
-from app.models import Diet, Pacients, Role, User, db
+from app.forms import AnthropometricAssessmentForm, DietForm, PacientForm, SkinfoldMeasurementForm
+from app.models import AnthropometricEvaluation, Diet, Pacients, Role, SkinFolds, User, db
 
 admin_bp = Blueprint("admin", __name__)
 
@@ -69,7 +69,6 @@ def list_pacients():
 @admin_bp.route("/pacients/add", methods=["GET", "POST"])
 @roles_required("admin")
 def add_pacient():
-    pacients = Pacients.query.all()  # List of available pacients
     if request.method == "POST":
         try:
             pacient = Pacients(
@@ -88,31 +87,11 @@ def add_pacient():
                 heartburn=request.form.get("heartburn"),
                 physical_activities=request.form.get("physical_activities"),
                 physical_details=request.form.get("physical_details"),
-                hours=datetime.strptime(request.form.get("hours"), "%H:%M").time(),
+                hours=datetime.strptime(request.form.get("hours"), "%H:%M").time()
+                if request.form.get("hours")
+                else None,
                 frequency=request.form.get("frequency"),
                 objective=request.form.get("objective"),
-                data_avaliacao=datetime.strptime(request.form.get("data_avaliacao"), "%Y-%m-%d").date(),
-                idade=request.form.get("idade"),
-                altura=request.form.get("altura"),
-                peso=request.form.get("peso"),
-                evolucao=request.form.get("evolucao"),
-                p_max=request.form.get("p_max"),
-                p_ide=request.form.get("p_ide"),
-                p_min=request.form.get("p_min"),
-                imc=request.form.get("imc"),
-                nutri_class=request.form.get("nutri_class"),
-                grau_atv_fisica=request.form.get("grau_atv_fisica"),
-                pa=request.form.get("pa"),
-                data_medicao=datetime.strptime(request.form.get("data_medicao"), "%Y-%m-%d").date(),
-                triciptal=request.form.get("triciptal"),
-                bicipital=request.form.get("bicipital"),
-                subscapula=request.form.get("subscapula"),
-                toracica=request.form.get("toracica"),
-                axilar=request.form.get("axilar"),
-                supra=request.form.get("supra"),
-                abdominal=request.form.get("abdominal"),
-                coxa=request.form.get("coxa"),
-                panturrilha=request.form.get("panturrilha"),
             )
 
             db.session.add(pacient)
@@ -121,7 +100,11 @@ def add_pacient():
             return redirect(url_for("admin.list_pacients"))
         except IntegrityError as e:
             db.session.rollback()
-            error_message = e
+            field_name = e.split("UNIQUE constraint failed: ")[1].split(" ")[0]
+            error_message = (
+                f"Erro ao cadastrar paciente. O seguinte campo já foi atribuído à outro paciente: {field_name}"
+            )
+
             if "pacients.name" in str(e):
                 error_message = "Erro: Já existe um paciente com esse nome cadastrado!"
             elif "pacients.cpf" in str(e):
@@ -129,7 +112,62 @@ def add_pacient():
 
             flash(error_message, "danger")
 
-    return render_template("admin/pacients/add_pacient.html", pacients=pacients)
+    return render_template("admin/pacients/add_pacient.html")
+
+
+@admin_bp.route("/pacients/<int:pacient_id>/anthropometric/add", methods=["GET", "POST"])
+@roles_required("admin")
+def add_anthro(pacient_id):
+    pacient = Pacients.query.get_or_404(pacient_id)
+    form = AnthropometricAssessmentForm()
+    if form.validate_on_submit():
+        anthro = AnthropometricEvaluation(
+            pacient_id=pacient.id,
+            data_avaliacao=form.data_avaliacao.data,
+            ultima_guia=form.ultima_guia.data,
+            idade=form.idade.data,
+            altura=form.altura.data,
+            peso=form.peso.data,
+            evolucao=form.evolucao.data,
+            p_max=form.p_max.data,
+            p_ide=form.p_ide.data,
+            p_min=form.p_min.data,
+            imc=form.imc.data,
+            nutri_class=form.nutri_class.data,
+            grau_atv_fisica=form.grau_atv_fisica.data,
+            pa=form.pa.data,
+        )
+        db.session.add(anthro)
+        db.session.commit()
+        flash("Avaliação antropométrica adicionada com sucesso!", "success")
+        return redirect(url_for("admin.view_pacient", id=pacient.id))
+    return render_template("admin/pacients/add_anthro.html", form=form, pacient=pacient)
+
+
+@admin_bp.route("/pacients/<int:pacient_id>/skinfolds/add", methods=["GET", "POST"])
+@roles_required("admin")
+def add_skinfold(pacient_id):
+    pacient = Pacients.query.get_or_404(pacient_id)
+    form = SkinfoldMeasurementForm()
+    if form.validate_on_submit():
+        skinfold = SkinFolds(
+            pacient_id=pacient.id,
+            data_medicao=form.data_medicao.data,
+            triciptal=form.triciptal.data,
+            bicipital=form.bicipital.data,
+            subscapula=form.subscapula.data,
+            toracica=form.toracica.data,
+            axilar=form.axilar.data,
+            supra=form.supra.data,
+            abdominal=form.abdominal.data,
+            coxa=form.coxa.data,
+            panturrilha=form.panturrilha.data,
+        )
+        db.session.add(skinfold)
+        db.session.commit()
+        flash("Pregas cutâneas adicionadas com sucesso!", "success")
+        return redirect(url_for("admin.view_pacient", id=pacient.id))
+    return render_template("admin/pacients/add_skinfold.html", form=form, pacient=pacient)
 
 
 @admin_bp.route("/pacients/edit/<int:id>", methods=["GET", "POST"])
@@ -155,6 +193,32 @@ def edit_pacient(id):
     return render_template("admin/pacients/edit_pacient.html", form=form, pacient=pacient)
 
 
+@admin_bp.route("/pacients/<int:pacient_id>/anthro/edit/<int:evaluation_id>", methods=["GET", "POST"])
+@roles_required("admin")
+def edit_anthro(pacient_id, evaluation_id):
+    evaluation = AnthropometricEvaluation.query.get_or_404(evaluation_id)
+    form = AnthropometricAssessmentForm(obj=evaluation)
+    if form.validate_on_submit():
+        form.populate_obj(evaluation)
+        db.session.commit()
+        flash("Avaliação antropométrica atualizada com sucesso!", "success")
+        return redirect(url_for("admin.edit_pacient", id=pacient_id))
+    return render_template("admin/pacients/edit_anthro.html", form=form, evaluation=evaluation)
+
+
+@admin_bp.route("/pacients/<int:pacient_id>/skinfolds/edit/<int:skinfold_id>", methods=["GET", "POST"])
+@roles_required("admin")
+def edit_skinfold(pacient_id, skinfold_id):
+    skinfold = SkinFolds.query.get_or_404(skinfold_id)
+    form = SkinfoldMeasurementForm(obj=skinfold)
+    if form.validate_on_submit():
+        form.populate_obj(skinfold)
+        db.session.commit()
+        flash("Dados de pregas cutâneas atualizados com sucesso!", "success")
+        return redirect(url_for("admin.edit_pacient", id=pacient_id))
+    return render_template("admin/pacients/edit_skinfold.html", form=form, skinfold=skinfold)
+
+
 @admin_bp.route("/pacients/view/<int:id>", methods=["GET"])
 @roles_required("admin")
 def view_pacient(id):
@@ -167,6 +231,10 @@ def view_pacient(id):
 def delete_pacient(id):
     pacient = Pacients.query.get_or_404(id)
     if request.method == "POST":
+        for evaluation in pacient.anthropometric_evaluations:
+            db.session.delete(evaluation)
+        for skinfold in pacient.skinfolds:
+            db.session.delete(skinfold)
         db.session.delete(pacient)
         db.session.commit()
         flash(f"Paciente '{pacient.name}' removido com sucesso!", "success")

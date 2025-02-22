@@ -78,100 +78,13 @@
         <input type="text" id="physical_details" name="physical_details" placeholder="Se sim, quais?" style="display: none;">
         <br>
         <label for="hours">Horário das atividades:</label>
-        <input type="time" name="hours" min="0">
+        <input type="time" name="hours">
         <br>
         <label for="frequency">Frequência das atividades:</label>
         <input type="number" name="frequency" min="0"> vezes por semana
         <br>
         <label for="objective">Objetivo da consulta:</label>
         <input type="text" name="objective" required>
-        <br><br>
-
-        <h3>Avaliação antropométrica</h3>
-        <table border="1" class="anthropometric_analysis">
-            <thead>
-                <tr>
-                    <th>Data de Avaliação</th>
-                    <th>Idade</th>
-                    <th>Altura</th>
-                    <th>Peso</th>
-                    <th>Evolução</th>
-                    <th>Peso Max</th>
-                    <th>Peso Ideal</th>
-                    <th>Peso Mínimo</th>
-                    <th>IMC</th>
-                    <th>Classificação Nutricional</th>
-                    <th>Grau Atv. Física</th>
-                    <th>Pressão Arterial</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td><input type="date" name="data_avaliacao" required></td>
-                    <td><input type="number" name="idade" step="0" required></td>
-                    <td><input type="number" name="altura" step="0.001" required></td>
-                    <td><input type="number" name="peso" step="0.1" required></td>
-                    <td><input type="text" name="evolucao"></td>
-                    <td><input type="number" name="p_max" required></td>
-                    <td><input type="number" name="p_ide" required></td>
-                    <td><input type="number" name="p_min" required></td>
-                    <td><input type="number" name="imc" step="0.01" required></td>
-                    <td>
-                        <select name="nutri_class" required>
-                            <option value="">Selecione</option>
-                            <option value="Abaixo">Abaixo do Peso</option>
-                            <option value="Normal">Peso Normal</option>
-                            <option value="Sobrepeso">Sobrepeso</option>
-                            <option value="Grau I">Obesidade Grau I</option>
-                            <option value="Grau II">Obesidade Grau II</option>
-                            <option value="Grau III">Obesidade Grau III</option>
-                        </select>
-                    </td>
-                    <td>
-                        <select name="grau_atv_fisica" required>
-                            <option value="">Selecione</option>
-                            <option value="Pouco Ativa">Pouco Ativa</option>
-                            <option value="Moderado">Moderadamente Ativa</option>
-                            <option value="Muito Ativa">Muito Ativa</option>
-                        </select>
-                    </td>
-                    <td><input type="number" name="pa" step="0.01" required></td>
-                </tr>
-            </tbody>
-        </table>
-        <br><br>
-
-        <h3>Pregas Cutâneas</h3>
-        <table border="1" class="measurements">
-            <thead>
-                <tr>
-                    <th>Data Medição</th>
-                    <th>Tricipital</th>
-                    <th>Bicipital</th>
-                    <th>Subscápula</th>
-                    <th>Torácica</th>
-                    <th>Axilar Média</th>
-                    <th>Supra Ilíaca</th>
-                    <th>Abdominal</th>
-                    <th>Coxa</th>
-                    <th>Panturrilha</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td><input type="date" name="data_medicao" required></td>
-                    <td><input type="number" name="triciptal" step="0.01" required></td>
-                    <td><input type="number" name="bicipital" step="0.01" required></td>
-                    <td><input type="number" name="subscapula" step="0.01" required></td>
-                    <td><input type="number" name="toracica" step="0.01" required></td>
-                    <td><input type="number" name="axilar" step="0.01" required></td>
-                    <td><input type="number" name="supra" step="0.01" required></td>
-                    <td><input type="number" name="abdominal" step="0.01" equired></td>
-                    <td><input type="number" name="coxa" step="0.01" required></td>
-                    <td><input type="number" name="panturrilha" step="0.01" required></td>
-                </tr>
-            </tbody>
-        </table>
         <br><br>
 
         <script>
@@ -185,6 +98,6 @@
                 document.getElementById('physical_details').style.display = select.value === "sim" ? "inline" : "none";
             }
         </script>
-        <button type="submit">Cadastrar</button>
+        <button type="submit">Cadastrar Paciente</button>
     </form>
 {% endblock %}

@@ -46,11 +46,26 @@ class Pacients(db.Model):
     physical_activities = db.Column(db.String(3), nullable=False)
     physical_details = db.Column(db.Text, nullable=True)
     hours = db.Column(db.Time, nullable=True)  # Physical activities hours
-    frequency = db.Column(db.Integer, nullable=True)
+    frequency = db.Column(db.Integer, nullable=False, default=0)
     objective = db.Column(db.Text, nullable=False)
 
-    # Avaliação antropométrica
-    data_avaliacao = db.Column(db.Date, nullable=False)
+    anthropometric_evaluations = db.relationship(
+        "AnthropometricEvaluation", backref="pacient", cascade="all, delete-orphan", passive_deletes=True
+    )
+    skinfolds = db.relationship("SkinFolds", backref="pacient", cascade="all, delete-orphan", passive_deletes=True)
+
+    def __repr__(self):
+        return f"<Pacient {self.name} | {self.cpf}>"
+
+
+# Anthropometric model
+class AnthropometricEvaluation(db.Model):
+    __tablename__ = "anthropometric_evaluations"
+
+    id = db.Column(db.Integer, primary_key=True)
+    pacient_id = db.Column(db.Integer, db.ForeignKey("pacients.id", ondelete="CASCADE"), nullable=False)
+    data_avaliacao = db.Column(db.Date, nullable=False, default=datetime.now(timezone.utc))
+    ultima_guia = db.Column(db.String(20), nullable=False)
     idade = db.Column(db.Integer, nullable=False)
     altura = db.Column(db.Float, nullable=False)
     peso = db.Column(db.Float, nullable=False)
@@ -63,8 +78,17 @@ class Pacients(db.Model):
     grau_atv_fisica = db.Column(db.String(20), nullable=False)
     pa = db.Column(db.Float, nullable=False)
 
-    # Pregas Cutâneas
-    data_medicao = db.Column(db.Date, nullable=False)
+    def __repr__(self):
+        return f"<AnthropometricEvaluation {self.pacient_id} | {self.date}>"
+
+
+# SkinFolds model
+class SkinFolds(db.Model):
+    __tablename__ = "skinfolds"
+
+    id = db.Column(db.Integer, primary_key=True)
+    pacient_id = db.Column(db.Integer, db.ForeignKey("pacients.id", ondelete="CASCADE"), nullable=False)
+    data_medicao = db.Column(db.Date, nullable=False, default=datetime.now(timezone.utc))
     triciptal = db.Column(db.Float, nullable=False)
     bicipital = db.Column(db.Float, nullable=False)
     subscapula = db.Column(db.Float, nullable=False)
@@ -76,7 +100,7 @@ class Pacients(db.Model):
     panturrilha = db.Column(db.Float, nullable=False)
 
     def __repr__(self):
-        return f"<Pacient {self.name} | {self.cpf}>"
+        return f"<SkinFolds {self.pacient_id} | {self.date}>"
 
 
 # Diet model

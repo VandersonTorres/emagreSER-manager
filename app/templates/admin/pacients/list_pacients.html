@@ -7,28 +7,86 @@
                     <strong>{{ message }}</strong>
                 </div>
             {% endfor %}
-            {% set _ = session.pop('_flashes', None) %}
+            {% set _ = session.pop("_flashes", None) %}
         {% endif %}
     {% endwith %}
 
     <h2>Pacientes</h2>
-    <a href="{{ url_for('admin.add_pacient') }}">+ Adicionar Paciente</a>
+    <a href="{{ url_for('admin.add_pacient') }}">+ Cadastrar Paciente</a>
     {% if pacients %}
-        <ul>
-            {% for pacient in pacients %}
-                <li>
-                    {{ pacient.name }} | CPF: {{ pacient.cpf }} |
-                    Tel: {{ pacient.tel_number }} | E-mail: {{ pacient.email }}
-                    &nbsp;
-                    <a href="{{ url_for('admin.view_pacient', id=pacient.id) }}" target="_blank">Ver Paciente</a>
-                    &nbsp;
-                    <a href="{{ url_for('admin.edit_pacient', id=pacient.id) }}">Editar</a>
-                    &nbsp;
-                    <a href="{{ url_for('admin.delete_pacient', id=pacient.id) }}">Remover</a>
-                </li>
-            {% endfor %}
-        </ul>
+        <div class="listings">
+            <ul>
+                {% for pacient in pacients %}
+                    <li>
+                        {{ pacient.name }} | CPF: {{ pacient.cpf }} |
+                        Tel: {{ pacient.tel_number }} | E-mail: {{ pacient.email }}
+                        &nbsp;
+                        <a href="{{ url_for('admin.view_pacient', id=pacient.id) }}" target="_blank">Ver Paciente</a>
+                        &nbsp;
+                        <a href="{{ url_for('admin.edit_pacient', id=pacient.id) }}">Editar</a>
+                        &nbsp;
+                        <a href="{{ url_for('admin.delete_pacient', id=pacient.id) }}">Remover</a>
+                    </li>
+                {% endfor %}
+            </ul>
+        </div>
+
+        <hr>
+
+        <div class="add-anthro-info">
+            <h3>Adicionar Informações Antropométricas</h3>
+            <form id="anthro-form" method="GET"></form>
+                <label for="pacient_select">Selecione o Paciente:</label>
+                <select id="pacient_select" name="pacient_id">
+                    <option value="">Selecione um paciente</option>
+                    {% for pacient in pacients %}
+                        <option value="{{ pacient.id }}">{{ pacient.name }} | CPF: {{ pacient.cpf }}</option>
+                    {% endfor %}
+                </select>
+                <button type="submit" onclick="redirectAnthro(event)">Realizar Avaliação</button>
+            </form>
+        </div>
+
+        <hr>
+
+        <div class="add-skinfold-info"></div>
+            <h3>Adicionar Dados de Pregas Cutâneas</h3>
+            <form id="skinfold-form" method="GET">
+                <label for="pacient_select_skinfold">Selecione o Paciente:</label>
+                <select id="pacient_select_skinfold" name="pacient_id">
+                    <option value="">Selecione um paciente</option>
+                    {% for pacient in pacients %}
+                        <option value="{{ pacient.id }}">{{ pacient.name }} | CPF: {{ pacient.cpf }}</option>
+                    {% endfor %}
+                </select>
+                <button type="submit" onclick="redirectSkinfold(event)">Aferir Pregas Cutâneas</button>
+            </form>
+        </div>
     {% else %}
         <h3>Ainda não existem pacientes cadastrados no sistema</h3>
     {% endif %}
+
+    <script>
+        function redirectAnthro(event) {
+            event.preventDefault();
+            var select = document.getElementById("pacient_select");
+            var id = select.value;
+            if (id) {
+                // Substitui o valor 0 pela id selecionada na URL
+                window.location.href = "{{ url_for('admin.add_anthro', pacient_id=0) }}".replace("0", id);
+            } else {
+                alert("Por favor, selecione um paciente.");
+            }
+        }
+        function redirectSkinfold(event) {
+            event.preventDefault();
+            var select = document.getElementById("pacient_select_skinfold");
+            var id = select.value;
+            if (id) {
+                window.location.href = "{{ url_for('admin.add_skinfold', pacient_id=0) }}".replace("0", id);
+            } else {
+                alert("Por favor, selecione um paciente.");
+            }
+        }
+    </script>
 {% endblock %}

@@ -57,8 +57,12 @@ class PacientForm(FlaskForm):
     frequency = IntegerField("Frequência das atividades (vezes por semana)", validators=[Optional()])
     objective = StringField("Objetivo da consulta", validators=[DataRequired()])
 
-    # Avaliação antropométrica
-    data_avaliação = DateField("Data de Avaliação", format="%Y-%m-%d", validators=[DataRequired()])
+    submit = SubmitField("Salvar")
+
+
+class AnthropometricAssessmentForm(FlaskForm):
+    data_avaliacao = DateField("Data de Avaliação", format="%Y-%m-%d", validators=[DataRequired()])
+    ultima_guia = StringField("Nome da Última Guia", validators=[DataRequired()])
     idade = IntegerField("Idade", validators=[DataRequired()])
     altura = FloatField("Altura (m)", validators=[DataRequired()])
     peso = FloatField("Peso (kg)", validators=[DataRequired()])
@@ -92,7 +96,10 @@ class PacientForm(FlaskForm):
     )
     pa = FloatField("Pressão Arterial", validators=[DataRequired()])
 
-    # Pregas Cutâneas
+    submit = SubmitField("Salvar")
+
+
+class SkinfoldMeasurementForm(FlaskForm):
     data_medicao = DateField("Data de Medição", format="%Y-%m-%d", validators=[DataRequired()])
     triciptal = FloatField("Tricipital", validators=[DataRequired()])
     bicipital = FloatField("Bicipital", validators=[DataRequired()])
