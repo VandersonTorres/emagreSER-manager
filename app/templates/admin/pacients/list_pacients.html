@@ -66,27 +66,10 @@
         <h3>Ainda não existem pacientes cadastrados no sistema</h3>
     {% endif %}
 
+    <!-- Assign global variables with dynamic URLs -->
     <script>
-        function redirectAnthro(event) {
-            event.preventDefault();
-            var select = document.getElementById("pacient_select");
-            var id = select.value;
-            if (id) {
-                // Substitui o valor 0 pela id selecionada na URL
-                window.location.href = "{{ url_for('admin.add_anthro', pacient_id=0) }}".replace("0", id);
-            } else {
-                alert("Por favor, selecione um paciente.");
-            }
-        }
-        function redirectSkinfold(event) {
-            event.preventDefault();
-            var select = document.getElementById("pacient_select_skinfold");
-            var id = select.value;
-            if (id) {
-                window.location.href = "{{ url_for('admin.add_skinfold', pacient_id=0) }}".replace("0", id);
-            } else {
-                alert("Por favor, selecione um paciente.");
-            }
-        }
+        var addAnthroUrlTemplate = "{{ url_for('admin.add_anthro', pacient_id=0) }}";
+        var addSkinfoldUrlTemplate = "{{ url_for('admin.add_skinfold', pacient_id=0) }}";
     </script>
+    <script src="{{ url_for('static', filename='js/list_pacients.js') }}"></script>
 {% endblock %}

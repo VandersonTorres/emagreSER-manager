@@ -1,6 +1,17 @@
 <!-- edit_pacient.html -->
 {% extends "base.html" %}
 {% block content %}
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }}">
+                    <strong>{{ message }}</strong>
+                </div>
+            {% endfor %}
+            {% set _ = session.pop("_flashes", None) %}
+        {% endif %}
+    {% endwith %}
+
     <h2>Editar dados do paciente</h2>
     <form method="POST" action="{{ url_for('admin.edit_pacient', id=pacient.id) }}">
         {{ form.hidden_tag() }}
@@ -58,21 +69,6 @@
     {% endif %}
     <a href="{{ url_for('admin.list_pacients') }}" class="btn btn-secondary">🔙 Voltar</a>
 
-    <script>
-        function toggleField(fieldId) {
-            let fieldDiv = document.getElementById("field_" + fieldId);
-            let checkbox = document.getElementById("check_" + fieldId);
-            let inputField = fieldDiv.querySelector("input, select, textarea");
-
-            if (checkbox.checked) {
-                // Show and allow edition
-                fieldDiv.style.display = "block";
-                inputField.removeAttribute("readonly");
-            } else {
-                // Hide field and keep the original value
-                fieldDiv.style.display = "none";
-                inputField.setAttribute("readonly", "true");
-            }
-        }
-    </script>
+    <script src="{{ url_for('static', filename='js/edit_pacient.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/normalize_fields.js') }}"></script>
 {% endblock %}

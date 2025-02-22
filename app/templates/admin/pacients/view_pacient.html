@@ -29,6 +29,7 @@
                     <thead>
                         <tr>
                             <th>Data Avaliação</th>
+                            <th>Nome da Última Guia</th>
                             <th>Idade</th>
                             <th>Altura</th>
                             <th>Peso</th>
@@ -46,6 +47,7 @@
                         {% for evaluation in pacient.anthropometric_evaluations %}
                             <tr>
                                 <td>{{ evaluation.data_avaliacao }}</td>
+                                <td>{{ evaluation.ultima_guia }}</td>
                                 <td>{{ evaluation.idade }}</td>
                                 <td>{{ evaluation.altura }}</td>
                                 <td>{{ evaluation.peso }}</td>

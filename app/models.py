@@ -79,7 +79,7 @@ class AnthropometricEvaluation(db.Model):
     pa = db.Column(db.Float, nullable=False)
 
     def __repr__(self):
-        return f"<AnthropometricEvaluation {self.pacient_id} | {self.date}>"
+        return f"<AnthropometricEvaluation {self.pacient_id} | {self.data_avaliacao}>"
 
 
 # SkinFolds model
@@ -100,7 +100,7 @@ class SkinFolds(db.Model):
     panturrilha = db.Column(db.Float, nullable=False)
 
     def __repr__(self):
-        return f"<SkinFolds {self.pacient_id} | {self.date}>"
+        return f"<SkinFolds {self.pacient_id} | {self.data_medicao}>"
 
 
 # Diet model

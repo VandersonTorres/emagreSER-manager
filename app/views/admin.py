@@ -100,7 +100,7 @@ def add_pacient():
             return redirect(url_for("admin.list_pacients"))
         except IntegrityError as e:
             db.session.rollback()
-            field_name = e.split("UNIQUE constraint failed: ")[1].split(" ")[0]
+            field_name = str(e).split("UNIQUE constraint failed: ")[1].split(" ")[0]
             error_message = (
                 f"Erro ao cadastrar paciente. O seguinte campo já foi atribuído à outro paciente: {field_name}"
             )
@@ -120,11 +120,13 @@ def add_pacient():
 def add_anthro(pacient_id):
     pacient = Pacients.query.get_or_404(pacient_id)
     form = AnthropometricAssessmentForm()
+    diet_form = DietForm()
     if form.validate_on_submit():
+        diet_name = diet_form.other_name.data if diet_form.name.data == "outro" else diet_form.name.data
         anthro = AnthropometricEvaluation(
             pacient_id=pacient.id,
             data_avaliacao=form.data_avaliacao.data,
-            ultima_guia=form.ultima_guia.data,
+            ultima_guia=diet_name,
             idade=form.idade.data,
             altura=form.altura.data,
             peso=form.peso.data,
@@ -141,7 +143,7 @@ def add_anthro(pacient_id):
         db.session.commit()
         flash("Avaliação antropométrica adicionada com sucesso!", "success")
         return redirect(url_for("admin.view_pacient", id=pacient.id))
-    return render_template("admin/pacients/add_anthro.html", form=form, pacient=pacient)
+    return render_template("admin/pacients/add_anthro.html", form=form, diet_form=diet_form, pacient=pacient)
 
 
 @admin_bp.route("/pacients/<int:pacient_id>/skinfolds/add", methods=["GET", "POST"])
@@ -177,13 +179,17 @@ def edit_pacient(id):
     form = PacientForm(obj=pacient)
     if request.method == "POST":
         try:
+            if form.frequency.data is None:
+                # Even defining a default value in the model,
+                # SQL doesn't considere this in UPDATE operations
+                form.frequency.data = 0
             form.populate_obj(pacient)
             db.session.commit()
             flash(f"Dados do paciente '{pacient.name}' atualizados com sucesso!", "success")
             return redirect(url_for("admin.list_pacients"))
         except IntegrityError as e:
             db.session.rollback()
-            error_message = e
+            error_message = str(e)
             if "pacients.name" in str(e):
                 error_message = "Erro: Já existe um paciente com esse nome cadastrado!"
             elif "pacients.cpf" in str(e):
@@ -198,12 +204,15 @@ def edit_pacient(id):
 def edit_anthro(pacient_id, evaluation_id):
     evaluation = AnthropometricEvaluation.query.get_or_404(evaluation_id)
     form = AnthropometricAssessmentForm(obj=evaluation)
+    diet_form = DietForm(name=evaluation.ultima_guia)
     if form.validate_on_submit():
+        diet_name = diet_form.other_name.data if diet_form.name.data == "outro" else diet_form.name.data
         form.populate_obj(evaluation)
+        evaluation.ultima_guia = diet_name
         db.session.commit()
         flash("Avaliação antropométrica atualizada com sucesso!", "success")
-        return redirect(url_for("admin.edit_pacient", id=pacient_id))
-    return render_template("admin/pacients/edit_anthro.html", form=form, evaluation=evaluation)
+        return redirect(url_for("admin.view_pacient", id=pacient_id))
+    return render_template("admin/pacients/edit_anthro.html", form=form, diet_form=diet_form, evaluation=evaluation)
 
 
 @admin_bp.route("/pacients/<int:pacient_id>/skinfolds/edit/<int:skinfold_id>", methods=["GET", "POST"])
@@ -215,7 +224,7 @@ def edit_skinfold(pacient_id, skinfold_id):
         form.populate_obj(skinfold)
         db.session.commit()
         flash("Dados de pregas cutâneas atualizados com sucesso!", "success")
-        return redirect(url_for("admin.edit_pacient", id=pacient_id))
+        return redirect(url_for("admin.view_pacient", id=pacient_id))
     return render_template("admin/pacients/edit_skinfold.html", form=form, skinfold=skinfold)
 
 
