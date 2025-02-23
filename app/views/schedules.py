@@ -1,6 +1,9 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash
+from datetime import datetime
+
+from flask import Blueprint, flash, redirect, render_template, request, url_for
 from flask_security import roles_required
-from app.models import Schedules, Pacients, db
+
+from app.models import Patients, Schedules, db
 
 schedules_bp = Blueprint("schedules", __name__)
 
@@ -9,25 +12,27 @@ schedules_bp = Blueprint("schedules", __name__)
 @roles_required("admin")
 def list_schedules():
     schedules = Schedules.query.all()
-    return render_template("admin/list_schedules.html", schedules=schedules)
+    return render_template("admin/schedules/list_schedules.html", schedules=schedules)
 
 
 @schedules_bp.route("/schedule_action", methods=["GET", "POST"])
 @roles_required("admin")
 def schedule_action():
     if request.method == "POST":
-        pacient_id = request.form["pacient_id"]
-        date_time = request.form["date_time"]
+        patient_name = request.form["patient_name"]
+        date_time_str = request.form["date_time"]
+        specialist = request.form["specialist"]
+        date_time = datetime.strptime(date_time_str, "%Y-%m-%dT%H:%M")
 
-        schedule = Schedules(pacient_id=pacient_id, date_time=date_time)
+        schedule = Schedules(patient_name=patient_name, date_time=date_time, specialist=specialist)
         db.session.add(schedule)
         db.session.commit()
 
         flash("Consulta agendada com sucesso!")
         return redirect(url_for("schedules.list_schedules"))
 
-    pacients = Pacients.query.all()
-    return render_template("admin/schedule_action.html", pacients=pacients)
+    patients = Patients.query.all()
+    return render_template("admin/schedules/schedule_action.html", patients=patients)
 
 
 @schedules_bp.route("/schedules/delete/<int:id>", methods=["POST"])

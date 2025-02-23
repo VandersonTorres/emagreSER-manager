@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block content %}
+    <h2>Enviar Dieta</h2>
+    <form method="POST" action="{{ url_for('admin.send_diet', diet_id=diet.id) }}">
+        <label for="telefone">Número de telefone:</label>
+        <input type="text" name="telefone" placeholder="(00) 00000-0000" required>
+        <br>
+        <button type="submit">Enviar Dieta</button>
+    </form>
+{% endblock %}

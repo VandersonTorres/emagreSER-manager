@@ -1,23 +1,27 @@
-emagreSER-manager/
-│── app/
-│   ├── static/   # CSS, JS, imagens
-│   ├── templates/  # HTML files
-│   │   ├── home.html
-│   ├── views/
-│   │   ├── __init__.py
-│   │   ├── admin.py
-│   │   ├── main.py
-│   ├── models.py   # Definição do banco de dados
-│   ├── routes.py   # Rotas do sistema
-│   ├── forms.py    # Formulários Flask-WTF
-│   ├── __init__.py # Inicialização da aplicação
-│── scripts/
-│   ├── __init__.py
-│   ├── create_user.py
-│── venv
-│── database.db  # Banco de Dados SQLite
-│── config.py    # Configurações do sistema
-│── run.py       # Arquivo principal
-│── .gitignore
-│── .pre-commit-config.yaml
-│── README.md# emagreSER-manager
+IN PROGRESS...
+
+INICIALIZAR O SERVIDOR FLASK:
+
+flask --app app run
+---
+
+COMANDOS SQLITE:
+
+rm -rf migrations               # Remove as migrações
+rm database.db                  # Apaga o banco SQLite
+flask db init                   # Inicia o banco
+flask db migrate -m "Mensagem"  # Alterações no banco
+flask db upgrade                # Recria o banco
+---
+
+# TODO: Mail Validation Settings
+    # MAIL_SERVER = "smtp.office365.com"
+    # MAIL_PORT = 587  # 465 for SSL, 587 for TLS
+    # MAIL_USE_TLS = True
+    # MAIL_USE_SSL = False
+    # MAIL_USERNAME = os.getenv("EMAGRESER_MAIL_ADDRESS", "sirlene.torres35@hotmail.com")
+    # MAIL_PASSWORD = os.getenv("EMAGRESER_MAIL_PASSWORD")
+    # MAIL_DEFAULT_SENDER = "sirlene.torres35@hotmail.com"
+    # SECURITY_EMAIL_SENDER = os.getenv("EMAGRESER_MAIL_ADDRESS", "sirlene.torres35@hotmail.com")
+    # SECURITY_SEND_REGISTER_EMAIL = True
+    # SECURITY_CONFIRMABLE = True

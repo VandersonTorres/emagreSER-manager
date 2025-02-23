@@ -1,17 +1,32 @@
 {% extends "base.html" %}
 
 {% block content %}
-<h2>Bem vindo, {{ current_user.email }}</h2>
-<p>Você está logado.</p>
-<a href="{{ url_for('security.logout') }}">Sair</a>
-<br>
-<a href="{{ url_for('security.change_password') }}">Trocar senha</a>
-<br>
-<a href="{{ url_for('admin.list_pacients') }}">Ver pacientes cadastrados</a>
-<br>
-<a href="{{ url_for('admin.list_diets') }}">Ver dietas disponíveis</a>
-<br>
-<a href="{{ url_for('schedules.list_schedules') }}">Ver agendamentos</a>
-<br>
-<a href="{{ url_for('schedules.schedule_action') }}">Agendar consulta</a>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }}">
+                    <strong>{{ message }}</strong>
+                </div>
+            {% endfor %}
+            {% set _ = session.pop('_flashes', None) %}
+        {% endif %}
+    {% endwith %}
+
+    <h2>Bem vindo, {{ current_user.email }}</h2>
+    <p>Você está logado.</p>
+    <a href="{{ url_for('security.logout') }}">Sair</a>
+    <br>
+    <a href="{{ url_for('security.change_password') }}">Trocar senha</a>
+    <br>
+    <a href="{{ url_for('admin.list_patients') }}">Gerenciamento de Pacientes</a>
+    <br>
+    <a href="{{ url_for('admin.list_diets') }}">Gerenciamento de Dietas</a>
+    <br>
+    <a href="{{ url_for('schedules.list_schedules') }}">Gerenciamento de Agendamentos</a>
+    <br>
+    <a href="{{ url_for('schedules.schedule_action') }}">Agendar Consulta</a>
+    <br>
+    <a href="{{ url_for('admin.create_user') }}">Cadastrar Novo Usuário</a>
+    <br>
+    <a href="{{ url_for('admin.list_users') }}">Ver Usuários</a>
 {% endblock %}

@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block content %}
+    <h2>Remover Dieta</h2>
+    <p>Tem certeza de que deseja remover {{ diet.name }}?</p>
+    <form method="POST" action="{{ url_for('admin.delete_diet', id=diet.id) }}">
+        <button type="submit">Confirmar Remoção</button>
+        <a href="{{ url_for('admin.list_diets') }}">Cancelar</a>
+    </form>
+{% endblock %}

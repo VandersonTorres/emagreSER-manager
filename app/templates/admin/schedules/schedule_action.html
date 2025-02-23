@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block content %}
+    <h2>Agendar Consulta</h2>
+    <form method="POST" action="{{ url_for('schedules.schedule_action') }}">
+        <label>Paciente:</label>
+        <select name="patient_name">
+            {% for patient in patients %}
+                <option value="{{ patient.name }}">{{ patient.name }}</option>
+            {% endfor %}
+        </select>
+        <br>
+        <label>Data e Hora:</label>
+        <input type="datetime-local" name="date_time" required>
+        <br>
+        <label>Profissional:</label>
+        <input type="text" name="specialist" required>
+        <br>
+        <button type="submit">Agendar</button>
+    </form>
+{% endblock %}

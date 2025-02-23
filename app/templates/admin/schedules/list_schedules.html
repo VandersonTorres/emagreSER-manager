@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block content %}
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+        {% for category, message in messages %}
+            <div class="alert alert-{{ category }}">
+                <strong>{{ message }}</strong>
+            </div>
+        {% endfor %}
+        {% set _ = session.pop('_flashes', None) %}
+    {% endif %}
+    {% endwith %}
+
+    <h2>Consultas Agendadas</h2>
+    <a href="{{ url_for('schedules.schedule_action') }}">+ Novo Agendamento</a>
+    {% if schedules %}
+        <table>
+            <tr>
+                <th>Paciente</th>
+                <th>Data</th>
+                <th>Profissional</th>
+                <th>Status</th>
+                <th>Ações</th>
+            </tr>
+            {% for schedule in schedules %}
+            <tr>
+                <td>{{ schedule.patient.name }}</td>
+                <td>{{ schedule.date_time }}</td>
+                <td>{{ schedule.specialist }}</td>
+                <td>{{ schedule.status }}</td>
+                <td>
+                    <form method="POST" action="{{ url_for('schedules.delete_schedule', id=schedule.id) }}">
+                        <button type="submit">Cancelar</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </table>
+    {% else %}
+        <h3>Nenhum agendamento foi encontrado.</h3>
+    {% endif %}
+{% endblock %}

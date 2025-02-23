@@ -4,6 +4,7 @@ BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 
 
 class Config:
+    # Flask Settings
     SECRET_KEY = os.getenv("FLASK_SECRET_KEY", "your-secret-key")
     SECURITY_PASSWORD_SALT = os.getenv("FLASK_SECURITY_PASSWORD_SALT", "your-password-salt")
     SECURITY_REGISTERABLE = True
@@ -16,10 +17,16 @@ class Config:
     SECURITY_POST_CHANGE_VIEW = "/profile"
     SECURITY_POST_LOGOUT_VIEW = "/login"
     SECURITY_MSG_INVALID_PASSWORD = ("Senha inválida, tente novamente", "error")
+
+    # SQL Settings
     SQLALCHEMY_DATABASE_URI = f"sqlite:///{os.path.join(BASE_DIR, 'database.db')}"
     SQLALCHEMY_TRACK_MODIFICATIONS = False
+
+    # Uploads Settings
     UPLOAD_FOLDER = os.path.join(BASE_DIR, "uploads")
     ALLOWED_EXTENSIONS = {"pdf"}
-    TWILIO_SID = "SID"
-    TWILIO_AUTH = "AUTH"
-    TWILIO_PHONE = "NUMBER"
+
+    # WhatsApp API Settings
+    TWILIO_SID = os.getenv("EMAGRESER_TWILIO_SID", "Missing TWILIO SID")
+    TWILIO_AUTH = os.getenv("EMAGRESER_TWILIO_AUTH", "Missing TWILIO AUTH")
+    TWILIO_PHONE = os.getenv("EMAGRESER_TWILIO_NUMBER", "Missing TWILIO NUMBER")

@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% block content %}
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }}">
+                    <strong>{{ message }}</strong>
+                </div>
+            {% endfor %}
+            {% set _ = session.pop('_flashes', None) %}
+        {% endif %}
+    {% endwith %}
+
+    <h2>Avaliação Antropométrica</h2>
+    <p>Paciente: {{ patient.name }}</p>
+    <form method="POST" action="{{ url_for('admin.add_anthro', patient_id=patient.id) }}">
+        {{ form.hidden_tag() }}
+        <label for="data_avaliacao">Data de Avaliação:</label>
+        {{ form.data_avaliacao(size=20) }}
+        <br>
+        <label for="ultima_guia">Nome da Última Guia:</label>
+        <select id="diet-select" name="ultima_guia">
+            {% for value, label in diet_form.name.choices %}
+                <option value="{{ value }}" {% if diet_form.name.data == value %}selected{% endif %}>{{ label }}</option>
+            {% endfor %}
+        </select>
+        <div id="other-name-field" style="display: none;">
+            <label for="other_name">Outro (especifique):</label>
+            {{ diet_form.other_name() }}
+        </div>
+        <br>
+        <label for="idade">Idade:</label>
+        {{ form.idade(size=5) }}
+        <br>
+        <label for="altura">Altura (m):</label>
+        {{ form.altura(step="0.001") }}
+        <br>
+        <label for="peso">Peso (kg):</label>
+        {{ form.peso(step="0.1") }}
+        <br>
+        <label for="evolucao">Evolução:</label>
+        {{ form.evolucao() }}
+        <br>
+        <label for="p_max">Peso Máximo:</label>
+        {{ form.p_max(step="0.1") }}
+        <br>
+        <label for="p_ide">Peso Ideal:</label>
+        {{ form.p_ide(step="0.1") }}
+        <br>
+        <label for="p_min">Peso Mínimo:</label>
+        {{ form.p_min(step="0.1") }}
+        <br>
+        <label for="imc">IMC:</label>
+        {{ form.imc(step="0.01") }}
+        <br>
+        <label for="nutri_class">Classificação Nutricional:</label>
+        {{ form.nutri_class() }}
+        <br>
+        <label for="grau_atv_fisica">Grau de Atividade Física:</label>
+        {{ form.grau_atv_fisica() }}
+        <br>
+        <label for="pa">Pressão Arterial:</label>
+        {{ form.pa(step="0.01") }}
+        <br><br>
+        <button type="submit">Salvar Avaliação</button>
+    </form>
+    <br>
+    <a href="{{ url_for('admin.list_patients') }}">🔙 Voltar</a>
+    <script src="{{ url_for('static', filename='js/add_diet.js') }}"></script>
+{% endblock %}

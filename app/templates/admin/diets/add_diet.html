@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block content %}
+    <h2>Adicionar Dieta</h2>
+    <form method="POST" enctype="multipart/form-data" action="{{ url_for('admin.add_diet') }}">
+        {{ form.hidden_tag() }}
+        <label for="name">Nome:</label>
+        {{ form.name(id="diet-select") }}
+        <br>
+        <div id="other-name-field" style="display: none;">
+            <label for="other_name">Outro (especifique):</label>
+            {{ form.other_name() }}
+        </div>
+        <br>
+        <label for="description">Descrição:</label>
+        {{ form.description() }}
+        <br>
+        <label for="pdf_file">Arquivo PDF:</label>
+        {{ form.pdf_file() }}
+        <br>
+        <button type="submit">Salvar Dieta</button>
+    </form>
+    <script src="{{ url_for('static', filename='js/add_diet.js') }}"></script>
+{% endblock %}

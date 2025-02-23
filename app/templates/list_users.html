@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block content %}
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }}">
+                    <strong>{{ message }}</strong>
+                </div>
+            {% endfor %}
+            {% set _ = session.pop("_flashes", None) %}
+        {% endif %}
+    {% endwith %}
+
+    <h2>Usuários Cadastrados</h2>
+    {% if users %}
+        <div class="listings">
+            <ul>
+                {% for user in users %}
+                    <li>
+                        E-mail: {{ user.email }} | Último acesso: {{ user.last_login_at }}
+                        &nbsp;
+                        <a href="{{ url_for('admin.delete_user', id=user.id) }}">Remover</a>
+                    </li>
+                {% endfor %}
+            </ul>
+        </div>
+
+        <hr>
+    {% else %}
+        <h3>Ainda não existem Usuários cadastrados no sistema</h3>
+    {% endif %}
+{% endblock %}
