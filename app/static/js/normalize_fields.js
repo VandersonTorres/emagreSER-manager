@@ -47,12 +47,17 @@ document.addEventListener("DOMContentLoaded", function () {
     // Validate email before submitting the form
     const form = document.querySelector("form");
     const emailInput = document.getElementById("email");
+    const frequencyInput = document.getElementsByName("frequency");
     form.addEventListener("submit", function (e) {
         let email = emailInput.value.trim().toLowerCase();
         if (email.indexOf('@') === -1 || email.indexOf('.') === -1) {
             alert("Email inválido.");
             emailInput.focus();
             e.preventDefault();
+        }
+        let frequency = frequencyInput.value.trim();
+        if (frequency === "vezes por semana") {
+            frequencyInput.value = "0 vezes por semana"
         }
     });
 });

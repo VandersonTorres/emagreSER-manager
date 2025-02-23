@@ -71,19 +71,7 @@ class AnthropometricAssessmentForm(FlaskForm):
     p_ide = FloatField("Peso Ideal", validators=[DataRequired()])
     p_min = FloatField("Peso Mínimo", validators=[DataRequired()])
     imc = FloatField("IMC", validators=[DataRequired()])
-    nutri_class = SelectField(
-        "Classificação Nutricional",
-        choices=[
-            ("", "Selecione"),
-            ("Abaixo", "Abaixo do Peso"),
-            ("Normal", "Peso Normal"),
-            ("Sobrepeso", "Sobrepeso"),
-            ("Grau I", "Obesidade Grau I"),
-            ("Grau II", "Obesidade Grau II"),
-            ("Grau III", "Obesidade Grau III"),
-        ],
-        validators=[DataRequired()],
-    )
+    nutri_class = StringField("Classificação Nutricional", validators=[DataRequired()])
     grau_atv_fisica = SelectField(
         "Grau de Atividade Física",
         choices=[

@@ -33,38 +33,58 @@
         {{ form.idade(size=5) }}
         <br>
         <label for="altura">Altura (m):</label>
-        {{ form.altura(step="0.001") }}
+        {{ form.altura(step="0.001", class="form-control", id="altura", placeholder="1.60") }}
         <br>
         <label for="peso">Peso (kg):</label>
-        {{ form.peso(step="0.1") }}
+        {{ form.peso(step="0.1", class="form-control", id="peso", placeholder="62.5") }}
+        <input type="hidden" id="peso_anterior" value="{{ peso_anterior }}">
         <br>
         <label for="evolucao">Evolução:</label>
-        {{ form.evolucao() }}
+        {{ form.evolucao(class="form-control", id="evolucao", readonly=True) }}
+        <span id="auto_calc_info" style="font-size: 9px; margin-left: 10px; color: #555;">
+            Calculado automaticamente
+        </span>
         <br>
         <label for="p_max">Peso Máximo:</label>
-        {{ form.p_max(step="0.1") }}
+        {{ form.p_max(step="0.1", class="form-control", id="p_max", readonly=True) }}
+        <span id="auto_calc_info" style="font-size: 9px; margin-left: 10px; color: #555;">
+            Calculado automaticamente
+        </span>
         <br>
         <label for="p_ide">Peso Ideal:</label>
-        {{ form.p_ide(step="0.1") }}
+        {{ form.p_ide(step="0.1", class="form-control", id="p_ide", readonly=True) }}
+        <span id="auto_calc_info" style="font-size: 9px; margin-left: 10px; color: #555;">
+            Calculado automaticamente
+        </span>
         <br>
         <label for="p_min">Peso Mínimo:</label>
-        {{ form.p_min(step="0.1") }}
+        {{ form.p_min(step="0.1", class="form-control", id="p_min", readonly=True) }}
+        <span id="auto_calc_info" style="font-size: 9px; margin-left: 10px; color: #555;">
+            Calculado automaticamente
+        </span>
         <br>
         <label for="imc">IMC:</label>
-        {{ form.imc(step="0.01") }}
+        {{ form.imc(step="0.01", class="form-control", id="imc", readonly=True) }}
+        <span id="auto_calc_info" style="font-size: 9px; margin-left: 10px; color: #555;">
+            Calculado automaticamente
+        </span>
         <br>
         <label for="nutri_class">Classificação Nutricional:</label>
-        {{ form.nutri_class() }}
+        {{ form.nutri_class(class="form-control", id="nutri_class", readonly=True) }}
+        <span id="auto_calc_info" style="font-size: 9px; margin-left: 10px; color: #555;">
+            Calculado automaticamente
+        </span>
         <br>
         <label for="grau_atv_fisica">Grau de Atividade Física:</label>
         {{ form.grau_atv_fisica() }}
         <br>
         <label for="pa">Pressão Arterial:</label>
-        {{ form.pa(step="0.01") }}
+        {{ form.pa(step="0.01", placeholder="ex: 000.00 ou 00.0") }}
         <br><br>
         <button type="submit">Salvar Avaliação</button>
     </form>
     <br>
     <a href="{{ url_for('admin.list_patients') }}">🔙 Voltar</a>
     <script src="{{ url_for('static', filename='js/add_diet.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/automate_anthro_fields.js') }}"></script>
 {% endblock %}

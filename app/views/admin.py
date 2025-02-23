@@ -141,6 +141,13 @@ def add_anthro(patient_id):
     form = AnthropometricAssessmentForm()
     diet_form = DietForm()
     diet_form.name.data = form.ultima_guia.data
+    # Search for the last evaluation of the patient (except the current, if there was one)
+    previous_anthro = (
+        AnthropometricEvaluation.query.filter_by(patient_id=patient.id)
+        .order_by(AnthropometricEvaluation.data_avaliacao.desc())
+        .first()
+    )
+    peso_anterior = previous_anthro.peso if previous_anthro else 0
     if form.validate_on_submit():
         diet_name = diet_form.other_name.data if diet_form.name.data == "outro" else diet_form.name.data
         form.ultima_guia.data = diet_name
@@ -166,7 +173,9 @@ def add_anthro(patient_id):
         return redirect(url_for("admin.view_patient", id=patient.id))
     else:
         print("Erros no formulário:", form.errors)
-    return render_template("admin/patients/add_anthro.html", form=form, diet_form=diet_form, patient=patient)
+    return render_template(
+        "admin/patients/add_anthro.html", form=form, diet_form=diet_form, patient=patient, peso_anterior=peso_anterior
+    )
 
 
 @admin_bp.route("/patients/<int:patient_id>/skinfolds/add", methods=["GET", "POST"])
