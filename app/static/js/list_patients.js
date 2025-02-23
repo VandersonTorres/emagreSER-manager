@@ -2,7 +2,7 @@
 
 function redirectAnthro(event) {
     event.preventDefault();
-    var select = document.getElementById("pacient_select");
+    var select = document.getElementById("patient_select");
     var id = select.value;
     if (id) {
         // Getting the global variable assigned in template
@@ -14,7 +14,7 @@ function redirectAnthro(event) {
 
 function redirectSkinfold(event) {
     event.preventDefault();
-    var select = document.getElementById("pacient_select_skinfold");
+    var select = document.getElementById("patient_select_skinfold");
     var id = select.value;
     if (id) {
         window.location.href = addSkinfoldUrlTemplate.replace("0", id);

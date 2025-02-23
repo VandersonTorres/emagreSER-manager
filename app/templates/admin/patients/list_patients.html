@@ -12,20 +12,20 @@
     {% endwith %}
 
     <h2>Pacientes</h2>
-    <a href="{{ url_for('admin.add_pacient') }}">+ Cadastrar Paciente</a>
-    {% if pacients %}
+    <a href="{{ url_for('admin.add_patient') }}">+ Cadastrar Paciente</a>
+    {% if patients %}
         <div class="listings">
             <ul>
-                {% for pacient in pacients %}
+                {% for patient in patients %}
                     <li>
-                        {{ pacient.name }} | CPF: {{ pacient.cpf }} |
-                        Tel: {{ pacient.tel_number }} | E-mail: {{ pacient.email }}
+                        {{ patient.name }} | CPF: {{ patient.cpf }} |
+                        Tel: {{ patient.tel_number }} | E-mail: {{ patient.email }}
                         &nbsp;
-                        <a href="{{ url_for('admin.view_pacient', id=pacient.id) }}" target="_blank">Ver Paciente</a>
+                        <a href="{{ url_for('admin.view_patient', id=patient.id) }}" target="_blank">Ver Paciente</a>
                         &nbsp;
-                        <a href="{{ url_for('admin.edit_pacient', id=pacient.id) }}">Editar</a>
+                        <a href="{{ url_for('admin.edit_patient', id=patient.id) }}">Editar</a>
                         &nbsp;
-                        <a href="{{ url_for('admin.delete_pacient', id=pacient.id) }}">Remover</a>
+                        <a href="{{ url_for('admin.delete_patient', id=patient.id) }}">Remover</a>
                     </li>
                 {% endfor %}
             </ul>
@@ -36,11 +36,11 @@
         <div class="add-anthro-info">
             <h3>Adicionar Informações Antropométricas</h3>
             <form id="anthro-form" method="GET"></form>
-                <label for="pacient_select">Selecione o Paciente:</label>
-                <select id="pacient_select" name="pacient_id">
+                <label for="patient_select">Selecione o Paciente:</label>
+                <select id="patient_select" name="patient_id">
                     <option value="">Selecione um paciente</option>
-                    {% for pacient in pacients %}
-                        <option value="{{ pacient.id }}">{{ pacient.name }} | CPF: {{ pacient.cpf }}</option>
+                    {% for patient in patients %}
+                        <option value="{{ patient.id }}">{{ patient.name }} | CPF: {{ patient.cpf }}</option>
                     {% endfor %}
                 </select>
                 <button type="submit" onclick="redirectAnthro(event)">Realizar Avaliação</button>
@@ -52,11 +52,11 @@
         <div class="add-skinfold-info"></div>
             <h3>Adicionar Dados de Pregas Cutâneas</h3>
             <form id="skinfold-form" method="GET">
-                <label for="pacient_select_skinfold">Selecione o Paciente:</label>
-                <select id="pacient_select_skinfold" name="pacient_id">
+                <label for="patient_select_skinfold">Selecione o Paciente:</label>
+                <select id="patient_select_skinfold" name="patient_id">
                     <option value="">Selecione um paciente</option>
-                    {% for pacient in pacients %}
-                        <option value="{{ pacient.id }}">{{ pacient.name }} | CPF: {{ pacient.cpf }}</option>
+                    {% for patient in patients %}
+                        <option value="{{ patient.id }}">{{ patient.name }} | CPF: {{ patient.cpf }}</option>
                     {% endfor %}
                 </select>
                 <button type="submit" onclick="redirectSkinfold(event)">Aferir Pregas Cutâneas</button>
@@ -68,8 +68,8 @@
 
     <!-- Assign global variables with dynamic URLs -->
     <script>
-        var addAnthroUrlTemplate = "{{ url_for('admin.add_anthro', pacient_id=0) }}";
-        var addSkinfoldUrlTemplate = "{{ url_for('admin.add_skinfold', pacient_id=0) }}";
+        var addAnthroUrlTemplate = "{{ url_for('admin.add_anthro', patient_id=0) }}";
+        var addSkinfoldUrlTemplate = "{{ url_for('admin.add_skinfold', patient_id=0) }}";
     </script>
-    <script src="{{ url_for('static', filename='js/list_pacients.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/list_patients.js') }}"></script>
 {% endblock %}

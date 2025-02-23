@@ -18,7 +18,7 @@
     <br>
     <a href="{{ url_for('security.change_password') }}">Trocar senha</a>
     <br>
-    <a href="{{ url_for('admin.list_pacients') }}">Gerenciamento de Pacientes</a>
+    <a href="{{ url_for('admin.list_patients') }}">Gerenciamento de Pacientes</a>
     <br>
     <a href="{{ url_for('admin.list_diets') }}">Gerenciamento de Dietas</a>
     <br>
@@ -27,4 +27,6 @@
     <a href="{{ url_for('schedules.schedule_action') }}">Agendar Consulta</a>
     <br>
     <a href="{{ url_for('admin.create_user') }}">Cadastrar Novo Usuário</a>
+    <br>
+    <a href="{{ url_for('admin.list_users') }}">Ver Usuários</a>
 {% endblock %}

@@ -15,3 +15,7 @@ document.addEventListener("DOMContentLoaded", function() {
     selectField.addEventListener("change", toggleOtherField);
     toggleOtherField();
 });
+
+document.addEventListener("submit", function(event) {
+    document.getElementById("ultima_guia").disabled = false;
+});

@@ -12,8 +12,8 @@
     {% endwith %}
 
     <h2>Editar Avaliação Antropométrica</h2>
-    <p>Paciente: {{ evaluation.pacient.name }}</p>
-    <form method="POST" action="{{ url_for('admin.edit_anthro', pacient_id=evaluation.pacient_id, evaluation_id=evaluation.id) }}">
+    <p>Paciente: {{ evaluation.patient.name }}</p>
+    <form method="POST" action="{{ url_for('admin.edit_anthro', patient_id=evaluation.patient_id, evaluation_id=evaluation.id) }}">
         {{ form.hidden_tag() }}
         <label for="data_avaliacao">Data de Avaliação:</label>
         {{ form.data_avaliacao(size=20) }}
@@ -77,7 +77,7 @@
         <button type="submit">Atualizar Avaliação</button>
     </form>
     <br>
-    <a href="{{ url_for('admin.edit_pacient', id=evaluation.pacient_id) }}">🔙 Voltar</a>
+    <a href="{{ url_for('admin.edit_patient', id=evaluation.patient_id) }}">🔙 Voltar</a>
 
     <script src="{{ url_for('static', filename='js/add_diet.js') }}"></script>
 {% endblock %}

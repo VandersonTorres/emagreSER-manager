@@ -12,7 +12,7 @@
     {% endwith %}
 
     <h2>CADASTRAR PACIENTE</h2>
-    <form method="POST" action="{{ url_for('admin.add_pacient') }}">
+    <form method="POST" action="{{ url_for('admin.add_patient') }}">
         <h3>Dados pessoais:</h3>
         <label for="name">Nome:</label>
         <input type="text" name="name" required>
@@ -87,7 +87,7 @@
         <input type="text" name="objective" required>
         <br><br>
 
-        <script src="{{ url_for('static', filename='js/add_pacient.js') }}"></script>
+        <script src="{{ url_for('static', filename='js/add_patient.js') }}"></script>
         <script src="{{ url_for('static', filename='js/normalize_fields.js') }}"></script>
         <button type="submit">Cadastrar Paciente</button>
     </form>

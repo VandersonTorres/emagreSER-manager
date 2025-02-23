@@ -3,7 +3,7 @@ from datetime import datetime
 from flask import Blueprint, flash, redirect, render_template, request, url_for
 from flask_security import roles_required
 
-from app.models import Pacients, Schedules, db
+from app.models import Patients, Schedules, db
 
 schedules_bp = Blueprint("schedules", __name__)
 
@@ -19,20 +19,20 @@ def list_schedules():
 @roles_required("admin")
 def schedule_action():
     if request.method == "POST":
-        pacient_name = request.form["pacient_name"]
+        patient_name = request.form["patient_name"]
         date_time_str = request.form["date_time"]
         specialist = request.form["specialist"]
         date_time = datetime.strptime(date_time_str, "%Y-%m-%dT%H:%M")
 
-        schedule = Schedules(pacient_name=pacient_name, date_time=date_time, specialist=specialist)
+        schedule = Schedules(patient_name=patient_name, date_time=date_time, specialist=specialist)
         db.session.add(schedule)
         db.session.commit()
 
         flash("Consulta agendada com sucesso!")
         return redirect(url_for("schedules.list_schedules"))
 
-    pacients = Pacients.query.all()
-    return render_template("admin/schedules/schedule_action.html", pacients=pacients)
+    patients = Patients.query.all()
+    return render_template("admin/schedules/schedule_action.html", patients=patients)
 
 
 @schedules_bp.route("/schedules/delete/<int:id>", methods=["POST"])

@@ -12,14 +12,18 @@
     {% endwith %}
 
     <h2>Avaliação Antropométrica</h2>
-    <p>Paciente: {{ pacient.name }}</p>
-    <form method="POST" action="{{ url_for('admin.add_anthro', pacient_id=pacient.id) }}">
+    <p>Paciente: {{ patient.name }}</p>
+    <form method="POST" action="{{ url_for('admin.add_anthro', patient_id=patient.id) }}">
         {{ form.hidden_tag() }}
         <label for="data_avaliacao">Data de Avaliação:</label>
         {{ form.data_avaliacao(size=20) }}
         <br>
         <label for="ultima_guia">Nome da Última Guia:</label>
-        {{ diet_form.name(id="diet-select") }}
+        <select id="diet-select" name="ultima_guia">
+            {% for value, label in diet_form.name.choices %}
+                <option value="{{ value }}" {% if diet_form.name.data == value %}selected{% endif %}>{{ label }}</option>
+            {% endfor %}
+        </select>
         <div id="other-name-field" style="display: none;">
             <label for="other_name">Outro (especifique):</label>
             {{ diet_form.other_name() }}
@@ -61,6 +65,6 @@
         <button type="submit">Salvar Avaliação</button>
     </form>
     <br>
-    <a href="{{ url_for('admin.list_pacients') }}">🔙 Voltar</a>
+    <a href="{{ url_for('admin.list_patients') }}">🔙 Voltar</a>
     <script src="{{ url_for('static', filename='js/add_diet.js') }}"></script>
 {% endblock %}

@@ -11,9 +11,9 @@
         {% endif %}
     {% endwith %}
 
-    <h2>Pregas Cutâneas</h2>
-    <p>Paciente: {{ pacient.name }}</p>
-    <form method="POST" action="{{ url_for('admin.add_skinfold', pacient_id=pacient.id) }}">
+    <h2>Editar Pregas Cutâneas</h2>
+    <p>Paciente: {{ skinfold.patient.name }}</p>
+    <form method="POST" action="{{ url_for('admin.edit_skinfold', patient_id=skinfold.patient_id, skinfold_id=skinfold.id) }}">
         {{ form.hidden_tag() }}
         <label for="data_medicao">Data de Medição:</label>
         {{ form.data_medicao() }}
@@ -48,5 +48,5 @@
         <button type="submit">Salvar Pregas</button>
     </form>
     <br>
-    <a href="{{ url_for('admin.list_pacients') }}">🔙 Voltar</a>
+    <a href="{{ url_for('admin.edit_patient', id=skinfold.patient_id) }}">🔙 Voltar</a>
 {% endblock %}

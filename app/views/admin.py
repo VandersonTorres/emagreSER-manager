@@ -19,8 +19,8 @@ from sqlalchemy.exc import IntegrityError
 from twilio.rest import Client
 from werkzeug.utils import secure_filename
 
-from app.forms import AnthropometricAssessmentForm, DietForm, PacientForm, SkinfoldMeasurementForm
-from app.models import AnthropometricEvaluation, Diet, Pacients, Role, SkinFolds, User, db
+from app.forms import AnthropometricAssessmentForm, DietForm, PatientForm, SkinfoldMeasurementForm
+from app.models import AnthropometricEvaluation, Diet, Patients, Role, SkinFolds, User, db
 
 admin_bp = Blueprint("admin", __name__)
 
@@ -59,19 +59,38 @@ def create_user():
     return render_template("/create_user.html")
 
 
-@admin_bp.route("/pacients")
+@admin_bp.route("/users")
 @roles_required("admin")
-def list_pacients():
-    pacients = Pacients.query.all()
-    return render_template("admin/pacients/list_pacients.html", pacients=pacients)
+def list_users():
+    users = User.query.all()
+    return render_template("list_users.html", users=users)
 
 
-@admin_bp.route("/pacients/add", methods=["GET", "POST"])
+@admin_bp.route("/users/delete/<int:id>", methods=["GET", "POST"])
 @roles_required("admin")
-def add_pacient():
+def delete_user(id):
+    user = User.query.get_or_404(id)
+    if request.method == "POST":
+        db.session.delete(user)
+        db.session.commit()
+        flash(f"Usuário '{user.email}' removido com sucesso!", "success")
+        return redirect(url_for("admin.list_users"))
+    return render_template("delete_user.html", user=user)
+
+
+@admin_bp.route("/patients")
+@roles_required("admin")
+def list_patients():
+    patients = Patients.query.all()
+    return render_template("admin/patients/list_patients.html", patients=patients)
+
+
+@admin_bp.route("/patients/add", methods=["GET", "POST"])
+@roles_required("admin")
+def add_patient():
     if request.method == "POST":
         try:
-            pacient = Pacients(
+            patient = Patients(
                 name=request.form.get("name"),
                 gender=request.form.get("gender"),
                 birth_date=datetime.strptime(request.form.get("birth_date"), "%Y-%m-%d").date(),
@@ -94,10 +113,10 @@ def add_pacient():
                 objective=request.form.get("objective"),
             )
 
-            db.session.add(pacient)
+            db.session.add(patient)
             db.session.commit()
             flash("Paciente cadastrado com sucesso!", "success")
-            return redirect(url_for("admin.list_pacients"))
+            return redirect(url_for("admin.list_patients"))
         except IntegrityError as e:
             db.session.rollback()
             field_name = str(e).split("UNIQUE constraint failed: ")[1].split(" ")[0]
@@ -105,28 +124,30 @@ def add_pacient():
                 f"Erro ao cadastrar paciente. O seguinte campo já foi atribuído à outro paciente: {field_name}"
             )
 
-            if "pacients.name" in str(e):
+            if "patients.name" in str(e):
                 error_message = "Erro: Já existe um paciente com esse nome cadastrado!"
-            elif "pacients.cpf" in str(e):
+            elif "patients.cpf" in str(e):
                 error_message = "Erro: Já existe um paciente com esse CPF cadastrado!"
 
             flash(error_message, "danger")
 
-    return render_template("admin/pacients/add_pacient.html")
+    return render_template("admin/patients/add_patient.html")
 
 
-@admin_bp.route("/pacients/<int:pacient_id>/anthropometric/add", methods=["GET", "POST"])
+@admin_bp.route("/patients/<int:patient_id>/anthropometric/add", methods=["GET", "POST"])
 @roles_required("admin")
-def add_anthro(pacient_id):
-    pacient = Pacients.query.get_or_404(pacient_id)
+def add_anthro(patient_id):
+    patient = Patients.query.get_or_404(patient_id)
     form = AnthropometricAssessmentForm()
     diet_form = DietForm()
+    diet_form.name.data = form.ultima_guia.data
     if form.validate_on_submit():
         diet_name = diet_form.other_name.data if diet_form.name.data == "outro" else diet_form.name.data
+        form.ultima_guia.data = diet_name
         anthro = AnthropometricEvaluation(
-            pacient_id=pacient.id,
+            patient_id=patient.id,
             data_avaliacao=form.data_avaliacao.data,
-            ultima_guia=diet_name,
+            ultima_guia=form.ultima_guia.data,
             idade=form.idade.data,
             altura=form.altura.data,
             peso=form.peso.data,
@@ -142,18 +163,20 @@ def add_anthro(pacient_id):
         db.session.add(anthro)
         db.session.commit()
         flash("Avaliação antropométrica adicionada com sucesso!", "success")
-        return redirect(url_for("admin.view_pacient", id=pacient.id))
-    return render_template("admin/pacients/add_anthro.html", form=form, diet_form=diet_form, pacient=pacient)
+        return redirect(url_for("admin.view_patient", id=patient.id))
+    else:
+        print("Erros no formulário:", form.errors)
+    return render_template("admin/patients/add_anthro.html", form=form, diet_form=diet_form, patient=patient)
 
 
-@admin_bp.route("/pacients/<int:pacient_id>/skinfolds/add", methods=["GET", "POST"])
+@admin_bp.route("/patients/<int:patient_id>/skinfolds/add", methods=["GET", "POST"])
 @roles_required("admin")
-def add_skinfold(pacient_id):
-    pacient = Pacients.query.get_or_404(pacient_id)
+def add_skinfold(patient_id):
+    patient = Patients.query.get_or_404(patient_id)
     form = SkinfoldMeasurementForm()
     if form.validate_on_submit():
         skinfold = SkinFolds(
-            pacient_id=pacient.id,
+            patient_id=patient.id,
             data_medicao=form.data_medicao.data,
             triciptal=form.triciptal.data,
             bicipital=form.bicipital.data,
@@ -168,40 +191,40 @@ def add_skinfold(pacient_id):
         db.session.add(skinfold)
         db.session.commit()
         flash("Pregas cutâneas adicionadas com sucesso!", "success")
-        return redirect(url_for("admin.view_pacient", id=pacient.id))
-    return render_template("admin/pacients/add_skinfold.html", form=form, pacient=pacient)
+        return redirect(url_for("admin.view_patient", id=patient.id))
+    return render_template("admin/patients/add_skinfold.html", form=form, patient=patient)
 
 
-@admin_bp.route("/pacients/edit/<int:id>", methods=["GET", "POST"])
+@admin_bp.route("/patients/edit/<int:id>", methods=["GET", "POST"])
 @roles_required("admin")
-def edit_pacient(id):
-    pacient = Pacients.query.get_or_404(id)
-    form = PacientForm(obj=pacient)
+def edit_patient(id):
+    patient = Patients.query.get_or_404(id)
+    form = PatientForm(obj=patient)
     if request.method == "POST":
         try:
             if form.frequency.data is None:
                 # Even defining a default value in the model,
                 # SQL doesn't considere this in UPDATE operations
                 form.frequency.data = 0
-            form.populate_obj(pacient)
+            form.populate_obj(patient)
             db.session.commit()
-            flash(f"Dados do paciente '{pacient.name}' atualizados com sucesso!", "success")
-            return redirect(url_for("admin.list_pacients"))
+            flash(f"Dados do paciente '{patient.name}' atualizados com sucesso!", "success")
+            return redirect(url_for("admin.list_patients"))
         except IntegrityError as e:
             db.session.rollback()
             error_message = str(e)
-            if "pacients.name" in str(e):
+            if "patients.name" in str(e):
                 error_message = "Erro: Já existe um paciente com esse nome cadastrado!"
-            elif "pacients.cpf" in str(e):
+            elif "patients.cpf" in str(e):
                 error_message = "Erro: Já existe um paciente com esse CPF cadastrado!"
 
             flash(error_message, "danger")
-    return render_template("admin/pacients/edit_pacient.html", form=form, pacient=pacient)
+    return render_template("admin/patients/edit_patient.html", form=form, patient=patient)
 
 
-@admin_bp.route("/pacients/<int:pacient_id>/anthro/edit/<int:evaluation_id>", methods=["GET", "POST"])
+@admin_bp.route("/patients/<int:patient_id>/anthro/edit/<int:evaluation_id>", methods=["GET", "POST"])
 @roles_required("admin")
-def edit_anthro(pacient_id, evaluation_id):
+def edit_anthro(patient_id, evaluation_id):
     evaluation = AnthropometricEvaluation.query.get_or_404(evaluation_id)
     form = AnthropometricAssessmentForm(obj=evaluation)
     diet_form = DietForm(name=evaluation.ultima_guia)
@@ -211,44 +234,46 @@ def edit_anthro(pacient_id, evaluation_id):
         evaluation.ultima_guia = diet_name
         db.session.commit()
         flash("Avaliação antropométrica atualizada com sucesso!", "success")
-        return redirect(url_for("admin.view_pacient", id=pacient_id))
-    return render_template("admin/pacients/edit_anthro.html", form=form, diet_form=diet_form, evaluation=evaluation)
+        return redirect(url_for("admin.view_patient", id=patient_id))
+    return render_template("admin/patients/edit_anthro.html", form=form, diet_form=diet_form, evaluation=evaluation)
 
 
-@admin_bp.route("/pacients/<int:pacient_id>/skinfolds/edit/<int:skinfold_id>", methods=["GET", "POST"])
+@admin_bp.route("/patients/<int:patient_id>/skinfolds/edit/<int:skinfold_id>", methods=["GET", "POST"])
 @roles_required("admin")
-def edit_skinfold(pacient_id, skinfold_id):
+def edit_skinfold(patient_id, skinfold_id):
     skinfold = SkinFolds.query.get_or_404(skinfold_id)
     form = SkinfoldMeasurementForm(obj=skinfold)
     if form.validate_on_submit():
         form.populate_obj(skinfold)
         db.session.commit()
         flash("Dados de pregas cutâneas atualizados com sucesso!", "success")
-        return redirect(url_for("admin.view_pacient", id=pacient_id))
-    return render_template("admin/pacients/edit_skinfold.html", form=form, skinfold=skinfold)
+        return redirect(url_for("admin.view_patient", id=patient_id))
+    return render_template("admin/patients/edit_skinfold.html", form=form, skinfold=skinfold)
 
 
-@admin_bp.route("/pacients/view/<int:id>", methods=["GET"])
+@admin_bp.route("/patients/view/<int:id>", methods=["GET"])
 @roles_required("admin")
-def view_pacient(id):
-    pacient = Pacients.query.get_or_404(id)
-    return render_template("admin/pacients/view_pacient.html", pacient=pacient)
+def view_patient(id):
+    patient = Patients.query.get_or_404(id)
+    return render_template("admin/patients/view_patient.html", patient=patient)
 
 
-@admin_bp.route("/pacients/delete/<int:id>", methods=["GET", "POST"])
+@admin_bp.route("/patients/delete/<int:id>", methods=["GET", "POST"])
 @roles_required("admin")
-def delete_pacient(id):
-    pacient = Pacients.query.get_or_404(id)
+def delete_patient(id):
+    patient = Patients.query.get_or_404(id)
     if request.method == "POST":
-        for evaluation in pacient.anthropometric_evaluations:
+        for schedule in patient.schedules:
+            db.session.delete(schedule)
+        for evaluation in patient.anthropometric_evaluations:
             db.session.delete(evaluation)
-        for skinfold in pacient.skinfolds:
+        for skinfold in patient.skinfolds:
             db.session.delete(skinfold)
-        db.session.delete(pacient)
+        db.session.delete(patient)
         db.session.commit()
-        flash(f"Paciente '{pacient.name}' removido com sucesso!", "success")
-        return redirect(url_for("admin.list_pacients"))
-    return render_template("admin/pacients/delete_pacient.html", pacient=pacient)
+        flash(f"Paciente '{patient.name}' removido com sucesso!", "success")
+        return redirect(url_for("admin.list_patients"))
+    return render_template("admin/patients/delete_patient.html", patient=patient)
 
 
 @admin_bp.route("/diets")
@@ -315,9 +340,9 @@ def download_diet(filename):
 @admin_bp.route("/send_diet/<int:diet_id>", methods=["POST"])
 @roles_required("admin")
 def send_diet(diet_id):
-    def twilio_send_diet(pacient, telephone, diet):
+    def twilio_send_diet(patient, telephone, diet):
         client = Client(current_app.config["TWILIO_SID"], current_app.config["TWILIO_AUTH"])
-        message = f"Olá {pacient}, aqui está sua dieta:\n{diet}"
+        message = f"Olá {patient}, aqui está sua dieta:\n{diet}"
         client.messages.create(body=message, from_=current_app.config["TWILIO_PHONE"], to=telephone)
 
     telephone = request.form.get("telefone")
@@ -330,7 +355,7 @@ def send_diet(diet_id):
 
     # Send diet by WhatsApp
     response = twilio_send_diet(
-        pacient="Paciente", telephone=telephone, diet_name=diet.name, pdf_filename=diet.pdf_file
+        patient="Paciente", telephone=telephone, diet_name=diet.name, pdf_filename=diet.pdf_file
     )
 
     return jsonify({"message": response}), 200

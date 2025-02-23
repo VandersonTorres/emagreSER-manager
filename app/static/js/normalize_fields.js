@@ -1,41 +1,42 @@
 document.addEventListener("DOMContentLoaded", function () {
     // Sanitize CPF
     const cpfInput = document.getElementById("cpf");
-    cpfInput.addEventListener("blur", function () {
-        // Get only digits
+    cpfInput.addEventListener("blur", function cpfHandler() {
         let cpf = cpfInput.value.replace(/\D/g, "");
         if (/[a-zA-Z]/.test(cpfInput.value)) {
+            cpfInput.removeEventListener("blur", cpfHandler);   // Avoid alert loop
+            cpfInput.value = "";
             alert("CPF inválido. Não pode conter letras.");
-            cpfInput.value = "";
+            cpfInput.addEventListener("blur", cpfHandler);      // Avoid alert loop
             return;
-        }
-        else if (cpf.length !== 11) {
+        } else if (cpf.length !== 11) {
+            cpfInput.removeEventListener("blur", cpfHandler);
+            cpfInput.value = "";
             alert("CPF inválido. Precisa conter 11 dígitos.");
-            cpfInput.value = "";
+            cpfInput.addEventListener("blur", cpfHandler);
             return;
-        }
-        else if (cpf.length === 11) {
+        } else {
             cpfInput.value = cpf.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, "$1.$2.$3-$4");
         }
     });
 
     // Sanitize Tel Number
     const phoneInput = document.getElementById("phone") || document.getElementById("tel_number");
-    phoneInput.addEventListener("blur", function () {
+    phoneInput.addEventListener("blur", function phoneHandler() {
         let phone = phoneInput.value.replace(/\D/g, "");
-        // Format according to size:
-        // 10 digits: (00) 0000-0000
-        // 11 digits: (00) 00000-0000
         if (/[a-zA-Z]/.test(phoneInput.value)) {
-            alert("Telefone inválido. Não pode conter letras.");
+            phoneInput.removeEventListener("blur", phoneHandler);
             phoneInput.value = "";
+            alert("Telefone inválido. Não pode conter letras.");
+            phoneInput.addEventListener("blur", phoneHandler);
             return;
         } else if (phone.length < 10 || phone.length > 11) {
-            alert("Telefone inválido. Precisa conter 10 ou 11 dígitos.");
+            phoneInput.removeEventListener("blur", phoneHandler);
             phoneInput.value = "";
+            alert("Telefone inválido. Precisa conter 10 ou 11 dígitos.");
+            phoneInput.addEventListener("blur", phoneHandler);
             return;
         }
-
         if (phone.length === 10) {
             phoneInput.value = phone.replace(/(\d{2})(\d{4})(\d{4})/, "($1) $2-$3");
         } else if (phone.length === 11) {
@@ -43,8 +44,9 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     });
 
-    // Validate email before submiting the form
+    // Validate email before submitting the form
     const form = document.querySelector("form");
+    const emailInput = document.getElementById("email");
     form.addEventListener("submit", function (e) {
         let email = emailInput.value.trim().toLowerCase();
         if (email.indexOf('@') === -1 || email.indexOf('.') === -1) {

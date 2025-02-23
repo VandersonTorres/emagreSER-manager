@@ -18,9 +18,9 @@ class User(db.Model, fsqla.FsUserMixin):
     pass
 
 
-# Pacients model
-class Pacients(db.Model):
-    __tablename__ = "pacients"
+# Patients model
+class Patients(db.Model):
+    __tablename__ = "patients"
 
     id = db.Column(db.Integer, primary_key=True)
 
@@ -50,12 +50,12 @@ class Pacients(db.Model):
     objective = db.Column(db.Text, nullable=False)
 
     anthropometric_evaluations = db.relationship(
-        "AnthropometricEvaluation", backref="pacient", cascade="all, delete-orphan", passive_deletes=True
+        "AnthropometricEvaluation", backref="patient", cascade="all, delete-orphan", passive_deletes=True
     )
-    skinfolds = db.relationship("SkinFolds", backref="pacient", cascade="all, delete-orphan", passive_deletes=True)
+    skinfolds = db.relationship("SkinFolds", backref="patient", cascade="all, delete-orphan", passive_deletes=True)
 
     def __repr__(self):
-        return f"<Pacient {self.name} | {self.cpf}>"
+        return f"<Patient {self.name} | {self.cpf}>"
 
 
 # Anthropometric model
@@ -63,9 +63,9 @@ class AnthropometricEvaluation(db.Model):
     __tablename__ = "anthropometric_evaluations"
 
     id = db.Column(db.Integer, primary_key=True)
-    pacient_id = db.Column(db.Integer, db.ForeignKey("pacients.id", ondelete="CASCADE"), nullable=False)
+    patient_id = db.Column(db.Integer, db.ForeignKey("patients.id", ondelete="CASCADE"), nullable=False)
     data_avaliacao = db.Column(db.Date, nullable=False, default=datetime.now(timezone.utc))
-    ultima_guia = db.Column(db.String(20), nullable=False)
+    ultima_guia = db.Column(db.String(20), nullable=False, default="Nenhuma")
     idade = db.Column(db.Integer, nullable=False)
     altura = db.Column(db.Float, nullable=False)
     peso = db.Column(db.Float, nullable=False)
@@ -79,7 +79,7 @@ class AnthropometricEvaluation(db.Model):
     pa = db.Column(db.Float, nullable=False)
 
     def __repr__(self):
-        return f"<AnthropometricEvaluation {self.pacient_id} | {self.data_avaliacao}>"
+        return f"<AnthropometricEvaluation {self.patient_id} | {self.data_avaliacao}>"
 
 
 # SkinFolds model
@@ -87,7 +87,7 @@ class SkinFolds(db.Model):
     __tablename__ = "skinfolds"
 
     id = db.Column(db.Integer, primary_key=True)
-    pacient_id = db.Column(db.Integer, db.ForeignKey("pacients.id", ondelete="CASCADE"), nullable=False)
+    patient_id = db.Column(db.Integer, db.ForeignKey("patients.id", ondelete="CASCADE"), nullable=False)
     data_medicao = db.Column(db.Date, nullable=False, default=datetime.now(timezone.utc))
     triciptal = db.Column(db.Float, nullable=False)
     bicipital = db.Column(db.Float, nullable=False)
@@ -100,7 +100,7 @@ class SkinFolds(db.Model):
     panturrilha = db.Column(db.Float, nullable=False)
 
     def __repr__(self):
-        return f"<SkinFolds {self.pacient_id} | {self.data_medicao}>"
+        return f"<SkinFolds {self.patient_id} | {self.data_medicao}>"
 
 
 # Diet model
@@ -121,12 +121,12 @@ class Schedules(db.Model):
     __tablename__ = "schedules"
 
     id = db.Column(db.Integer, primary_key=True)
-    pacient_name = db.Column(db.String(255), db.ForeignKey("pacients.name"), nullable=False)
+    patient_name = db.Column(db.String(255), db.ForeignKey("patients.name"), nullable=False)
     date_time = db.Column(db.DateTime, nullable=False)
     specialist = db.Column(db.String, nullable=False)
     status = db.Column(db.String, default="pendente")
 
-    pacient = db.relationship("Pacients", backref="schedules")
+    patient = db.relationship("Patients", backref="schedules")
 
     def __repr__(self):
-        return f"<Schedule {self.pacient_name} | {self.specialist} | {self.date_time}>"
+        return f"<Schedule {self.patient_name} | {self.specialist} | {self.date_time}>"

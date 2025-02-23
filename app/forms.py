@@ -14,7 +14,7 @@ from wtforms import (
 from wtforms.validators import DataRequired, Optional
 
 
-class PacientForm(FlaskForm):
+class PatientForm(FlaskForm):
     # Dados pessoais
     name = StringField("Nome", validators=[DataRequired()])
     gender = SelectField(
