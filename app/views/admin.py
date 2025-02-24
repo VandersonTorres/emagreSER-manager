@@ -171,8 +171,6 @@ def add_anthro(patient_id):
         db.session.commit()
         flash("Avaliação antropométrica adicionada com sucesso!", "success")
         return redirect(url_for("admin.view_patient", id=patient.id))
-    else:
-        print("Erros no formulário:", form.errors)
     return render_template(
         "admin/patients/add_anthro.html", form=form, diet_form=diet_form, patient=patient, peso_anterior=peso_anterior
     )

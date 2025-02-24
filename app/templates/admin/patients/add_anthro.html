@@ -87,4 +87,29 @@
     <a href="{{ url_for('admin.list_patients') }}">🔙 Voltar</a>
     <script src="{{ url_for('static', filename='js/add_diet.js') }}"></script>
     <script src="{{ url_for('static', filename='js/automate_anthro_fields.js') }}"></script>
+    <script>
+        // Script to automatically calculates the age of the Patient
+        // Needs being here due to jinja's sintax
+        document.addEventListener("DOMContentLoaded", function () {
+            function calculateAge() {
+                const birthDate = "{{ patient.birth_date }}";
+                const dataAvaliacao = document.getElementById("data_avaliacao").value;
+                if (birthDate && dataAvaliacao) {
+                    const birth = new Date(birthDate);
+                    const evaluation = new Date(dataAvaliacao);
+                    let years_old = evaluation.getFullYear() - birth.getFullYear();
+                    const current_month = evaluation.getMonth();
+                    const born_month = birth.getMonth();
+                    if (current_month < born_month || (current_month === born_month && evaluation.getDate() < birth.getDate())) {
+                        years_old--;
+                    }
+                    document.getElementById("idade").value = years_old;
+                }
+            }
+
+            // When the evaluation date is filled, automatically fill age field
+            document.getElementById("data_avaliacao").addEventListener("change", calculateAge);
+            calculateAge();
+        });
+    </script>
 {% endblock %}
