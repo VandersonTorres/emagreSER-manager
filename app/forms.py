@@ -13,6 +13,17 @@ from wtforms import (
 )
 from wtforms.validators import DataRequired, Optional
 
+from app.models import Specialists
+
+
+class SpecialistForm(FlaskForm):
+    name = StringField("Nome do Profissional", validators=[DataRequired()])
+    cpf = StringField("CPF", validators=[DataRequired()])
+    tel_number = StringField("Telefone", validators=[DataRequired()])
+    email = StringField("E-mail", validators=[DataRequired()])
+
+    submit = SubmitField("Salvar")
+
 
 class PatientForm(FlaskForm):
     # Dados pessoais
@@ -26,6 +37,7 @@ class PatientForm(FlaskForm):
     cpf = StringField("CPF", validators=[DataRequired()])
     tel_number = StringField("Telefone", validators=[DataRequired()])
     email = StringField("E-mail", validators=[DataRequired()])
+    specialist_id = SelectField("Profissional", coerce=int, validators=[DataRequired()])
 
     # História Clínica
     medication = SelectField(
@@ -58,6 +70,10 @@ class PatientForm(FlaskForm):
     objective = StringField("Objetivo da consulta", validators=[DataRequired()])
 
     submit = SubmitField("Salvar")
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.specialist_id.choices = [(s.id, s.name) for s in Specialists.query.all()]
 
 
 class AnthropometricAssessmentForm(FlaskForm):

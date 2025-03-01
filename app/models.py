@@ -18,6 +18,20 @@ class User(db.Model, fsqla.FsUserMixin):
     pass
 
 
+# Specialits model
+class Specialists(db.Model):
+    __tablename__ = "specialists"
+
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
+    cpf = db.Column(db.String(14), unique=True, nullable=False)
+    tel_number = db.Column(db.String(20), nullable=False)
+    email = db.Column(db.String(100), unique=True, nullable=False)
+
+    def __repr__(self):
+        return f"<Specialist {self.name} | {self.cpf}>"
+
+
 # Patients model
 class Patients(db.Model):
     __tablename__ = "patients"
@@ -32,6 +46,7 @@ class Patients(db.Model):
     tel_number = db.Column(db.String(20), nullable=False)
     email = db.Column(db.String(100), unique=True, nullable=False)
     started_at = db.Column(db.DateTime, default=datetime.now(timezone.utc))
+    specialist_id = db.Column(db.Integer, db.ForeignKey("specialists.id"), nullable=True)
 
     # História Clínica
     medication = db.Column(db.String(3), nullable=False)
@@ -53,6 +68,7 @@ class Patients(db.Model):
         "AnthropometricEvaluation", backref="patient", cascade="all, delete-orphan", passive_deletes=True
     )
     skinfolds = db.relationship("SkinFolds", backref="patient", cascade="all, delete-orphan", passive_deletes=True)
+    specialist = db.relationship("Specialists", backref="patients")
 
     def __repr__(self):
         return f"<Patient {self.name} | {self.cpf}>"
