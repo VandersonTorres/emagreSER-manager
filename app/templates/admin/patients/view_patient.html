@@ -21,6 +21,9 @@
             <p><strong>CPF:</strong> {{ patient.cpf }}</p>
             <p><strong>Número de telefone:</strong> {{ patient.tel_number }}</p>
             <p><strong>E-mail:</strong> {{ patient.email }}</p>
+            {% if patient.specialist %}
+                <p><strong>Profissional:</strong> {{ patient.specialist.name }} - {{ patient.specialist.email }}</p>
+            {% endif %}
             <br>
 
             <h3>Avaliação Antropométrica:</h3>

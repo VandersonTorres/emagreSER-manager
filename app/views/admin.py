@@ -19,8 +19,8 @@ from sqlalchemy.exc import IntegrityError
 from twilio.rest import Client
 from werkzeug.utils import secure_filename
 
-from app.forms import AnthropometricAssessmentForm, DietForm, PatientForm, SkinfoldMeasurementForm
-from app.models import AnthropometricEvaluation, Diet, Patients, Role, SkinFolds, User, db
+from app.forms import AnthropometricAssessmentForm, DietForm, PatientForm, SkinfoldMeasurementForm, SpecialistForm
+from app.models import AnthropometricEvaluation, Diet, Patients, Role, SkinFolds, Specialists, User, db
 
 admin_bp = Blueprint("admin", __name__)
 
@@ -78,6 +78,76 @@ def delete_user(id):
     return render_template("delete_user.html", user=user)
 
 
+@admin_bp.route("/specialists")
+@roles_required("admin")
+def list_specialists():
+    specialists = Specialists.query.all()
+    return render_template("admin/specialists/list_specialists.html", specialists=specialists)
+
+
+@admin_bp.route("/specialists/add", methods=["GET", "POST"])
+@roles_required("admin")
+def add_specialist():
+    form = SpecialistForm()
+
+    if request.method == "POST" and form.validate_on_submit():
+        try:
+            specialist = Specialists(
+                name=form.name.data, cpf=form.cpf.data, tel_number=form.tel_number.data, email=form.email.data
+            )
+            db.session.add(specialist)
+            db.session.commit()
+            flash("Profissional cadastrado com sucesso!", "success")
+            return redirect(url_for("admin.list_specialists"))
+        except IntegrityError as e:
+            db.session.rollback()
+            flash(f"Erro ao cadastrar profissional. Verifique se os dados estão corretos. {e}", "danger")
+
+    return render_template("admin/specialists/add_specialist.html", form=form)
+
+
+@admin_bp.route("/specialists/edit/<int:id>", methods=["GET", "POST"])
+@roles_required("admin")
+def edit_specialist(id):
+    specialist = Specialists.query.get_or_404(id)
+    form = SpecialistForm()
+    if request.method == "POST" and form.validate_on_submit():
+        try:
+            specialist.name = form.name.data
+            specialist.cpf = form.cpf.data
+            specialist.tel_number = form.tel_number.data
+            specialist.email = form.email.data
+
+            db.session.commit()
+            flash("Profissional editado com sucesso!", "success")
+            return redirect(url_for("admin.list_specialists"))
+        except IntegrityError as e:
+            db.session.rollback()
+            flash(f"Erro ao editar profissional. Verifique os dados inseridos. {e}", "danger")
+
+    form.name.data = specialist.name
+    form.cpf.data = specialist.cpf
+    form.tel_number.data = specialist.tel_number
+    form.email.data = specialist.email
+
+    return render_template("admin/specialists/edit_specialist.html", form=form, specialist=specialist)
+
+
+@admin_bp.route("/specialists/delete/<int:id>", methods=["POST"])
+@roles_required("admin")
+def delete_specialist(id):
+    specialist = Specialists.query.get_or_404(id)
+    try:
+        db.session.delete(specialist)
+        db.session.commit()
+        flash("Profissional removido com sucesso!", "success")
+    except Exception as e:
+        db.session.rollback()
+        flash(f"Erro ao remover profissional. Tente novamente mais tarde. {e}", "danger")
+
+    return redirect(url_for("admin.list_specialists"))
+
+
 @admin_bp.route("/patients")
 @roles_required("admin")
 def list_patients():
@@ -88,6 +158,7 @@ def list_patients():
 @admin_bp.route("/patients/add", methods=["GET", "POST"])
 @roles_required("admin")
 def add_patient():
+    specialists = Specialists.query.all()
     if request.method == "POST":
         try:
             patient = Patients(
@@ -97,6 +168,7 @@ def add_patient():
                 cpf=request.form.get("cpf"),
                 tel_number=request.form.get("phone"),
                 email=request.form.get("email"),
+                specialist_id=request.form.get("specialist"),
                 medication=request.form.get("medication"),
                 medications_details=request.form.get("medications_details"),
                 intestine=request.form.get("intestine"),
@@ -106,9 +178,9 @@ def add_patient():
                 heartburn=request.form.get("heartburn"),
                 physical_activities=request.form.get("physical_activities"),
                 physical_details=request.form.get("physical_details"),
-                hours=datetime.strptime(request.form.get("hours"), "%H:%M").time()
-                if request.form.get("hours")
-                else None,
+                hours=(
+                    datetime.strptime(request.form.get("hours"), "%H:%M").time() if request.form.get("hours") else None
+                ),
                 frequency=request.form.get("frequency"),
                 objective=request.form.get("objective"),
             )
@@ -131,7 +203,7 @@ def add_patient():
 
             flash(error_message, "danger")
 
-    return render_template("admin/patients/add_patient.html")
+    return render_template("admin/patients/add_patient.html", specialists=specialists)
 
 
 @admin_bp.route("/patients/<int:patient_id>/anthropometric/add", methods=["GET", "POST"])
@@ -141,6 +213,13 @@ def add_anthro(patient_id):
     form = AnthropometricAssessmentForm()
     diet_form = DietForm()
     diet_form.name.data = form.ultima_guia.data
+    # Search for the last evaluation of the patient (except the current, if there was one)
+    previous_anthro = (
+        AnthropometricEvaluation.query.filter_by(patient_id=patient.id)
+        .order_by(AnthropometricEvaluation.data_avaliacao.desc())
+        .first()
+    )
+    peso_anterior = previous_anthro.peso if previous_anthro else 0
     if form.validate_on_submit():
         diet_name = diet_form.other_name.data if diet_form.name.data == "outro" else diet_form.name.data
         form.ultima_guia.data = diet_name
@@ -164,9 +243,9 @@ def add_anthro(patient_id):
         db.session.commit()
         flash("Avaliação antropométrica adicionada com sucesso!", "success")
         return redirect(url_for("admin.view_patient", id=patient.id))
-    else:
-        print("Erros no formulário:", form.errors)
-    return render_template("admin/patients/add_anthro.html", form=form, diet_form=diet_form, patient=patient)
+    return render_template(
+        "admin/patients/add_anthro.html", form=form, diet_form=diet_form, patient=patient, peso_anterior=peso_anterior
+    )
 
 
 @admin_bp.route("/patients/<int:patient_id>/skinfolds/add", methods=["GET", "POST"])

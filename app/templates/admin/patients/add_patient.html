@@ -12,6 +12,13 @@
     {% endwith %}
 
     <h2>CADASTRAR PACIENTE</h2>
+    {% if not specialists %}
+        <h3>Ainda não existem profissionais cadastrados.</h3>
+        <p>Se você adicionar um paciente, ele não estará vinculado à nenhuma profissional</p>
+        <a href="{{ url_for('admin.add_specialist') }}">+ Adicionar novo(a) profissional</a>
+        <hr>
+    {% endif %}
+
     <form method="POST" action="{{ url_for('admin.add_patient') }}">
         <h3>Dados pessoais:</h3>
         <label for="name">Nome:</label>
@@ -35,6 +42,16 @@
         <br>
         <label for="email">E-mail:</label>
         <input type="email" name="email" required>
+        <br>
+        {% if specialists %}
+            <label for="specialist">Selecionar Profissional:</label>
+            <select name="specialist" required>
+                <option value="">Selecione um profissional</option>
+                {% for specialist in specialists %}
+                    <option value="{{ specialist.id }}">{{ specialist.name }}</option>
+                {% endfor %}
+            </select>
+        {% endif %}
         <br><br>
 
         <h3>História Clínica:</h3>
@@ -81,7 +98,7 @@
         <input type="time" name="hours">
         <br>
         <label for="frequency">Frequência das atividades:</label>
-        <input type="number" name="frequency" min="0"> vezes por semana
+        <input type="number" name="frequency" min="0" value="0"> vezes por semana
         <br>
         <label for="objective">Objetivo da consulta:</label>
         <input type="text" name="objective" required>

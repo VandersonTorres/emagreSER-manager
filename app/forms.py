@@ -13,6 +13,17 @@ from wtforms import (
 )
 from wtforms.validators import DataRequired, Optional
 
+from app.models import Specialists
+
+
+class SpecialistForm(FlaskForm):
+    name = StringField("Nome do Profissional", validators=[DataRequired()])
+    cpf = StringField("CPF", validators=[DataRequired()])
+    tel_number = StringField("Telefone", validators=[DataRequired()])
+    email = StringField("E-mail", validators=[DataRequired()])
+
+    submit = SubmitField("Salvar")
+
 
 class PatientForm(FlaskForm):
     # Dados pessoais
@@ -26,6 +37,7 @@ class PatientForm(FlaskForm):
     cpf = StringField("CPF", validators=[DataRequired()])
     tel_number = StringField("Telefone", validators=[DataRequired()])
     email = StringField("E-mail", validators=[DataRequired()])
+    specialist_id = SelectField("Profissional", coerce=int, validators=[DataRequired()])
 
     # História Clínica
     medication = SelectField(
@@ -59,6 +71,10 @@ class PatientForm(FlaskForm):
 
     submit = SubmitField("Salvar")
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.specialist_id.choices = [(s.id, s.name) for s in Specialists.query.all()]
+
 
 class AnthropometricAssessmentForm(FlaskForm):
     data_avaliacao = DateField("Data de Avaliação", format="%Y-%m-%d", validators=[DataRequired()])
@@ -71,19 +87,7 @@ class AnthropometricAssessmentForm(FlaskForm):
     p_ide = FloatField("Peso Ideal", validators=[DataRequired()])
     p_min = FloatField("Peso Mínimo", validators=[DataRequired()])
     imc = FloatField("IMC", validators=[DataRequired()])
-    nutri_class = SelectField(
-        "Classificação Nutricional",
-        choices=[
-            ("", "Selecione"),
-            ("Abaixo", "Abaixo do Peso"),
-            ("Normal", "Peso Normal"),
-            ("Sobrepeso", "Sobrepeso"),
-            ("Grau I", "Obesidade Grau I"),
-            ("Grau II", "Obesidade Grau II"),
-            ("Grau III", "Obesidade Grau III"),
-        ],
-        validators=[DataRequired()],
-    )
+    nutri_class = StringField("Classificação Nutricional", validators=[DataRequired()])
     grau_atv_fisica = SelectField(
         "Grau de Atividade Física",
         choices=[

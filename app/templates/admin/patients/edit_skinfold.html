@@ -12,7 +12,7 @@
     {% endwith %}
 
     <h2>Editar Pregas Cutâneas</h2>
-    <p>Paciente: {{ skinfold.patient.name }}</p>
+    <p><strong>Paciente:</strong> {{ skinfold.patient.name }}</p>
     <form method="POST" action="{{ url_for('admin.edit_skinfold', patient_id=skinfold.patient_id, skinfold_id=skinfold.id) }}">
         {{ form.hidden_tag() }}
         <label for="data_medicao">Data de Medição:</label>
