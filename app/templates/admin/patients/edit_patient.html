@@ -50,6 +50,7 @@
         </ul>
     {% else %}
         <p>Nenhuma avaliação registrada.</p>
+        <a href="{{ url_for('admin.add_anthro', patient_id=patient.id) }}">Adicionar avaliação</a>
     {% endif %}
 
     <hr>
@@ -66,7 +67,9 @@
         </ul>
     {% else %}
         <p>Nenhum registro de pregas cutâneas.</p>
+        <a href="{{ url_for('admin.add_skinfold', patient_id=patient.id) }}">Adicionar registro</a>
     {% endif %}
+    <hr>
     <a href="{{ url_for('admin.list_patients') }}" class="btn btn-secondary">🔙 Voltar</a>
 
     <script src="{{ url_for('static', filename='js/edit_patient.js') }}"></script>

@@ -12,7 +12,7 @@
     {% endwith %}
 
     <h2>Avaliação Antropométrica</h2>
-    <p>Paciente: {{ patient.name }}</p>
+    <p><strong>Paciente:</strong> {{ patient.name }}</p>
     <form method="POST" action="{{ url_for('admin.add_anthro', patient_id=patient.id) }}">
         {{ form.hidden_tag() }}
         <label for="data_avaliacao">Data de Avaliação:</label>

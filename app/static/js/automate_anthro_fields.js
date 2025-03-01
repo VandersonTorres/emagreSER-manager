@@ -75,12 +75,12 @@ document.addEventListener("DOMContentLoaded", function () {
     function recalcWeights() {
         var altura = parseFloat(alturaInput.value);
         if (!isNaN(altura) && altura > 0) {
-            // Max Weight (IMC == 24.9)
-            pMaxInput.value = (24.9 * (altura ** 2)).toFixed(2);
+            // Max Weight (IMC == 25)
+            pMaxInput.value = (25 * (altura ** 2)).toFixed(2);
             // Min Weight (IMC == 18.5)
             pMinInput.value = (18.5 * (altura ** 2)).toFixed(2);
-            // Best Weight (using the average value of 18.5 and 24.9, that is 21.7)
-            pIdeInput.value = (21.7 * (altura ** 2)).toFixed(2);
+            // Best Weight (using the average value of 18.5 and 24.9, that is 21.75)
+            pIdeInput.value = (21.75 * (altura ** 2)).toFixed(2);
         } else {
             pMaxInput.value = "";
             pMinInput.value = "";
@@ -94,7 +94,7 @@ document.addEventListener("DOMContentLoaded", function () {
         calculateEvolucao();
     });
 
-    alturaInput.addEventListener("input", function () {
+    alturaInput.addEventListener("blur", function () {
         normalizeAltura();
         calculateIMC();
         recalcWeights();
