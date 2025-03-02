@@ -13,8 +13,14 @@
 
     <h2>Pacientes</h2>
     <a href="{{ url_for('admin.add_patient') }}">+ Cadastrar Paciente</a>
+    <br><br>
     {% if patients %}
-        <div class="listings">
+        <!-- Alternate patients view -->
+        <a href="#" id="toggle-patients" onclick="togglePatients(event)">
+            Mostrar {{ patients|length }} pacientes
+        </a>
+        <!-- Patients list -->
+        <div class="listings" id="patients-list" style="display: none;">
             <ul>
                 {% for patient in patients %}
                     <li>
@@ -35,7 +41,7 @@
 
         <div class="add-anthro-info">
             <h3>Adicionar Informações Antropométricas</h3>
-            <form class="add-anthro-form" id="anthro-form" method="GET"></form>
+            <form class="add-anthro-form" id="anthro-form" method="GET">
                 <label for="patient_select">Selecione o Paciente:</label>
                 <select id="patient_select" name="patient_id">
                     <option value="">Selecione um paciente</option>
@@ -49,7 +55,7 @@
 
         <hr>
 
-        <div class="add-skinfold-info"></div>
+        <div class="add-skinfold-info">
             <h3>Adicionar Dados de Pregas Cutâneas</h3>
             <form class="add-skinfold-form" id="skinfold-form" method="GET">
                 <label for="patient_select_skinfold">Selecione o Paciente:</label>
