@@ -1,0 +1,205 @@
+/* Basic Reset */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* Page Body Style */
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f2f2f2;
+    color: #333;
+    line-height: 1.6;
+    padding: 20px;
+}
+
+/* Header and Navigation */
+header {
+    background-color: #007BFF;
+    padding: 10px;
+    margin-bottom: 20px;
+}
+
+/* Container for Logo and Title */
+.logo-title {
+    /* Use Flexbox to center items horizontally */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px; /* Space between title and logo */
+}
+
+/* Optional: Additional styling for the h1 element */
+.logo-title h1 {
+    display: flex;
+    align-items: center;
+    font-size: 2em;
+    color: #fff; /* Ajuste a cor se necessário */
+}
+
+/* Navigation Links */
+nav {
+    text-align: center;
+    margin-top: 10px;
+}
+
+nav a {
+    color: #fff;
+    text-decoration: none;
+    margin: 0 10px;
+    font-weight: bold;
+}
+
+nav a:hover {
+    text-decoration: underline;
+}
+
+/* Main Content */
+.main-content {
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+/* Alert Messages */
+.alert {
+    padding: 10px;
+    margin-bottom: 15px;
+    border-radius: 5px;
+}
+
+.alert.alert-success {
+    background-color: #d4edda;
+    color: #155724;
+}
+
+.alert.alert-error,
+.alert.alert-danger {
+    background-color: #f8d7da;
+    color: #721c24;
+}
+
+/* Styles for Listings (e.g., patients) */
+.listings ul {
+    list-style: none;
+    padding: 0;
+}
+
+.listings li {
+    padding: 10px;
+    border-bottom: 1px solid #ccc;
+}
+
+.listings li:last-child {
+    border-bottom: none;
+}
+
+/* Styles for Forms */
+form {
+    margin-top: 20px;
+}
+
+form label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+}
+
+form select,
+form input,
+form button {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+form button {
+    background-color: #007BFF;
+    color: #fff;
+    border: none;
+    cursor: pointer;
+}
+
+form button:hover {
+    background-color: #0056b3;
+}
+
+/* Pagination Controls */
+#pagination-controls {
+    margin-top: 20px;
+    text-align: center;
+}
+
+#pagination-controls a {
+    margin: 0 5px;
+    text-decoration: none;
+    color: #007BFF;
+}
+
+#pagination-controls a:hover {
+    text-decoration: underline;
+}
+
+/* Special styling for editing sections */
+section.editing {
+    background-color: #ffffff;       /* Background white for clarity */
+    border: 2px solid #e0e0e0;         /* Light border */
+    border-radius: 8px;              /* Rounded corners */
+    padding: 20px;                   /* Internal spacing */
+    margin: 20px 0;                  /* Vertical spacing */
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); /* Soft shadow for depth */
+}
+
+/* Styling for each editable field row */
+.edit-field-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+/* Checkbox container: fixed width for consistency */
+.edit-field-row .checkbox {
+    flex: 0 0 30px;
+}
+
+/* Label styling: fixed width to align all labels */
+.edit-field-row label {
+    flex: 0 0 150px;
+    font-weight: bold;
+}
+
+/* Container for the input field: occupies remaining space */
+.edit-field-row .field-container {
+    flex: 1;
+}
+
+/* Style for input fields inside the editing section */
+.edit-field-row .field-container input,
+.edit-field-row .field-container select,
+.edit-field-row .field-container textarea {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+/* Submit button styling inside editing section */
+section.editing button[type="submit"] {
+    background-color: #007BFF;
+    color: #fff;
+    border: none;
+    padding: 12px 20px;
+    border-radius: 4px;
+    cursor: pointer;
+    display: block;
+    margin: 20px auto 0 auto;
+}
+
+section.editing button[type="submit"]:hover {
+    background-color: #0056b3;
+}

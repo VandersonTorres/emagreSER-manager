@@ -12,89 +12,91 @@
     {% endwith %}
 
     <h2>Editar Avaliação Antropométrica</h2>
-    <p><strong>Paciente:</strong> {{ evaluation.patient.name }}</p>
-    <form class="edit-anthro-form" method="POST" action="{{ url_for('admin.edit_anthro', patient_id=evaluation.patient_id, evaluation_id=evaluation.id) }}">
-        {{ form.hidden_tag() }}
-        <label for="data_avaliacao">Data de Avaliação:</label>
-        {{ form.data_avaliacao(size=20) }}
-        <br>
+    <section class="editing">
+        <p><strong>Paciente:</strong> {{ evaluation.patient.name }}</p>
+        <form class="edit-anthro-form" method="POST" action="{{ url_for('admin.edit_anthro', patient_id=evaluation.patient_id, evaluation_id=evaluation.id) }}">
+            {{ form.hidden_tag() }}
+            <label for="data_avaliacao">Data de Avaliação:</label>
+            {{ form.data_avaliacao(size=20) }}
+            <br>
 
-        <label for="ultima_guia">Última Guia:</label>
-        {{ diet_form.name(id="diet-select") }}
-        <span id="current-diet" style="font-size: 12px; margin-left: 10px; font-weight: bold; color: #555;">
-            Atual: {{ evaluation.ultima_guia if evaluation.ultima_guia else "Nenhum" }}
-        </span>
-        <div id="other-name-field" style="display: none;">
-            <label for="other_name">Nome da nova guia:</label>
-            {{ diet_form.other_name() }}
-        </div>
-        <br>
+            <label for="ultima_guia">Última Guia:</label>
+            {{ diet_form.name(id="diet-select") }}
+            <span id="current-diet" style="font-size: 12px; margin-left: 10px; font-weight: bold; color: #555;">
+                Atual: {{ evaluation.ultima_guia if evaluation.ultima_guia else "Nenhum" }}
+            </span>
+            <div id="other-name-field" style="display: none;">
+                <label for="other_name">Nome da nova guia:</label>
+                {{ diet_form.other_name() }}
+            </div>
+            <br>
 
-        <label for="idade">Idade:</label>
-        {{ form.idade(size=5) }}
-        <br>
+            <label for="idade">Idade:</label>
+            {{ form.idade(size=5) }}
+            <br>
 
-        <label for="altura">Altura (m):</label>
-        {{ form.altura(step="0.001", class="form-control", id="altura", placeholder="1.60") }}
-        <br>
+            <label for="altura">Altura (m):</label>
+            {{ form.altura(step="0.001", class="form-control", id="altura", placeholder="1.60") }}
+            <br>
 
-        <label for="peso">Peso (kg):</label>
-        {{ form.peso(step="0.1", class="form-control", id="peso", placeholder="62.5") }}
-        <input type="hidden" id="peso_anterior" value="{{ peso_anterior }}">
-        <br>
+            <label for="peso">Peso (kg):</label>
+            {{ form.peso(step="0.1", class="form-control", id="peso", placeholder="62.5") }}
+            <input type="hidden" id="peso_anterior" value="{{ peso_anterior }}">
+            <br>
 
-        <label for="evolucao">Evolução:</label>
-        {{ form.evolucao(class="form-control", id="evolucao", readonly=True) }}
-        <span id="auto_calc_info" style="font-size: 9px; margin-left: 10px; color: #555;">
-            Calculado automaticamente
-        </span>
-        <br>
+            <label for="evolucao">Evolução:</label>
+            {{ form.evolucao(class="form-control", id="evolucao", readonly=True) }}
+            <span id="auto_calc_info" style="font-size: 9px; margin-left: 10px; color: #555;">
+                Calculado automaticamente
+            </span>
+            <br>
 
-        <label for="p_max">Peso Máximo:</label>
-        {{ form.p_max(step="0.1", class="form-control", id="p_max", readonly=True) }}
-        <span id="auto_calc_info" style="font-size: 9px; margin-left: 10px; color: #555;">
-            Calculado automaticamente
-        </span>
-        <br>
+            <label for="p_max">Peso Máximo:</label>
+            {{ form.p_max(step="0.1", class="form-control", id="p_max", readonly=True) }}
+            <span id="auto_calc_info" style="font-size: 9px; margin-left: 10px; color: #555;">
+                Calculado automaticamente
+            </span>
+            <br>
 
-        <label for="p_ide">Peso Ideal:</label>
-        {{ form.p_ide(step="0.1", class="form-control", id="p_ide", readonly=True) }}
-        <span id="auto_calc_info" style="font-size: 9px; margin-left: 10px; color: #555;">
-            Calculado automaticamente
-        </span>
-        <br>
+            <label for="p_ide">Peso Ideal:</label>
+            {{ form.p_ide(step="0.1", class="form-control", id="p_ide", readonly=True) }}
+            <span id="auto_calc_info" style="font-size: 9px; margin-left: 10px; color: #555;">
+                Calculado automaticamente
+            </span>
+            <br>
 
-        <label for="p_min">Peso Mínimo:</label>
-        {{ form.p_min(step="0.1", class="form-control", id="p_min", readonly=True) }}
-        <span id="auto_calc_info" style="font-size: 9px; margin-left: 10px; color: #555;">
-            Calculado automaticamente
-        </span>
-        <br>
+            <label for="p_min">Peso Mínimo:</label>
+            {{ form.p_min(step="0.1", class="form-control", id="p_min", readonly=True) }}
+            <span id="auto_calc_info" style="font-size: 9px; margin-left: 10px; color: #555;">
+                Calculado automaticamente
+            </span>
+            <br>
 
-        <label for="imc">IMC:</label>
-        {{ form.imc(step="0.01", class="form-control", id="imc", readonly=True) }}
-        <span id="auto_calc_info" style="font-size: 9px; margin-left: 10px; color: #555;">
-            Calculado automaticamente
-        </span>
-        <br>
+            <label for="imc">IMC:</label>
+            {{ form.imc(step="0.01", class="form-control", id="imc", readonly=True) }}
+            <span id="auto_calc_info" style="font-size: 9px; margin-left: 10px; color: #555;">
+                Calculado automaticamente
+            </span>
+            <br>
 
-        <label for="nutri_class">Classificação Nutricional:</label>
-        {{ form.nutri_class(class="form-control", id="nutri_class", readonly=True) }}
-        <span id="auto_calc_info" style="font-size: 9px; margin-left: 10px; color: #555;">
-            Calculado automaticamente
-        </span>
-        <br>
+            <label for="nutri_class">Classificação Nutricional:</label>
+            {{ form.nutri_class(class="form-control", id="nutri_class", readonly=True) }}
+            <span id="auto_calc_info" style="font-size: 9px; margin-left: 10px; color: #555;">
+                Calculado automaticamente
+            </span>
+            <br>
 
-        <label for="grau_atv_fisica">Grau de Atividade Física:</label>
-        {{ form.grau_atv_fisica() }}
-        <br>
+            <label for="grau_atv_fisica">Grau de Atividade Física:</label>
+            {{ form.grau_atv_fisica() }}
+            <br>
 
-        <label for="pa">Pressão Arterial:</label>
-        {{ form.pa(step="0.01", placeholder="ex: 000.00 ou 00.0") }}
-        <br><br>
+            <label for="pa">Pressão Arterial:</label>
+            {{ form.pa(step="0.01", placeholder="ex: 000.00 ou 00.0") }}
+            <br><br>
 
-        <button type="submit">Atualizar Avaliação</button>
-    </form>
+            <button type="submit">Atualizar Avaliação</button>
+        </form>
+    </section>
     <hr>
     <div class="nav-actions">
         <a href="{{ url_for('admin.edit_patient', id=evaluation.patient_id) }}">🔙 Voltar</a>
@@ -107,7 +109,7 @@
         // Needs being here due to jinja's sintax
         document.addEventListener("DOMContentLoaded", function () {
             function calculateAge() {
-                const birthDate = "{{ patient.birth_date }}";
+                const birthDate = "{{ evaluation.patient.birth_date }}";
                 const dataAvaliacao = document.getElementById("data_avaliacao").value;
                 if (birthDate && dataAvaliacao) {
                     const birth = new Date(birthDate);
