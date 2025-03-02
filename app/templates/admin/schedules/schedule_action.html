@@ -1,5 +1,15 @@
 {% extends "base.html" %}
 {% block content %}
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+        {% for category, message in messages %}
+            <div class="alert alert-{{ category }}">
+                <strong>{{ message }}</strong>
+            </div>
+        {% endfor %}
+        {% set _ = session.pop("_flashes", None) %}
+    {% endif %}
+    {% endwith %}
     <h2>Agendar Consulta</h2>
     <form method="POST" action="{{ url_for('schedules.schedule_action') }}">
         <label>Paciente:</label>
@@ -12,9 +22,21 @@
         <label>Data e Hora:</label>
         <input type="datetime-local" name="date_time" required>
         <br>
-        <label>Profissional:</label>
-        <input type="text" name="specialist" required>
+        {% if specialists %}
+            <label for="specialist">Selecionar Profissional:</label>
+            <select name="specialist" required>
+                <option value="">Selecione um profissional</option>
+                {% for specialist in specialists %}
+                    <option value="{{ specialist.name }}">{{ specialist.name }}</option>
+                {% endfor %}
+            </select>
+        {% else %}
+            <label>Profissional:</label>
+            <input type="text" name="specialist" required>
+        {% endif %}
         <br>
         <button type="submit">Agendar</button>
     </form>
+    <hr>
+    <a href="{{ url_for('schedules.list_schedules') }}">🔙 Voltar</a>
 {% endblock %}
