@@ -2,7 +2,7 @@
 {% block content %}
     <h2>Remover Paciente</h2>
     <p>Tem certeza de que deseja remover {{ patient.name }} - CPF: {{ patient.cpf }}?</p>
-    <form method="POST" action="{{ url_for('admin.delete_patient', id=patient.id) }}">
+    <form class="delete-patient-form" method="POST" action="{{ url_for('admin.delete_patient', id=patient.id) }}">
         <button type="submit">Confirmar Remoção</button>
         <a href="{{ url_for('admin.list_patients') }}">Cancelar</a>
     </form>

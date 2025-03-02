@@ -13,7 +13,7 @@
 
     <h2>Pregas Cutâneas</h2>
     <p><strong>Paciente:</strong> {{ patient.name }}</p>
-    <form method="POST" action="{{ url_for('admin.add_skinfold', patient_id=patient.id) }}">
+    <form class="add-skinfold-form" method="POST" action="{{ url_for('admin.add_skinfold', patient_id=patient.id) }}">
         {{ form.hidden_tag() }}
         <label for="data_medicao">Data de Medição:</label>
         {{ form.data_medicao() }}
@@ -47,6 +47,8 @@
         <br><br>
         <button type="submit">Salvar Pregas</button>
     </form>
-    <br>
-    <a href="{{ url_for('admin.list_patients') }}">🔙 Voltar</a>
+    <hr>
+    <div class="nav-actions">
+        <a href="{{ url_for('admin.list_patients') }}">🔙 Voltar</a>
+    </div>
 {% endblock %}

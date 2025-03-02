@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% block content %}
     <h2>EDITAR PROFISSIONAL</h2>
-    <form method="POST" action="{{ url_for('admin.edit_specialist', id=specialist.id) }}">
+    <form class="edit-specialist-form" method="POST" action="{{ url_for('admin.edit_specialist', id=specialist.id) }}">
         {{ form.hidden_tag() }}
         <label for="name">Nome:</label>
         {{ form.name() }}
@@ -17,6 +17,10 @@
         <br><br>
         <button type="submit">Salvar alterações</button>
     </form>
-    <a href="{{ url_for('admin.list_specialists') }}">🔙 Voltar</a>
+    <hr>
+    <div class="nav-actions">
+        <a href="{{ url_for('admin.list_specialists') }}">🔙 Voltar</a>
+    </div>
+
     <script src="{{ url_for('static', filename='js/normalize_fields.js') }}"></script>
 {% endblock %}

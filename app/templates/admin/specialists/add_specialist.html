@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% block content %}
     <h2>CADASTRAR PROFISSIONAL</h2>
-    <form method="POST" action="{{ url_for('admin.add_specialist') }}">
+    <form class="add-specialist-form" method="POST" action="{{ url_for('admin.add_specialist') }}">
         {{ form.hidden_tag() }}
         <label for="name">Nome:</label>
         {{ form.name() }}
@@ -17,6 +17,10 @@
         <br>
         <button type="submit">Cadastrar Profissional</button>
     </form>
-    <a href="{{ url_for('admin.list_specialists') }}">🔙 Voltar</a>
+    <hr>
+    <div class="nav-actions">
+        <a href="{{ url_for('admin.list_specialists') }}">🔙 Voltar</a>
+    </div>
+
     <script src="{{ url_for('static', filename='js/normalize_fields.js') }}"></script>
 {% endblock %}

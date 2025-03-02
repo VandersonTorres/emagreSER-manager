@@ -1,9 +1,11 @@
 {% extends "base.html" %}
 {% block content %}
-    <h2>Remover Usuário</h2>
-    <p>Tem certeza de que deseja remover {{ user.email }}?</p>
-    <form method="POST" action="{{ url_for('admin.delete_user', id=user.id) }}">
-        <button type="submit">Confirmar Remoção</button>
-        <a href="{{ url_for('admin.list_users') }}">Cancelar</a>
-    </form>
+    <div class="remove-user">
+        <h2>Remover Usuário</h2>
+        <p class="confirmation">Tem certeza de que deseja remover {{ user.email }}?</p>
+        <form class="delete-user-form" method="POST" action="{{ url_for('admin.delete_user', id=user.id) }}">
+            <button type="submit">Confirmar Remoção</button>
+            <a href="{{ url_for('admin.list_users') }}">Cancelar</a>
+        </form>
+    </div>
 {% endblock %}

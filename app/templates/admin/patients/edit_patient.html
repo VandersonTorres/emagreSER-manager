@@ -13,7 +13,7 @@
     {% endwith %}
 
     <h2>Editar dados do paciente</h2>
-    <form method="POST" action="{{ url_for('admin.edit_patient', id=patient.id) }}">
+    <form class="edit-patient-form" method="POST" action="{{ url_for('admin.edit_patient', id=patient.id) }}">
         {{ form.hidden_tag() }}
 
         <label>Escolha os campos que deseja editar:</label>
@@ -70,7 +70,9 @@
         <a href="{{ url_for('admin.add_skinfold', patient_id=patient.id) }}">Adicionar registro</a>
     {% endif %}
     <hr>
-    <a href="{{ url_for('admin.list_patients') }}" class="btn btn-secondary">🔙 Voltar</a>
+    <div class="nav-actions">
+        <a href="{{ url_for('admin.list_patients') }}" class="btn btn-secondary">🔙 Voltar</a>
+    </div>
 
     <script src="{{ url_for('static', filename='js/edit_patient.js') }}"></script>
     <script src="{{ url_for('static', filename='js/normalize_fields.js') }}"></script>

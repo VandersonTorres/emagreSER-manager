@@ -18,7 +18,7 @@
         <p>Não há profissionais cadastrados.</p>
     {% else %}
         <div class="show-specialists">
-            <table>
+            <table class="specialists-table">
                 <thead>
                     <tr>
                         <th>Nome</th>
@@ -37,7 +37,7 @@
                         <td>{{ specialist.email }}</td>
                         <td>
                             <a href="{{ url_for('admin.edit_specialist', id=specialist.id) }}">Editar</a>
-                            <form action="{{ url_for('admin.delete_specialist', id=specialist.id) }}" method="POST" style="display:inline;">
+                            <form class="delete-specialist-form" action="{{ url_for('admin.delete_specialist', id=specialist.id) }}" method="POST" style="display:inline;">
                                 <button type="submit" onclick="return confirm('Tem certeza que deseja remover este profissional?')">Remover</button>
                             </form>
                         </td>

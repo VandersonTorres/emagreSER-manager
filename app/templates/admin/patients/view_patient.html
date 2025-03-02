@@ -28,7 +28,7 @@
 
             <h3>Avaliação Antropométrica:</h3>
             {% if patient.anthropometric_evaluations|length > 0 %}
-                <table border="1">
+                <table class="anthro-table" border="1">
                     <thead>
                         <tr>
                             <th>Data Avaliação</th>
@@ -74,7 +74,7 @@
 
             <h3>Pregas Cutâneas:</h3>
             {% if patient.skinfolds|length > 0 %}
-                <table border="1">
+                <table class="skinfolds-table" border="1">
                     <thead>
                         <tr>
                             <th>Data Medição</th>
@@ -114,39 +114,43 @@
             <br><br>
             <hr>
 
-            <h3>Mais detalhes sobre {{ patient.name }}</h3>
-            <br>
-            <h4>História Clínica:</h4>
-            <p><strong>Faz uso de medicação?</strong> {{ patient.medication }}</p>
-            {% if patient.medication == 'sim' %}
-                <p><strong>Quais?</strong> {{ patient.medications_details }}</p>
-            {% endif %}
-            <p><strong>Funcionamento intestinal:</strong> {{ patient.intestine }} vezes por semana</p>
-            <p><strong>Alergias / Intolerâncias?</strong> {{ patient.allergies }}</p>
-            {% if patient.allergies == 'sim' %}
-                <p><strong>Quais?</strong> {{ patient.allergies_details }}</p>
-            {% endif %}
-            <p><strong>Consumo de água:</strong> {{ patient.water }} litros/dia</p>
-            <p><strong>Azia / Refluxo:</strong> {{ patient.heartburn }}</p>
-            <br>
+            <div class="patient-details">
+                <h3>Mais detalhes sobre {{ patient.name }}</h3>
+                <br>
+                <h4>História Clínica:</h4>
+                <p><strong>Faz uso de medicação?</strong> {{ patient.medication }}</p>
+                {% if patient.medication == 'sim' %}
+                    <p><strong>Quais?</strong> {{ patient.medications_details }}</p>
+                {% endif %}
+                <p><strong>Funcionamento intestinal:</strong> {{ patient.intestine }} vezes por semana</p>
+                <p><strong>Alergias / Intolerâncias?</strong> {{ patient.allergies }}</p>
+                {% if patient.allergies == 'sim' %}
+                    <p><strong>Quais?</strong> {{ patient.allergies_details }}</p>
+                {% endif %}
+                <p><strong>Consumo de água:</strong> {{ patient.water }} litros/dia</p>
+                <p><strong>Azia / Refluxo:</strong> {{ patient.heartburn }}</p>
+                <br>
 
-            <h4>História Comportamental:</h4>
-            <p><strong>Faz atividade física?</strong> {{ patient.physical_activities }}</p>
-            {% if patient.physical_activities == 'sim' %}
-                <p><strong>Quais?</strong> {{ patient.physical_details }}</p>
-            {% endif %}
-            <p><strong>Horário das atividades:</strong> {{ patient.hours }}</p>
-            <p><strong>Frequência das atividades:</strong> {{ patient.frequency }} vezes por semana</p>
-            <p><strong>Objetivo da consulta:</strong> {{ patient.objective }}</p>
-            <br>
-            <hr>
+                <h4>História Comportamental:</h4>
+                <p><strong>Faz atividade física?</strong> {{ patient.physical_activities }}</p>
+                {% if patient.physical_activities == 'sim' %}
+                    <p><strong>Quais?</strong> {{ patient.physical_details }}</p>
+                {% endif %}
+                <p><strong>Horário das atividades:</strong> {{ patient.hours }}</p>
+                <p><strong>Frequência das atividades:</strong> {{ patient.frequency }} vezes por semana</p>
+                <p><strong>Objetivo da consulta:</strong> {{ patient.objective }}</p>
+                <br>
+            </div>
         </div>
     {% else %}
         <p>Nenhum paciente cadastrado.</p>
     {% endif %}
-    <a href="{{ url_for('admin.list_patients') }}">🔙 Voltar</a>
-    &nbsp;
-    <a href="{{ url_for('admin.edit_patient', id=patient.id) }}">Editar</a>
-    &nbsp;
-    <a href="{{ url_for('admin.delete_patient', id=patient.id) }}">Remover</a>
+    <hr>
+    <div class="nav-actions">
+        <a href="{{ url_for('admin.list_patients') }}">🔙 Voltar</a>
+        &nbsp;
+        <a href="{{ url_for('admin.edit_patient', id=patient.id) }}">Editar</a>
+        &nbsp;
+        <a href="{{ url_for('admin.delete_patient', id=patient.id) }}">Remover</a>
+    </div>
 {% endblock %}

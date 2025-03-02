@@ -19,7 +19,7 @@
         <hr>
     {% endif %}
 
-    <form method="POST" action="{{ url_for('admin.add_patient') }}">
+    <form class="add-patient-form" method="POST" action="{{ url_for('admin.add_patient') }}">
         <h3>Dados pessoais:</h3>
         <label for="name">Nome:</label>
         <input type="text" name="name" required>
@@ -108,4 +108,8 @@
         <script src="{{ url_for('static', filename='js/normalize_fields.js') }}"></script>
         <button type="submit">Cadastrar Paciente</button>
     </form>
+    <hr>
+    <div class="nav-actions">
+        <a href="{{ url_for('admin.list_patients') }}">🔙 Voltar</a>
+    </div>
 {% endblock %}

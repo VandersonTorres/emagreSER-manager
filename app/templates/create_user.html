@@ -3,7 +3,7 @@
 {% block content %}
     <h2>CADASTRAMENTO</h2>
     <br>
-    <form method="POST" action="{{ url_for('admin.create_user') }}">
+    <form class="create-user-form" method="POST" action="{{ url_for('admin.create_user') }}">
         <div class="email-board">
             <label for="email">Email:</label>
             <input type="text" name="email" required>
@@ -13,17 +13,19 @@
             <label for="password">Senha:</label>
             <input type="password" name="password" required>
             <h4>A senha deve conter:</h4>
-            <p>&nbsp;<i>- Pelo menos 6 caracteres</i></p>
-            <p>&nbsp;<i>- Um caractere maiúsculo</i></p>
-            <p>&nbsp;<i>- Um caractere minúsculo</i></p>
-            <p>&nbsp;<i>- Um símbolo</i></p>
+            <p class="instruction">&nbsp;<i>- Pelo menos 6 caracteres</i></p>
+            <p class="instruction">&nbsp;<i>- Um caractere maiúsculo</i></p>
+            <p class="instruction">&nbsp;<i>- Um caractere minúsculo</i></p>
+            <p class="instruction">&nbsp;<i>- Um símbolo</i></p>
         </div>
         <br>
         <hr>
-        <label for="role">Esse usuário deve ser um Adminstrador?</label>
-        <input type="radio" name="role" value="yes" required> Sim
-        <input type="radio" name="role" value="no" required> Não
-        <br><br>
+        <div class="role-setup">
+            <label for="role">Esse usuário deve ser um Adminstrador?</label>
+            <input type="radio" name="role" value="yes" required> Sim
+            <input type="radio" name="role" value="no" required> Não
+            <br><br>
+        </div>
         <button type="submit">Cadastrar Usuário</button>
     </form>
     <script src="{{ url_for('static', filename='js/validate_register.js') }}"></script>

@@ -12,23 +12,27 @@
         {% endif %}
     {% endwith %}
 
-    <h2>Bem vindo, {{ current_user.email }}</h2>
-    <p>Você está logado.</p>
-    <a href="{{ url_for('security.logout') }}">Sair</a>
-    <br>
-    <a href="{{ url_for('security.change_password') }}">Trocar senha</a>
-    <br>
-    <a href="{{ url_for('admin.list_specialists') }}">Gerenciamento de Profissionais</a>
-    <br>
-    <a href="{{ url_for('admin.list_patients') }}">Gerenciamento de Pacientes</a>
-    <br>
-    <a href="{{ url_for('admin.list_diets') }}">Gerenciamento de Dietas</a>
-    <br>
-    <a href="{{ url_for('schedules.list_schedules') }}">Gerenciamento de Agendamentos</a>
-    <br>
-    <a href="{{ url_for('schedules.schedule_action') }}">Agendar Consulta</a>
-    <br>
-    <a href="{{ url_for('admin.create_user') }}">Cadastrar Novo Usuário</a>
-    <br>
-    <a href="{{ url_for('admin.list_users') }}">Ver Usuários</a>
+    <div class="display-info">
+        <h2>Bem vindo, {{ current_user.email }}</h2>
+        <p>Você está logado.</p>
+    </div>
+    <div class="options">
+        <a href="{{ url_for('security.logout') }}">Sair</a>
+        <br>
+        <a href="{{ url_for('security.change_password') }}">Trocar senha</a>
+        <br>
+        <a href="{{ url_for('admin.list_specialists') }}">Gerenciamento de Profissionais</a>
+        <br>
+        <a href="{{ url_for('admin.list_patients') }}">Gerenciamento de Pacientes</a>
+        <br>
+        <a href="{{ url_for('admin.list_diets') }}">Gerenciamento de Dietas</a>
+        <br>
+        <a href="{{ url_for('schedules.list_schedules') }}">Gerenciamento de Agendamentos</a>
+        <br>
+        <a href="{{ url_for('schedules.schedule_action') }}">Agendar Consulta</a>
+        <br>
+        <a href="{{ url_for('admin.create_user') }}">Cadastrar Novo Usuário</a>
+        <br>
+        <a href="{{ url_for('admin.list_users') }}">Ver Usuários</a>
+    </div>
 {% endblock %}
