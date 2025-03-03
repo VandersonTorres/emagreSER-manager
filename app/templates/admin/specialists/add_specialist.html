@@ -1,26 +1,31 @@
 {% extends "base.html" %}
-{% block content %}
-    <h2>CADASTRAR PROFISSIONAL</h2>
-    <form class="add-specialist-form" method="POST" action="{{ url_for('admin.add_specialist') }}">
-        {{ form.hidden_tag() }}
-        <label for="name">Nome:</label>
-        {{ form.name() }}
-        <br>
-        <label for="cpf">CPF:</label>
-        {{ form.cpf(id="cpf") }}
-        <br>
-        <label for="tel_number">Telefone:</label>
-        {{ form.tel_number(id="phone") }}
-        <br>
-        <label for="email">E-mail:</label>
-        {{ form.email(id="email") }}
-        <br>
-        <button type="submit">Cadastrar Profissional</button>
-    </form>
-    <hr>
-    <div class="nav-actions">
-        <a href="{{ url_for('admin.list_specialists') }}">🔙 Voltar</a>
-    </div>
 
-    <script src="{{ url_for('static', filename='js/normalize_fields.js') }}"></script>
+{% block content %}
+
+<h2>CADASTRAR PROFISSIONAL</h2>
+<form class="add-specialist-form" method="POST" action="{{ url_for('admin.add_specialist') }}">
+    {{ form.hidden_tag() }}
+    <label for="name">Nome:</label>
+    {{ form.name() }}
+    <br>
+    <label for="cpf">CPF:</label>
+    {{ form.cpf(id="cpf") }}
+    <br>
+    <label for="tel_number">Telefone:</label>
+    {{ form.tel_number(id="phone") }}
+    <br>
+    <label for="email">E-mail:</label>
+    {{ form.email(id="email") }}
+    <br>
+    <button type="submit">Cadastrar Profissional</button>
+</form>
+
+<hr>
+
+<div class="nav-actions">
+    <a class="back-button" href="{{ url_for('admin.list_specialists') }}">🔙 Voltar</a>
+</div>
+
+<script src="{{ url_for('static', filename='js/normalize_fields.js') }}"></script>
+
 {% endblock %}

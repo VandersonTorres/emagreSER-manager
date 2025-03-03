@@ -110,7 +110,6 @@ form label {
 form select,
 form input,
 form button {
-    width: 100%;
     padding: 10px;
     margin-bottom: 10px;
     border: 1px solid #ccc;
@@ -146,12 +145,12 @@ form button:hover {
 
 /* Special styling for editing sections */
 section.editing {
-    background-color: #ffffff;       /* Background white for clarity */
-    border: 2px solid #e0e0e0;         /* Light border */
-    border-radius: 8px;              /* Rounded corners */
-    padding: 20px;                   /* Internal spacing */
-    margin: 20px 0;                  /* Vertical spacing */
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); /* Soft shadow for depth */
+    background-color: #ffffff;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 20px;
+    margin: 20px 0;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 /* Styling for each editable field row */
@@ -202,4 +201,112 @@ section.editing button[type="submit"] {
 
 section.editing button[type="submit"]:hover {
     background-color: #0056b3;
+}
+
+/* Edit buttons */
+button, .edit-button {
+    margin-bottom: 5px;
+    background-color: hsl(0, 0%, 50%);
+    font-size: 14px;
+    color: #fff;
+    border: none;
+    padding: 5px 20px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+button:hover, .edit-button:hover {
+    background-color: #313131;
+}
+
+/* Remove buttons */
+button, .remove-button {
+    margin-bottom: 5px;
+    background-color: hsl(0, 0%, 50%);
+    font-size: 14px;
+    color: #fff;
+    border: none;
+    padding: 5px 20px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+button:hover, .remove-button:hover {
+    background-color: #313131;
+}
+
+/* Back buttons */
+button, .back-button {
+    margin-bottom: 5px;
+    background-color: #6a6969cd;
+    font-size: 14px;
+    color: #fff;
+    border: none;
+    padding: 5px 20px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+button:hover, .back-button:hover {
+    background-color: #515151;
+}
+
+/* View buttons */
+button, .view-button {
+    margin-bottom: 5px;
+    background-color: hsl(0, 0%, 50%);
+    font-size: 14px;
+    color: #fff;
+    border: none;
+    padding: 5px 20px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+button:hover, .view-button:hover {
+    background-color: #313131;
+}
+
+/* Table Styling */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+    background-color: #fff;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+/* Table Header */
+thead {
+    background-color: #093669;
+    color: white;
+    text-align: left;
+    font-weight: bold;
+}
+
+/* Table Header & Cell Padding */
+th, td {
+    padding: 12px 15px;
+    border-bottom: 1px solid #ddd;
+}
+
+/* Zebra Striping for Better Readability */
+tbody tr:nth-child(even) {
+    background-color: #f9f9f9;
+}
+
+/* Hover Effect for Rows */
+tbody tr:hover {
+    background-color: #f1f1f1;
+}
+
+/* Responsive Table for Small Screens */
+@media screen and (max-width: 768px) {
+    table {
+        display: block;
+        overflow-x: auto;
+        white-space: nowrap;
+    }
 }

@@ -1,80 +1,86 @@
-<!-- edit_patient.html -->
 {% extends "base.html" %}
+
 {% block content %}
-    {% with messages = get_flashed_messages(with_categories=true) %}
-        {% if messages %}
-            {% for category, message in messages %}
-                <div class="alert alert-{{ category }}">
-                    <strong>{{ message }}</strong>
-                </div>
-            {% endfor %}
-            {% set _ = session.pop("_flashes", None) %}
-        {% endif %}
-    {% endwith %}
 
-    <h2>Editar dados do paciente</h2>
-    <section class="editing">
-        <form class="edit-patient-form" method="POST" action="{{ url_for('admin.edit_patient', id=patient.id) }}">
-            {{ form.hidden_tag() }}
+{% with messages = get_flashed_messages(with_categories=true) %}
+{% if messages %}
+{% for category, message in messages %}
+<div class="alert alert-{{ category }}">
+    <strong>{{ message }}</strong>
+</div>
+{% endfor %}
+{% set _ = session.pop("_flashes", None) %}
+{% endif %}
+{% endwith %}
 
-            <label>Escolha os campos que deseja editar:</label>
-            <br>
-            <!-- Listing of editable fields (patient data) -->
-            {% for field in form if field.label.field_id not in ["csrf_token", "submit"] %}
-                <div class="edit-field-row">
-                    <div class="checkbox">
-                        <input type="checkbox" id="check_{{ field.id }}" name="edit_fields" value="{{ field.id }}" onclick="toggleField('{{ field.id }}')">
-                    </div>
-                    <label for="check_{{ field.id }}">{{ field.label.text }}</label>
-                    <div id="field_{{ field.id }}" class="field-container" style="display: none;">
-                        <!-- Show editable field -->
-                        {{ field(class_="form-control", readonly=True) }}
-                    </div>
-                </div>
-            {% endfor %}
-            <br>
-            <button type="submit">Salvar Alterações</button>
-        </form>
+<h2>Editar dados do paciente</h2>
+<section class="editing">
+    <form class="edit-patient-form" method="POST" action="{{ url_for('admin.edit_patient', id=patient.id) }}">
+        {{ form.hidden_tag() }}
 
-        <hr>
-        <h3>Avaliações Antropométricas</h3>
-        {% if patient.anthropometric_evaluations %}
-            <ul>
-                {% for evaluation in patient.anthropometric_evaluations %}
-                    <li>
-                        Data: {{ evaluation.data_avaliacao }} | Peso: {{ evaluation.peso }} kg | IMC: {{ evaluation.imc }}
-                        &nbsp;
-                        <a href="{{ url_for('admin.edit_anthro', patient_id=patient.id, evaluation_id=evaluation.id) }}">Editar Avaliação</a>
-                    </li>
-                {% endfor %}
-            </ul>
-        {% else %}
-            <p>Nenhuma avaliação registrada.</p>
-            <a href="{{ url_for('admin.add_anthro', patient_id=patient.id) }}">Adicionar avaliação</a>
-        {% endif %}
-
-        <hr>
-        <h3>Dados de Pregas Cutâneas</h3>
-        {% if patient.skinfolds %}
-            <ul>
-                {% for skinfold in patient.skinfolds %}
-                    <li>
-                        Data: {{ skinfold.data_medicao }} | Triciptal: {{ skinfold.triciptal }} | Bicipital: {{ skinfold.bicipital }}
-                        &nbsp;
-                        <a href="{{ url_for('admin.edit_skinfold', patient_id=patient.id, skinfold_id=skinfold.id) }}">Editar Pregas Cutâneas</a>
-                    </li>
-                {% endfor %}
-            </ul>
-        {% else %}
-            <p>Nenhum registro de pregas cutâneas.</p>
-            <a href="{{ url_for('admin.add_skinfold', patient_id=patient.id) }}">Adicionar registro</a>
-        {% endif %}
-        <hr>
-        <div class="nav-actions">
-            <a href="{{ url_for('admin.list_patients') }}" class="btn btn-secondary">🔙 Voltar</a>
+        <label>Escolha os campos que deseja editar:</label>
+        <br>
+        <!-- Listing of editable fields (patient data) -->
+        {% for field in form if field.label.field_id not in ["csrf_token", "submit"] %}
+        <div class="edit-field-row">
+            <div class="checkbox">
+                <input type="checkbox" id="check_{{ field.id }}" name="edit_fields" value="{{ field.id }}"
+                    onclick="toggleField('{{ field.id }}')">
+            </div>
+            <label for="check_{{ field.id }}">{{ field.label.text }}</label>
+            <div id="field_{{ field.id }}" class="field-container" style="display: none;">
+                <!-- Show editable field -->
+                {{ field(class_="form-control", readonly=True) }}
+            </div>
         </div>
-    </section>
+        {% endfor %}
+        <br>
+        <button type="submit">Salvar Alterações</button>
+    </form>
 
-    <script src="{{ url_for('static', filename='js/edit_patient.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/normalize_fields.js') }}"></script>
+    <hr>
+    <h3>Avaliações Antropométricas</h3>
+    {% if patient.anthropometric_evaluations %}
+    <ul>
+        {% for evaluation in patient.anthropometric_evaluations %}
+        <li>
+            Data: {{ evaluation.data_avaliacao }} | Peso: {{ evaluation.peso }} kg | IMC: {{ evaluation.imc }}
+            &nbsp;
+            <a href="{{ url_for('admin.edit_anthro', patient_id=patient.id, evaluation_id=evaluation.id) }}">Editar
+                Avaliação</a>
+        </li>
+        {% endfor %}
+    </ul>
+    {% else %}
+    <p>Nenhuma avaliação registrada.</p>
+    <a href="{{ url_for('admin.add_anthro', patient_id=patient.id) }}">Adicionar avaliação</a>
+    {% endif %}
+
+    <hr>
+    <h3>Dados de Pregas Cutâneas</h3>
+    {% if patient.skinfolds %}
+    <ul>
+        {% for skinfold in patient.skinfolds %}
+        <li>
+            Data: {{ skinfold.data_medicao }} | Triciptal: {{ skinfold.triciptal }} | Bicipital: {{ skinfold.bicipital
+            }}
+            &nbsp;
+            <a href="{{ url_for('admin.edit_skinfold', patient_id=patient.id, skinfold_id=skinfold.id) }}">Editar Pregas
+                Cutâneas</a>
+        </li>
+        {% endfor %}
+    </ul>
+    {% else %}
+    <p>Nenhum registro de pregas cutâneas.</p>
+    <a href="{{ url_for('admin.add_skinfold', patient_id=patient.id) }}">Adicionar registro</a>
+    {% endif %}
+    <hr>
+    <div class="nav-actions">
+        <a href="{{ url_for('admin.list_patients') }}" class="btn btn-secondary back-button">🔙 Voltar</a>
+    </div>
+</section>
+
+<script src="{{ url_for('static', filename='js/edit_patient.js') }}"></script>
+<script src="{{ url_for('static', filename='js/normalize_fields.js') }}"></script>
+
 {% endblock %}

@@ -1,156 +1,162 @@
 {% extends "base.html" %}
 
 {% block content %}
-    {% with messages = get_flashed_messages(with_categories=true) %}
-        {% if messages %}
-            {% for category, message in messages %}
-                <div class="alert alert-{{ category }}">
-                    <strong>{{ message }}</strong>
-                </div>
-            {% endfor %}
-            {% set _ = session.pop("_flashes", None) %}
-        {% endif %}
-    {% endwith %}
-    <h2>Histórico do Paciente</h2>
 
-    {% if patient %}
-        <div class="patient-card">
-            <p><strong>Nome:</strong> {{ patient.name }}</p>
-            <p><strong>Sexo:</strong> {{ patient.gender }}</p>
-            <p><strong>Data de Nascimento:</strong> {{ patient.birth_date }}</p>
-            <p><strong>CPF:</strong> {{ patient.cpf }}</p>
-            <p><strong>Número de telefone:</strong> {{ patient.tel_number }}</p>
-            <p><strong>E-mail:</strong> {{ patient.email }}</p>
-            {% if patient.specialist %}
-                <p><strong>Profissional:</strong> {{ patient.specialist.name }} - {{ patient.specialist.email }}</p>
-            {% endif %}
-            <br>
+{% with messages = get_flashed_messages(with_categories=true) %}
+{% if messages %}
+{% for category, message in messages %}
+<div class="alert alert-{{ category }}">
+    <strong>{{ message }}</strong>
+</div>
+{% endfor %}
+{% set _ = session.pop("_flashes", None) %}
+{% endif %}
+{% endwith %}
 
-            <h3>Avaliação Antropométrica:</h3>
-            {% if patient.anthropometric_evaluations|length > 0 %}
-                <table class="anthro-table" border="1">
-                    <thead>
-                        <tr>
-                            <th>Data Avaliação</th>
-                            <th>Nome da Última Guia</th>
-                            <th>Idade</th>
-                            <th>Altura</th>
-                            <th>Peso</th>
-                            <th>Evolução</th>
-                            <th>Peso Max</th>
-                            <th>Peso Ideal</th>
-                            <th>Peso Mínimo</th>
-                            <th>IMC</th>
-                            <th>Classificação Nutricional</th>
-                            <th>Grau Atv. Física</th>
-                            <th>Pressão Arterial</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for evaluation in patient.anthropometric_evaluations %}
-                            <tr>
-                                <td>{{ evaluation.data_avaliacao }}</td>
-                                <td>{{ evaluation.ultima_guia }}</td>
-                                <td>{{ evaluation.idade }}</td>
-                                <td>{{ evaluation.altura }}</td>
-                                <td>{{ evaluation.peso }}</td>
-                                <td>{{ evaluation.evolucao }}</td>
-                                <td>{{ evaluation.p_max }}</td>
-                                <td>{{ evaluation.p_ide }}</td>
-                                <td>{{ evaluation.p_min }}</td>
-                                <td>{{ evaluation.imc }}</td>
-                                <td>{{ evaluation.nutri_class }}</td>
-                                <td>{{ evaluation.grau_atv_fisica }}</td>
-                                <td>{{ evaluation.pa }}</td>
-                            </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            {% else %}
-                <p>Não há avaliações antropométricas registradas.</p>
-                <a href="{{ url_for('admin.add_anthro', patient_id=patient.id) }}">Adicionar Avaliação Antropométrica</a>
+<h2>Histórico do Paciente</h2>
 
-            {% endif %}
-
-            <h3>Pregas Cutâneas:</h3>
-            {% if patient.skinfolds|length > 0 %}
-                <table class="skinfolds-table" border="1">
-                    <thead>
-                        <tr>
-                            <th>Data Medição</th>
-                            <th>Tricipital</th>
-                            <th>Bicipital</th>
-                            <th>Subscápula</th>
-                            <th>Torácica</th>
-                            <th>Axilar Média</th>
-                            <th>Supra Ilíaca</th>
-                            <th>Abdominal</th>
-                            <th>Coxa</th>
-                            <th>Panturrilha</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for fold in patient.skinfolds %}
-                            <tr>
-                                <td>{{ fold.data_medicao }}</td>
-                                <td>{{ fold.triciptal }}</td>
-                                <td>{{ fold.bicipital }}</td>
-                                <td>{{ fold.subscapula }}</td>
-                                <td>{{ fold.toracica }}</td>
-                                <td>{{ fold.axilar }}</td>
-                                <td>{{ fold.supra }}</td>
-                                <td>{{ fold.abdominal }}</td>
-                                <td>{{ fold.coxa }}</td>
-                                <td>{{ fold.panturrilha }}</td>
-                            </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            {% else %}
-                <p>Não há registros de pregas cutâneas.</p>
-                <a href="{{ url_for('admin.add_skinfold', patient_id=patient.id) }}">Adicionar Pregas Cutâneas</a>
-            {% endif %}
-
-            <br><br>
-            <hr>
-
-            <div class="patient-details">
-                <h3>Mais detalhes sobre {{ patient.name }}</h3>
-                <br>
-                <h4>História Clínica:</h4>
-                <p><strong>Faz uso de medicação?</strong> {{ patient.medication }}</p>
-                {% if patient.medication == 'sim' %}
-                    <p><strong>Quais?</strong> {{ patient.medications_details }}</p>
-                {% endif %}
-                <p><strong>Funcionamento intestinal:</strong> {{ patient.intestine }} vezes por semana</p>
-                <p><strong>Alergias / Intolerâncias?</strong> {{ patient.allergies }}</p>
-                {% if patient.allergies == 'sim' %}
-                    <p><strong>Quais?</strong> {{ patient.allergies_details }}</p>
-                {% endif %}
-                <p><strong>Consumo de água:</strong> {{ patient.water }} litros/dia</p>
-                <p><strong>Azia / Refluxo:</strong> {{ patient.heartburn }}</p>
-                <br>
-
-                <h4>História Comportamental:</h4>
-                <p><strong>Faz atividade física?</strong> {{ patient.physical_activities }}</p>
-                {% if patient.physical_activities == 'sim' %}
-                    <p><strong>Quais?</strong> {{ patient.physical_details }}</p>
-                {% endif %}
-                <p><strong>Horário das atividades:</strong> {{ patient.hours }}</p>
-                <p><strong>Frequência das atividades:</strong> {{ patient.frequency }} vezes por semana</p>
-                <p><strong>Objetivo da consulta:</strong> {{ patient.objective }}</p>
-                <br>
-            </div>
-        </div>
-    {% else %}
-        <p>Nenhum paciente cadastrado.</p>
+{% if patient %}
+<div class="patient-card">
+    <p><strong>Nome:</strong> {{ patient.name }}</p>
+    <p><strong>Sexo:</strong> {{ patient.gender }}</p>
+    <p><strong>Data de Nascimento:</strong> {{ patient.birth_date }}</p>
+    <p><strong>CPF:</strong> {{ patient.cpf }}</p>
+    <p><strong>Número de telefone:</strong> {{ patient.tel_number }}</p>
+    <p><strong>E-mail:</strong> {{ patient.email }}</p>
+    {% if patient.specialist %}
+    <p><strong>Profissional:</strong> {{ patient.specialist.name }} - {{ patient.specialist.email }}</p>
     {% endif %}
+    <br>
+
+    <h3>Avaliação Antropométrica:</h3>
+    {% if patient.anthropometric_evaluations|length > 0 %}
+    <table class="anthro-table" border="1">
+        <thead>
+            <tr>
+                <th>Data Avaliação</th>
+                <th>Nome da Última Guia</th>
+                <th>Idade</th>
+                <th>Altura</th>
+                <th>Peso</th>
+                <th>Evolução</th>
+                <th>Peso Max</th>
+                <th>Peso Ideal</th>
+                <th>Peso Mínimo</th>
+                <th>IMC</th>
+                <th>Classificação Nutricional</th>
+                <th>Grau Atv. Física</th>
+                <th>Pressão Arterial</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for evaluation in patient.anthropometric_evaluations %}
+            <tr>
+                <td>{{ evaluation.data_avaliacao }}</td>
+                <td>{{ evaluation.ultima_guia }}</td>
+                <td>{{ evaluation.idade }}</td>
+                <td>{{ evaluation.altura }}</td>
+                <td>{{ evaluation.peso }}</td>
+                <td>{{ evaluation.evolucao }}</td>
+                <td>{{ evaluation.p_max }}</td>
+                <td>{{ evaluation.p_ide }}</td>
+                <td>{{ evaluation.p_min }}</td>
+                <td>{{ evaluation.imc }}</td>
+                <td>{{ evaluation.nutri_class }}</td>
+                <td>{{ evaluation.grau_atv_fisica }}</td>
+                <td>{{ evaluation.pa }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p>Não há avaliações antropométricas registradas.</p>
+    <a href="{{ url_for('admin.add_anthro', patient_id=patient.id) }}">Adicionar Avaliação Antropométrica</a>
+
+    {% endif %}
+
+    <br>
+    <h3>Pregas Cutâneas:</h3>
+    {% if patient.skinfolds|length > 0 %}
+    <table class="skinfolds-table" border="1">
+        <thead>
+            <tr>
+                <th>Data Medição</th>
+                <th>Tricipital</th>
+                <th>Bicipital</th>
+                <th>Subscápula</th>
+                <th>Torácica</th>
+                <th>Axilar Média</th>
+                <th>Supra Ilíaca</th>
+                <th>Abdominal</th>
+                <th>Coxa</th>
+                <th>Panturrilha</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for fold in patient.skinfolds %}
+            <tr>
+                <td>{{ fold.data_medicao }}</td>
+                <td>{{ fold.triciptal }}</td>
+                <td>{{ fold.bicipital }}</td>
+                <td>{{ fold.subscapula }}</td>
+                <td>{{ fold.toracica }}</td>
+                <td>{{ fold.axilar }}</td>
+                <td>{{ fold.supra }}</td>
+                <td>{{ fold.abdominal }}</td>
+                <td>{{ fold.coxa }}</td>
+                <td>{{ fold.panturrilha }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p>Não há registros de pregas cutâneas.</p>
+    <a href="{{ url_for('admin.add_skinfold', patient_id=patient.id) }}">Adicionar Pregas Cutâneas</a>
+    {% endif %}
+
+    <br><br>
     <hr>
-    <div class="nav-actions">
-        <a href="{{ url_for('admin.list_patients') }}">🔙 Voltar</a>
-        &nbsp;
-        <a href="{{ url_for('admin.edit_patient', id=patient.id) }}">Editar</a>
-        &nbsp;
-        <a href="{{ url_for('admin.delete_patient', id=patient.id) }}">Remover</a>
+
+    <div class="patient-details">
+        <h3>Mais detalhes sobre {{ patient.name }}</h3>
+        <br>
+        <h4>História Clínica:</h4>
+        <p><strong>Faz uso de medicação?</strong> {{ patient.medication }}</p>
+        {% if patient.medication == 'sim' %}
+        <p><strong>Quais?</strong> {{ patient.medications_details }}</p>
+        {% endif %}
+        <p><strong>Funcionamento intestinal:</strong> {{ patient.intestine }} vezes por semana</p>
+        <p><strong>Alergias / Intolerâncias?</strong> {{ patient.allergies }}</p>
+        {% if patient.allergies == 'sim' %}
+        <p><strong>Quais?</strong> {{ patient.allergies_details }}</p>
+        {% endif %}
+        <p><strong>Consumo de água:</strong> {{ patient.water }} litros/dia</p>
+        <p><strong>Azia / Refluxo:</strong> {{ patient.heartburn }}</p>
+        <br>
+
+        <h4>História Comportamental:</h4>
+        <p><strong>Faz atividade física?</strong> {{ patient.physical_activities }}</p>
+        {% if patient.physical_activities == 'sim' %}
+        <p><strong>Quais?</strong> {{ patient.physical_details }}</p>
+        {% endif %}
+        <p><strong>Horário das atividades:</strong> {{ patient.hours }}</p>
+        <p><strong>Frequência das atividades:</strong> {{ patient.frequency }} vezes por semana</p>
+        <p><strong>Objetivo da consulta:</strong> {{ patient.objective }}</p>
+        <br>
     </div>
+</div>
+{% else %}
+<p>Nenhum paciente cadastrado.</p>
+{% endif %}
+
+<hr>
+
+<div class="nav-actions">
+    <a class="back-button" href="{{ url_for('admin.list_patients') }}">🔙 Voltar</a>
+    &nbsp;
+    <a class="edit-button" href="{{ url_for('admin.edit_patient', id=patient.id) }}">Editar</a>
+    &nbsp;
+    <a class="remove-button" href="{{ url_for('admin.delete_patient', id=patient.id) }}">Remover</a>
+</div>
+
 {% endblock %}

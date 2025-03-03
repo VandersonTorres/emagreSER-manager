@@ -1,25 +1,27 @@
 {% extends "base.html" %}
 
 {% block content %}
-    <h2>Login</h2>
-    <form class="login-form" method="POST" action="{{ url_for_security('login') }}">
-        {{ login_user_form.hidden_tag() }}
-        <label for="email">Email:</label>
-        {{ login_user_form.email(class="form-control") }}
-        <br>
-        <label for="password">Senha:</label>
-        {{ login_user_form.password(class="form-control") }}
-        <br>
-        <label for="remember">Lembrar-me:</label>
-        {{ login_user_form.remember }}
-        <br>
-        <button type="submit">Entrar</button>
-    </form>
 
-    <div class="manage-login">
-        <p><a href="{{ url_for_security('forgot_password') }}">Esqueci minha senha</a></p>
-        <br>
-        <p><i>Ainda não tem uma conta cadastrada? Solicite ao administrador (31) 98715-3429</i></p>
-        <!-- <p><a href="{{ url_for_security('register') }}">Registrar-se</a></p> Desabilitado inicialmente -->
-    </div>
+<h2>Login</h2>
+<form class="login-form" method="POST" action="{{ url_for_security('login') }}">
+    {{ login_user_form.hidden_tag() }}
+    <label for="email">Email:</label>
+    {{ login_user_form.email(class="form-control") }}
+    <br>
+    <label for="password">Senha:</label>
+    {{ login_user_form.password(class="form-control") }}
+    <br>
+    <label for="remember">Lembrar-me:</label>
+    {{ login_user_form.remember }}
+    <br>
+    <button type="submit">Entrar</button>
+</form>
+
+<div class="manage-login">
+    <p><a href="{{ url_for_security('forgot_password') }}">Esqueci minha senha</a></p>
+    <br>
+    <p><i>Ainda não tem uma conta cadastrada? Solicite ao administrador (31) 98715-3429</i></p>
+    <!-- <p><a href="{{ url_for_security('register') }}">Registrar-se</a></p> Desabilitado inicialmente -->
+</div>
+
 {% endblock %}

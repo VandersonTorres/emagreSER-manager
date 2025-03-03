@@ -1,25 +1,28 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Gerenciamento EmagreSER</title>
-        <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/style.css') }}">
-    </head>
-    <body>
-        <header>
-            <div class="logo-title">
-                <h1>
-                    EmagreSER
-                    <img width="100" src="{{ url_for('static', filename='img/logo.jpg') }}" alt="Logo EmagreSER" class="logo">
-                </h1>
-            </div>
-            <nav>
-                <a href="/">Home</a>
-            </nav>
-        </header>
-        <div class="main-content">
-            {% block content %}{% endblock %}
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerenciamento EmagreSER</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+
+<body>
+    <header>
+        <div class="logo-title">
+            <h1>
+                EmagreSER &nbsp;
+                <img width="100" src="{{ url_for('static', filename='img/logo.jpg') }}" alt="Logo EmagreSER" class="logo">
+            </h1>
         </div>
-    </body>
+        <nav>
+            <a href="/">Home</a>
+        </nav>
+    </header>
+    <div class="main-content">
+        {% block content %}{% endblock %}
+    </div>
+</body>
+
 </html>

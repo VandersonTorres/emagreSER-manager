@@ -1,28 +1,33 @@
 {% extends "base.html" %}
-{% block content %}
-    <h2>EDITAR PROFISSIONAL</h2>
-    <section class="editing">
-        <form class="edit-specialist-form" method="POST" action="{{ url_for('admin.edit_specialist', id=specialist.id) }}">
-            {{ form.hidden_tag() }}
-            <label for="name">Nome:</label>
-            {{ form.name() }}
-            <br>
-            <label for="cpf">CPF:</label>
-            {{ form.cpf(id="cpf") }}
-            <br>
-            <label for="tel_number">Telefone:</label>
-            {{ form.tel_number(id="phone") }}
-            <br>
-            <label for="email">E-mail:</label>
-            {{ form.email(id="email") }}
-            <br><br>
-            <button type="submit">Salvar alterações</button>
-        </form>
-    </section>
-    <hr>
-    <div class="nav-actions">
-        <a href="{{ url_for('admin.list_specialists') }}">🔙 Voltar</a>
-    </div>
 
-    <script src="{{ url_for('static', filename='js/normalize_fields.js') }}"></script>
+{% block content %}
+
+<h2>EDITAR PROFISSIONAL</h2>
+<section class="editing">
+    <form class="edit-specialist-form" method="POST" action="{{ url_for('admin.edit_specialist', id=specialist.id) }}">
+        {{ form.hidden_tag() }}
+        <label for="name">Nome:</label>
+        {{ form.name() }}
+        <br>
+        <label for="cpf">CPF:</label>
+        {{ form.cpf(id="cpf") }}
+        <br>
+        <label for="tel_number">Telefone:</label>
+        {{ form.tel_number(id="phone") }}
+        <br>
+        <label for="email">E-mail:</label>
+        {{ form.email(id="email") }}
+        <br><br>
+        <button type="submit">Salvar alterações</button>
+    </form>
+</section>
+
+<hr>
+
+<div class="nav-actions">
+    <a class="back-button" href="{{ url_for('admin.list_specialists') }}">🔙 Voltar</a>
+</div>
+
+<script src="{{ url_for('static', filename='js/normalize_fields.js') }}"></script>
+
 {% endblock %}

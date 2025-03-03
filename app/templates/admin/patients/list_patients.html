@@ -1,83 +1,87 @@
 {% extends "base.html" %}
+
 {% block content %}
-    {% with messages = get_flashed_messages(with_categories=true) %}
-        {% if messages %}
-            {% for category, message in messages %}
-                <div class="alert alert-{{ category }}">
-                    <strong>{{ message }}</strong>
-                </div>
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+{% if messages %}
+{% for category, message in messages %}
+<div class="alert alert-{{ category }}">
+    <strong>{{ message }}</strong>
+</div>
+{% endfor %}
+{% set _ = session.pop("_flashes", None) %}
+{% endif %}
+{% endwith %}
+
+<h2>Pacientes</h2>
+<a href="{{ url_for('admin.add_patient') }}">+ Cadastrar Paciente</a>
+<br><br>
+{% if patients %}
+<!-- Alternate patients view -->
+<a href="#" id="toggle-patients" onclick="togglePatients(event)">
+    Mostrar {{ patients|length }} pacientes
+</a>
+<!-- Patients list -->
+<div class="listings" id="patients-list" style="display: none;">
+    <ul>
+        {% for patient in patients %}
+        <li>
+            {{ patient.name }} | CPF: {{ patient.cpf }} |
+            Tel: {{ patient.tel_number }} | E-mail: {{ patient.email }}
+            &nbsp;
+            <a class="view-button" href="{{ url_for('admin.view_patient', id=patient.id) }}" target="_blank">Ver
+                Paciente</a>
+            &nbsp;
+            <a class="edit-button" href="{{ url_for('admin.edit_patient', id=patient.id) }}">Editar</a>
+            &nbsp;
+            <a class="remove-button" href="{{ url_for('admin.delete_patient', id=patient.id) }}">Remover</a>
+        </li>
+        {% endfor %}
+    </ul>
+    <!-- Pagination controls -->
+    <div id="pagination-controls"></div>
+</div>
+
+<hr>
+
+<div class="add-anthro-info">
+    <h3>Adicionar Informações Antropométricas</h3>
+    <form class="add-anthro-form" id="anthro-form" method="GET">
+        <label for="patient_select">Selecione o Paciente:</label>
+        <select id="patient_select" name="patient_id">
+            <option value="">Selecione um paciente</option>
+            {% for patient in patients %}
+            <option value="{{ patient.id }}">{{ patient.name }} | CPF: {{ patient.cpf }}</option>
             {% endfor %}
-            {% set _ = session.pop("_flashes", None) %}
-        {% endif %}
-    {% endwith %}
+        </select>
+        <button type="submit" onclick="redirectAnthro(event)">Realizar Avaliação</button>
+    </form>
+</div>
 
-    <h2>Pacientes</h2>
-    <a href="{{ url_for('admin.add_patient') }}">+ Cadastrar Paciente</a>
-    <br><br>
-    {% if patients %}
-        <!-- Alternate patients view -->
-        <a href="#" id="toggle-patients" onclick="togglePatients(event)">
-            Mostrar {{ patients|length }} pacientes
-        </a>
-        <!-- Patients list -->
-        <div class="listings" id="patients-list" style="display: none;">
-            <ul>
-                {% for patient in patients %}
-                    <li>
-                        {{ patient.name }} | CPF: {{ patient.cpf }} |
-                        Tel: {{ patient.tel_number }} | E-mail: {{ patient.email }}
-                        &nbsp;
-                        <a href="{{ url_for('admin.view_patient', id=patient.id) }}" target="_blank">Ver Paciente</a>
-                        &nbsp;
-                        <a href="{{ url_for('admin.edit_patient', id=patient.id) }}">Editar</a>
-                        &nbsp;
-                        <a href="{{ url_for('admin.delete_patient', id=patient.id) }}">Remover</a>
-                    </li>
-                {% endfor %}
-            </ul>
-            <!-- Pagination controls -->
-            <div id="pagination-controls"></div>
-        </div>
+<hr>
 
-        <hr>
+<div class="add-skinfold-info">
+    <h3>Adicionar Dados de Pregas Cutâneas</h3>
+    <form class="add-skinfold-form" id="skinfold-form" method="GET">
+        <label for="patient_select_skinfold">Selecione o Paciente:</label>
+        <select id="patient_select_skinfold" name="patient_id">
+            <option value="">Selecione um paciente</option>
+            {% for patient in patients %}
+            <option value="{{ patient.id }}">{{ patient.name }} | CPF: {{ patient.cpf }}</option>
+            {% endfor %}
+        </select>
+        <button type="submit" onclick="redirectSkinfold(event)">Aferir Pregas Cutâneas</button>
+    </form>
+</div>
+{% else %}
+<h3>Ainda não existem pacientes cadastrados no sistema</h3>
+{% endif %}
 
-        <div class="add-anthro-info">
-            <h3>Adicionar Informações Antropométricas</h3>
-            <form class="add-anthro-form" id="anthro-form" method="GET">
-                <label for="patient_select">Selecione o Paciente:</label>
-                <select id="patient_select" name="patient_id">
-                    <option value="">Selecione um paciente</option>
-                    {% for patient in patients %}
-                        <option value="{{ patient.id }}">{{ patient.name }} | CPF: {{ patient.cpf }}</option>
-                    {% endfor %}
-                </select>
-                <button type="submit" onclick="redirectAnthro(event)">Realizar Avaliação</button>
-            </form>
-        </div>
+<!-- Assign global variables with dynamic URLs -->
+<script>
+    var addAnthroUrlTemplate = "{{ url_for('admin.add_anthro', patient_id=0) }}";
+    var addSkinfoldUrlTemplate = "{{ url_for('admin.add_skinfold', patient_id=0) }}";
+</script>
+<script src="{{ url_for('static', filename='js/list_patients.js') }}"></script>
 
-        <hr>
-
-        <div class="add-skinfold-info">
-            <h3>Adicionar Dados de Pregas Cutâneas</h3>
-            <form class="add-skinfold-form" id="skinfold-form" method="GET">
-                <label for="patient_select_skinfold">Selecione o Paciente:</label>
-                <select id="patient_select_skinfold" name="patient_id">
-                    <option value="">Selecione um paciente</option>
-                    {% for patient in patients %}
-                        <option value="{{ patient.id }}">{{ patient.name }} | CPF: {{ patient.cpf }}</option>
-                    {% endfor %}
-                </select>
-                <button type="submit" onclick="redirectSkinfold(event)">Aferir Pregas Cutâneas</button>
-            </form>
-        </div>
-    {% else %}
-        <h3>Ainda não existem pacientes cadastrados no sistema</h3>
-    {% endif %}
-
-    <!-- Assign global variables with dynamic URLs -->
-    <script>
-        var addAnthroUrlTemplate = "{{ url_for('admin.add_anthro', patient_id=0) }}";
-        var addSkinfoldUrlTemplate = "{{ url_for('admin.add_skinfold', patient_id=0) }}";
-    </script>
-    <script src="{{ url_for('static', filename='js/list_patients.js') }}"></script>
 {% endblock %}
