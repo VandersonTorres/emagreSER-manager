@@ -19,7 +19,7 @@
     <ul>
         {% for user in users %}
         <li>
-            E-mail: {{ user.email }} | Último acesso: {{ user.last_login_at }}
+            E-mail: {{ user.email }} | Último acesso: {{ user.last_login_at.strftime("%d/%m/%Y") }}
             &nbsp;
             <a class="remove-button" href="{{ url_for('admin.delete_user', id=user.id) }}">Remover</a>
         </li>

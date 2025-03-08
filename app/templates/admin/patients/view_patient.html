@@ -19,7 +19,7 @@
 <div class="patient-card">
     <p><strong>Nome:</strong> {{ patient.name }}</p>
     <p><strong>Sexo:</strong> {{ patient.gender }}</p>
-    <p><strong>Data de Nascimento:</strong> {{ patient.birth_date }}</p>
+    <p><strong>Data de Nascimento:</strong> {{ patient.birth_date.strftime("%d/%m/%Y") }}</p>
     <p><strong>CPF:</strong> {{ patient.cpf }}</p>
     <p><strong>Número de telefone:</strong> {{ patient.tel_number }}</p>
     <p><strong>E-mail:</strong> {{ patient.email }}</p>
