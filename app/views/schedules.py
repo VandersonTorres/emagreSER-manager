@@ -22,6 +22,16 @@ def is_valid_time(candidate, specialist):
 @schedules_bp.route("/schedules", methods=["GET"])
 @roles_required("admin")
 def list_schedules():
+    now = datetime.now()
+
+    # Update status of expired schedules
+    expired_schedules = Schedules.query.filter(Schedules.date_time < now, Schedules.status == "pendente").all()
+    for schedule in expired_schedules:
+        schedule.status = "finalizado"
+
+    if expired_schedules:
+        db.session.commit()
+
     specialists = Specialists.query.all()
     schedules_by_specialist = {}
     for specialist in specialists:

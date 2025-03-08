@@ -1,6 +1,11 @@
 document.addEventListener("DOMContentLoaded", function () {
     function validateCPF(input, onSubmit = false) {
         let cpf = input.value.replace(/\D/g, "");
+        // If there are moren than 11 digits, truncate to 11
+        if (cpf.length > 11) {
+            cpf = cpf.slice(0, 11);
+            input.value = cpf;
+        }
         if (!onSubmit && input.value.trim() === "") {
             input.setCustomValidity("");
             return;
@@ -25,6 +30,11 @@ document.addEventListener("DOMContentLoaded", function () {
 
     function validatePhone(input, onSubmit = false) {
         let phone = input.value.replace(/\D/g, "");
+        // If there are moren than 11 digits, truncate to 11
+        if (phone.length > 11) {
+            phone = phone.slice(0, 11);
+            input.value = phone;
+        }
         if (!onSubmit && input.value.trim() === "") {
             input.setCustomValidity("");
             return;
@@ -39,8 +49,10 @@ document.addEventListener("DOMContentLoaded", function () {
         } else {
             input.setCustomValidity("");
             if (phone.length === 10) {
+                // Format to (00) 0000-0000
                 input.value = phone.replace(/(\d{2})(\d{4})(\d{4})/, "($1) $2-$3");
             } else if (phone.length === 11) {
+                // Format to (00) 00000-0000
                 input.value = phone.replace(/(\d{2})(\d{5})(\d{4})/, "($1) $2-$3");
             }
         }

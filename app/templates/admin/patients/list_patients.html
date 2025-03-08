@@ -24,7 +24,7 @@
 <!-- Patients list -->
 <div class="listings" id="patients-list" style="display: none;">
     <ul>
-        {% for patient in patients %}
+        {% for patient in patients|sort(attribute="name") %}
         <li>
             {{ patient.name }} | CPF: {{ patient.cpf }} |
             Tel: {{ patient.tel_number }} | E-mail: {{ patient.email }}

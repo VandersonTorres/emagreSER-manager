@@ -10,10 +10,10 @@
         {{ form.name() }}
         <br>
         <label for="cpf">CPF:</label>
-        {{ form.cpf(id="cpf") }}
+        {{ form.cpf(id="cpf", pattern="\d{3}\.\d{3}\.\d{3}-\d{2}", maxlength="11") }}
         <br>
         <label for="tel_number">Telefone:</label>
-        {{ form.tel_number(id="phone") }}
+        {{ form.tel_number(id="phone", pattern="\(\d{2}\) \d{4,5}-\d{4}", maxlength="11") }}
         <br>
         <label for="email">E-mail:</label>
         {{ form.email(id="email") }}

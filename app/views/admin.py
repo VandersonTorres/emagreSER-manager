@@ -202,6 +202,8 @@ def add_patient():
                 error_message = "Erro: Já existe um paciente com esse CPF cadastrado!"
 
             flash(error_message, "danger")
+        except Exception as e:
+            flash(f"Ocorreu o seguinte erro ao tentar cadastrar o paciente: {e}")
 
     return render_template("admin/patients/add_patient.html", specialists=specialists)
 

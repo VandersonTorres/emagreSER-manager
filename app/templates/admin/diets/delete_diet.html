@@ -8,5 +8,8 @@
     <button type="submit">Confirmar Remoção</button>
     <a class="remove-button" href="{{ url_for('admin.list_diets') }}">Cancelar</a>
 </form>
-
+<hr>
+<div class="nav-actions">
+    <a href="{{ url_for('admin.list_diets') }}" class="btn btn-secondary back-button">🔙 Voltar</a>
+</div>
 {% endblock %}

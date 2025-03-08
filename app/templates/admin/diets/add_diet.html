@@ -21,6 +21,10 @@
     <br>
     <button type="submit">Salvar Dieta</button>
 </form>
+<hr>
+<div class="nav-actions">
+    <a href="{{ url_for('admin.list_diets') }}" class="btn btn-secondary back-button">🔙 Voltar</a>
+</div>
 <script src="{{ url_for('static', filename='js/add_diet.js') }}"></script>
 
 {% endblock %}
