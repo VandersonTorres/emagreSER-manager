@@ -44,6 +44,9 @@
                 <th>Peso Mínimo</th>
                 <th>IMC</th>
                 <th>Classificação Nutricional</th>
+                <th>Necessidade Calórica</th>
+                <th>Ingestão de Líquido</th>
+                <th>Idade Metabólica</th>
                 <th>Grau Atv. Física</th>
                 <th>Pressão Arterial</th>
             </tr>
@@ -62,6 +65,9 @@
                 <td>{{ evaluation.p_min }}</td>
                 <td>{{ evaluation.imc }}</td>
                 <td>{{ evaluation.nutri_class }}</td>
+                <td>{{ evaluation.necessidade_calorica }}</td>
+                <td>{{ evaluation.ingestao_liquido }}</td>
+                <td>{{ evaluation.idade_metabolica }}</td>
                 <td>{{ evaluation.grau_atv_fisica }}</td>
                 <td>{{ evaluation.pa }}</td>
             </tr>
@@ -81,30 +87,22 @@
         <thead>
             <tr>
                 <th>Data Medição</th>
-                <th>Tricipital</th>
-                <th>Bicipital</th>
-                <th>Subscápula</th>
-                <th>Torácica</th>
-                <th>Axilar Média</th>
-                <th>Supra Ilíaca</th>
+                <th>Massa Muscular</th>
+                <th>Gordura</th>
                 <th>Abdominal</th>
-                <th>Coxa</th>
-                <th>Panturrilha</th>
+                <th>Cintura</th>
+                <th>Quadril</th>
             </tr>
         </thead>
         <tbody>
             {% for fold in patient.skinfolds %}
             <tr>
                 <td>{{ fold.data_medicao }}</td>
-                <td>{{ fold.triciptal }}</td>
-                <td>{{ fold.bicipital }}</td>
-                <td>{{ fold.subscapula }}</td>
-                <td>{{ fold.toracica }}</td>
-                <td>{{ fold.axilar }}</td>
-                <td>{{ fold.supra }}</td>
+                <td>{{ fold.massa_muscular }}</td>
+                <td>{{ fold.gordura }}</td>
                 <td>{{ fold.abdominal }}</td>
-                <td>{{ fold.coxa }}</td>
-                <td>{{ fold.panturrilha }}</td>
+                <td>{{ fold.cintura }}</td>
+                <td>{{ fold.quadril }}</td>
             </tr>
             {% endfor %}
         </tbody>

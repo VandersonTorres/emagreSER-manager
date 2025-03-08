@@ -236,6 +236,9 @@ def add_anthro(patient_id):
             p_min=form.p_min.data,
             imc=form.imc.data,
             nutri_class=form.nutri_class.data,
+            necessidade_calorica=form.necessidade_calorica.data,
+            ingestao_liquido=form.ingestao_liquido.data,
+            idade_metabolica=form.idade_metabolica.data,
             grau_atv_fisica=form.grau_atv_fisica.data,
             pa=form.pa.data,
         )
@@ -257,15 +260,11 @@ def add_skinfold(patient_id):
         skinfold = SkinFolds(
             patient_id=patient.id,
             data_medicao=form.data_medicao.data,
-            triciptal=form.triciptal.data,
-            bicipital=form.bicipital.data,
-            subscapula=form.subscapula.data,
-            toracica=form.toracica.data,
-            axilar=form.axilar.data,
-            supra=form.supra.data,
+            massa_muscular=form.massa_muscular.data,
+            gordura=form.gordura.data,
             abdominal=form.abdominal.data,
-            coxa=form.coxa.data,
-            panturrilha=form.panturrilha.data,
+            cintura=form.cintura.data,
+            quadril=form.quadril.data,
         )
         db.session.add(skinfold)
         db.session.commit()

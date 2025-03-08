@@ -1,20 +1,27 @@
 document.addEventListener("DOMContentLoaded", function () {
-    var pesoInput = document.getElementById("peso");
-    var alturaInput = document.getElementById("altura");
-    var imcInput = document.getElementById("imc");
-    var nutriClassInput = document.getElementById("nutri_class");
-    var evolucaoInput = document.getElementById("evolucao");
-    var pMaxInput = document.getElementById("p_max");
-    var pMinInput = document.getElementById("p_min");
-    var pIdeInput = document.getElementById("p_ide");
+    const pesoInput = document.getElementById("peso");
+    const alturaInput = document.getElementById("altura");
+    const imcInput = document.getElementById("imc");
+    const nutriClassInput = document.getElementById("nutri_class");
+    const evolucaoInput = document.getElementById("evolucao");
+    const pMaxInput = document.getElementById("p_max");
+    const pMinInput = document.getElementById("p_min");
+    const pIdeInput = document.getElementById("p_ide");
+    const paInput = document.getElementById("pa");
+    const paError = document.getElementById("paError");
+    const ingLiqInput = document.getElementById("ingestao_liquido");
+    const necCalInput = document.getElementById("necessidade_calorica");
+    const slimmingKCAL = 30;
+    const maintenanceKCAL = 35;
+    const mlWater = 35;
 
     // Get the previous weight evaluation (this is a 'hidden' input added on template)
-    var peso_anteriorInput = document.getElementById("peso_anterior");
-    var peso_anterior = peso_anteriorInput ? parseFloat(peso_anteriorInput.value) : 0;
+    let peso_anteriorInput = document.getElementById("peso_anterior");
+    let peso_anterior = peso_anteriorInput ? parseFloat(peso_anteriorInput.value) : 0;
 
     // Ensure height in meters
     function normalizeAltura() {
-        var altura = parseFloat(alturaInput.value);
+        let altura = parseFloat(alturaInput.value);
         if (!isNaN(altura) && altura > 3) {
             altura = altura / 100;
             alturaInput.value = altura.toFixed(2);
@@ -23,12 +30,21 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // Calculate BMI and update the field
     function calculateIMC() {
-        var peso = parseFloat(pesoInput.value);
-        var altura = parseFloat(alturaInput.value);
+        let peso = parseFloat(pesoInput.value);
+        let altura = parseFloat(alturaInput.value);
         if (!isNaN(peso) && !isNaN(altura) && altura > 0) {
-            var imc = peso / (altura * altura);
+            let imc = peso / (altura * altura);
             imcInput.value = imc.toFixed(2);
             calculateNutriClass(imc);
+
+            // Call for Kcal daily need calculation
+            if (imc > 24.9) {
+                calculateKcalLoseWeight();
+            } else if (imc <= 24.9 && imc >= 18.5) {
+                calculateKcalMaintenance();
+            } else {
+                necCalInput.value = "";
+            }
         } else {
             imcInput.value = "";
             nutriClassInput.value = "";
@@ -37,12 +53,12 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // Define nutritional classification based on BMI
     function calculateNutriClass(imc) {
-        var situation = [
+        let situation = [
             "Abaixo do peso", "Peso normal",
             "Sobrepeso", "Obesidade grau I",
             "Obesidade grau II", "Obesidade grau III"
         ];
-        var classification = "";
+        let classification = "";
         if (imc < 18.5) classification = situation[0];
         else if (imc >= 18.5 && imc <= 24.9) classification = situation[1];
         else if (imc > 24.9 && imc <= 29.9) classification = situation[2];
@@ -55,12 +71,12 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // Calculate evolution (diff between current and previous weight )
     function calculateEvolucao() {
-        var peso = parseFloat(pesoInput.value);
+        let peso = parseFloat(pesoInput.value);
         if (isNaN(peso)) {
             evolucaoInput.value = "";
             return;
         }
-        var diff = peso - peso_anterior;
+        let diff = peso - peso_anterior;
         // If diff is equal to the weight itself, it means that this is the first evaluation
         if (diff === peso) {
             evolucaoInput.value = "primeira avaliação";
@@ -73,7 +89,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // Recalculate best weight, min weight and max weight
     function recalcWeights() {
-        var altura = parseFloat(alturaInput.value);
+        let altura = parseFloat(alturaInput.value);
         if (!isNaN(altura) && altura > 0) {
             // Max Weight (IMC == 25)
             pMaxInput.value = (25 * (altura ** 2)).toFixed(2);
@@ -88,10 +104,69 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 
+    // Calculate daily KCAL for losing weight
+    function calculateKcalLoseWeight() {
+        let weight = parseFloat(pesoInput.value);
+        if (isNaN(weight)) {
+            necCalInput.value = "";
+            return;
+        }
+        let amountKCAL = (weight * slimmingKCAL);
+        necCalInput.value = `${Math.round(amountKCAL)} Kcal/ Dia (Emagrecer)`;
+    };
+
+    // Calculate maintenance of daily KCAL
+    function calculateKcalMaintenance() {
+        let weight = parseFloat(pesoInput.value);
+        if (isNaN(weight)) {
+            necCalInput.value = "";
+            return;
+        }
+        let amountKCAL = (weight * maintenanceKCAL);
+        necCalInput.value = `${Math.round(amountKCAL)} Kcal/ Dia (Manutenção)`;
+    };
+
+    // Calculate the need of daily water ingestion
+    function calculateWaterIngestion() {
+        let peso = parseFloat(pesoInput.value);
+        if (isNaN(peso)) {
+            ingLiqInput.value = "";
+            return;
+        }
+        let amountWater = ((peso * mlWater) / 1000);
+        ingLiqInput.value = amountWater;
+    };
+
+    // Function to normalize PA Field
+    function normalizePA() {
+        paError.textContent = "";
+        let paValue = paInput.value.trim();
+        if (paValue === "") return;
+
+        let regex = /^\d{1,3}\/\d{1,2}$/;
+        if (!regex.test(paValue)) {
+            paError.textContent = "Formato inválido. Use até 3 dígitos antes da barra e até 2 dígitos depois (ex: 120/80).";
+            paInput.focus();
+            return;
+        }
+        let parts = paValue.split("/");
+        let sys = parseInt(parts[0], 10);
+        let dia = parseInt(parts[1], 10);
+
+        if (sys < 30) {
+            sys *= 10;
+        }
+        if (dia < 30) {
+            dia *= 10;
+        }
+        paInput.value = sys + "/" + dia;
+    }
+
     // Update the values while user is typing
     pesoInput.addEventListener("input", function () {
         calculateIMC();
         calculateEvolucao();
+        calculateWaterIngestion();
     });
 
     alturaInput.addEventListener("blur", function () {
@@ -99,4 +174,8 @@ document.addEventListener("DOMContentLoaded", function () {
         calculateIMC();
         recalcWeights();
     });
+
+    if (paInput) {
+        paInput.addEventListener("blur", normalizePA);
+    }
 });

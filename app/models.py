@@ -91,8 +91,11 @@ class AnthropometricEvaluation(db.Model):
     p_min = db.Column(db.Float, nullable=False)
     imc = db.Column(db.Float, nullable=False)
     nutri_class = db.Column(db.String(20), nullable=False)
+    necessidade_calorica = db.Column(db.String(100), nullable=True)
+    ingestao_liquido = db.Column(db.Float, nullable=False)
+    idade_metabolica = db.Column(db.Integer, nullable=False)
     grau_atv_fisica = db.Column(db.String(20), nullable=False)
-    pa = db.Column(db.Float, nullable=False)
+    pa = db.Column(db.String(6), nullable=False)
 
     def __repr__(self):
         return f"<AnthropometricEvaluation {self.patient_id} | {self.data_avaliacao}>"
@@ -105,15 +108,11 @@ class SkinFolds(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     patient_id = db.Column(db.Integer, db.ForeignKey("patients.id", ondelete="CASCADE"), nullable=False)
     data_medicao = db.Column(db.Date, nullable=False, default=datetime.now(timezone.utc))
-    triciptal = db.Column(db.Float, nullable=False)
-    bicipital = db.Column(db.Float, nullable=False)
-    subscapula = db.Column(db.Float, nullable=False)
-    toracica = db.Column(db.Float, nullable=True)
-    axilar = db.Column(db.Float, nullable=False)
-    supra = db.Column(db.Float, nullable=False)
+    massa_muscular = db.Column(db.Float, nullable=False)
+    gordura = db.Column(db.Float, nullable=False)
     abdominal = db.Column(db.Float, nullable=False)
-    coxa = db.Column(db.Float, nullable=False)
-    panturrilha = db.Column(db.Float, nullable=False)
+    cintura = db.Column(db.Float, nullable=False)
+    quadril = db.Column(db.Float, nullable=False)
 
     def __repr__(self):
         return f"<SkinFolds {self.patient_id} | {self.data_medicao}>"

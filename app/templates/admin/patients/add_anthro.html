@@ -77,11 +77,28 @@
         Calculado automaticamente
     </span>
     <br>
+    <label for="necessidade_calorica">Necessidade Calórica:</label>
+    {{ form.necessidade_calorica(class="form-control", id="necessidade_calorica", readonly=True) }}
+    <span id="auto_calc_necessidade_calorica" style="font-size: 9px; margin-left: 10px; color: #555;">
+        Calculado automaticamente
+    </span>
+    <br>
+    <label for="ingestao_liquido">Ingestão de Líquido:</label>
+    {{ form.ingestao_liquido(class="form-control", id="ingestao_liquido", readonly=True) }}
+    <span id="auto_calc_ingestao_liquido" style="font-size: 9px; margin-left: 10px; color: #555;">
+        Calculado automaticamente
+    </span>
+    <br>
+    <label for="idade_metabolica">Idade Metabólica:</label>
+    {{ form.idade_metabolica(step="0", class="form-control", id="idade_metabolica") }}
+    <input type="hidden" id="idade_metabolica" value="{{ idade_metabolica }}">
+    <br>
     <label for="grau_atv_fisica">Grau de Atividade Física:</label>
     {{ form.grau_atv_fisica() }}
     <br>
     <label for="pa">Pressão Arterial:</label>
-    {{ form.pa(step="0.01", placeholder="ex: 000.00 ou 00.0") }}
+    {{ form.pa(id="pa", placeholder="ex: 120/80 ou 12/8") }}
+    <span id="paError" style="color: red;"></span>
     <br><br>
     <button type="submit">Salvar Avaliação</button>
 </form>

@@ -88,6 +88,9 @@ class AnthropometricAssessmentForm(FlaskForm):
     p_min = FloatField("Peso Mínimo", validators=[DataRequired()])
     imc = FloatField("IMC", validators=[DataRequired()])
     nutri_class = StringField("Classificação Nutricional", validators=[DataRequired()])
+    necessidade_calorica = StringField("Necessidade Calórica", validators=[Optional()])
+    ingestao_liquido = FloatField("Ingestão de Líquido", validators=[DataRequired()])
+    idade_metabolica = IntegerField("Idade Metabólica", validators=[DataRequired()])
     grau_atv_fisica = SelectField(
         "Grau de Atividade Física",
         choices=[
@@ -98,22 +101,18 @@ class AnthropometricAssessmentForm(FlaskForm):
         ],
         validators=[DataRequired()],
     )
-    pa = FloatField("Pressão Arterial", validators=[DataRequired()])
+    pa = StringField("Pressão Arterial", validators=[DataRequired()])
 
     submit = SubmitField("Salvar")
 
 
 class SkinfoldMeasurementForm(FlaskForm):
     data_medicao = DateField("Data de Medição", format="%Y-%m-%d", validators=[DataRequired()])
-    triciptal = FloatField("Tricipital", validators=[DataRequired()])
-    bicipital = FloatField("Bicipital", validators=[DataRequired()])
-    subscapula = FloatField("Subscápula", validators=[DataRequired()])
-    toracica = FloatField("Torácica", validators=[Optional()])
-    axilar = FloatField("Axilar Média", validators=[DataRequired()])
-    supra = FloatField("Supra Ilíaca", validators=[DataRequired()])
+    massa_muscular = FloatField("Massa Muscular", validators=[DataRequired()])
+    gordura = FloatField("Gordura", validators=[DataRequired()])
     abdominal = FloatField("Abdominal", validators=[DataRequired()])
-    coxa = FloatField("Coxa", validators=[DataRequired()])
-    panturrilha = FloatField("Panturrilha", validators=[DataRequired()])
+    cintura = FloatField("Cintura", validators=[DataRequired()])
+    quadril = FloatField("Quadril", validators=[DataRequired()])
 
     submit = SubmitField("Salvar")
 
@@ -122,19 +121,19 @@ class DietForm(FlaskForm):
     name = SelectField(
         "Nome da Dieta",
         choices=[
-            ("cetogenica", "Dieta Cetogênica"),
-            ("low_carb_i", "Dieta Low Carb I"),
-            ("low_carb_ii", "Dieta Low Carb II"),
-            ("low_carb_iii", "Dieta Low Carb III"),
-            ("termogenico_n3", "Dieta Termogênico N3"),
-            ("guia_n2", "Dieta Guia N2"),
-            ("guia_n5", "Dieta Guia N5"),
-            ("detox", "Dieta Detox"),
-            ("violeta", "Dieta Violeta"),
-            ("laxativa", "Dieta Laxativa"),
-            ("primavera", "Dieta Primavera"),
-            ("zero_acucar", "Dieta Zero Açucar"),
-            ("outro", "Outro"),
+            ("Dieta Cetogênica", "Dieta Cetogênica"),
+            ("Dieta Low Carb I", "Dieta Low Carb I"),
+            ("Dieta Low Carb II", "Dieta Low Carb II"),
+            ("Dieta Low Carb III", "Dieta Low Carb III"),
+            ("Dieta Termogênico N3", "Dieta Termogênico N3"),
+            ("Dieta Guia N2", "Dieta Guia N2"),
+            ("Dieta Guia N5", "Dieta Guia N5"),
+            ("Dieta Detox", "Dieta Detox"),
+            ("Dieta Violeta", "Dieta Violeta"),
+            ("Dieta Laxativa", "Dieta Laxativa"),
+            ("Dieta Primavera", "Dieta Primavera"),
+            ("Dieta Zero Açucar", "Dieta Zero Açucar"),
+            ("Outro", "Outro"),
         ],
         validators=[DataRequired()],
     )
