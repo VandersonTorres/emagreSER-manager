@@ -13,14 +13,14 @@
 {% endif %}
 {% endwith %}
 
-<h2>Histórico do Paciente</h2>
+<h2 class="page-title">Histórico do Paciente</h2>
 
 {% if patient %}
-<div style="text-align: right; margin-bottom: 10px;">
+<div class="action-bar" style="text-align: right; margin-bottom: 10px;">
     <button onclick="window.print()" class="print-button">🖨️ Imprimir Histórico</button>
 </div>
 
-<div class="patient-card">
+<div class="patient-card modern-card">
     <div class="patient-info">
         <p><strong>Nome:</strong> {{ patient.name }}</p>
         <p><strong>CPF:</strong> {{ patient.cpf }}</p>
@@ -31,38 +31,38 @@
         {% endif %}
     </div>
 
-    <br>
-    <hr>
-    <br>
-
-    <div class="patient-details">
-        <h3>Detalhamento</h3>
-        <br>
-        <p><strong>IMC Atual:</strong> {{ last_imc }}</p>
-        <p><strong>Altura:</strong> {{ height }}</p>
-        <p><strong>Percentual de Gordura:</strong> {{ fat_percentual }}</p>
-        <p><strong>Percentual de Massa Magra:</strong> {{ muscle_percentual }}</p>
-        <p>
-            <strong>Detalhamento de Evoluções:</strong>
-            {% for eval in all_evolutions %}
-            <br>
-            &nbsp; &nbsp;<span>- {{ eval }}</span>
-            {% endfor %}
-        </p>
-        <p><strong>Peso Inicial:</strong> {{ initial_weight_evaluated }}</p>
-        <p><strong>Peso Atual:</strong> {{ last_weight_evaluated }}</p>
-        <p><strong>Peso Ideal:</strong> {{ ideal_weight }}</p>
-        <p><strong>Resultado Final:</strong> {{ final_weight_result }}</p>
-        <br>
-        <p><strong>{{ final_message }}</p>
+    <div class="details-container">
+        <div class="patient-details">
+            <h3>Detalhamento</h3>
+            <fieldset style="padding: 10px; ">
+                <p><strong>IMC Atual:</strong> {{ last_imc }}</p>
+                <p><strong>Altura:</strong> {{ height }}</p>
+                <p><strong>Percentual de Gordura:</strong> {{ fat_percentual }}</p>
+                <p><strong>Percentual de Massa Magra:</strong> {{ muscle_percentual }}</p>
+                <p>
+                    <strong>Detalhamento de Evoluções:</strong>
+                    {% for eval in all_evolutions %}
+                    <br>&nbsp;&nbsp;&nbsp;<span>- {{ eval }}</span>
+                    {% endfor %}
+                </p>
+                <p><strong>Peso Inicial:</strong> {{ initial_weight_evaluated }}</p>
+                <p><strong>Peso Atual:</strong> {{ last_weight_evaluated }}</p>
+                <p><strong>Peso Ideal:</strong> {{ ideal_weight }}</p>
+                <p><strong>Resultado Final:</strong> {{ final_weight_result }}</p>
+                <p class="final-message"><strong>{{ final_message }}</strong></p>
+            </fieldset>
+        </div>
+        <div class="image-container">
+            <img class="header-image" src="{{ url_for('static', filename='img/body_contour.jpeg') }}"
+                alt="Imagem de Cabeçalho">
+        </div>
     </div>
 </div>
 {% else %}
-<p>Nenhum paciente cadastrado.</p>
+<h3>O paciente ainda não possui avaliações.</h3>
 {% endif %}
 
-<hr>
-
+<br>
 <div class="nav-actions">
     <a class="back-button" href="{{ url_for('admin.list_patients') }}">🔙 Voltar</a>
 </div>

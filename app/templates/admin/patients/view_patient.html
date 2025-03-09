@@ -78,13 +78,17 @@
             {% endfor %}
         </tbody>
     </table>
+    <br>
+    <a href="{{ url_for('admin.add_anthro', patient_id=patient.id) }}">Adicionar Avaliação Antropométrica</a>
     {% else %}
     <p>Não há avaliações antropométricas registradas.</p>
     <a href="{{ url_for('admin.add_anthro', patient_id=patient.id) }}">Adicionar Avaliação Antropométrica</a>
 
     {% endif %}
 
+    <hr>
     <br>
+
     <h3>Pregas Cutâneas:</h3>
     {% if patient.skinfolds|length > 0 %}
     <table class="skinfolds-table" border="1">
@@ -111,6 +115,8 @@
             {% endfor %}
         </tbody>
     </table>
+    <br>
+    <a href="{{ url_for('admin.add_skinfold', patient_id=patient.id) }}">Adicionar Pregas Cutâneas</a>
     {% else %}
     <p>Não há registros de pregas cutâneas.</p>
     <a href="{{ url_for('admin.add_skinfold', patient_id=patient.id) }}">Adicionar Pregas Cutâneas</a>
@@ -152,7 +158,7 @@
 {% endif %}
 
 <hr>
-
+<br>
 <div class="nav-actions">
     <a class="back-button" href="{{ url_for('admin.list_patients') }}">🔙 Voltar</a>
     &nbsp;
