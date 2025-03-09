@@ -1,27 +1,38 @@
-IN PROGRESS...
+# emagreSER-manager
+Management tools for emagreSer - Slimming and Auriculotherapy Clinic
 
-INICIALIZAR O SERVIDOR FLASK:
+## Installing
 
-flask --app app run
----
+- Clone this repository to a local environment;
 
-COMANDOS SQLITE:
+- Create virtual environment:
+```bash
+python -m venv .venv
+```
 
-rm -rf migrations               # Remove as migrações
-rm database.db                  # Apaga o banco SQLite
-flask db init                   # Inicia o banco
-flask db migrate -m "Mensagem"  # Alterações no banco
-flask db upgrade                # Recria o banco
----
+- Activate the virtual environment
+```bash
+source .venv/bin/activate
+```
 
-# TODO: Mail Validation Settings
-    # MAIL_SERVER = "smtp.office365.com"
-    # MAIL_PORT = 587  # 465 for SSL, 587 for TLS
-    # MAIL_USE_TLS = True
-    # MAIL_USE_SSL = False
-    # MAIL_USERNAME = os.getenv("EMAGRESER_MAIL_ADDRESS", "sirlene.torres35@hotmail.com")
-    # MAIL_PASSWORD = os.getenv("EMAGRESER_MAIL_PASSWORD")
-    # MAIL_DEFAULT_SENDER = "sirlene.torres35@hotmail.com"
-    # SECURITY_EMAIL_SENDER = os.getenv("EMAGRESER_MAIL_ADDRESS", "sirlene.torres35@hotmail.com")
-    # SECURITY_SEND_REGISTER_EMAIL = True
-    # SECURITY_CONFIRMABLE = True
+- Install dependencies from `requirements.txt`, the project dependencies are already included there. Run into the terminal:
+```bash
+$ pip install -r requirements.txt
+```
+
+- Install pre-commit
+```bash
+pre-commit install
+```
+
+## Running the project
+
+- Inside the `/app` folder run the command to start the flask app
+
+```bash
+$ flask --app app run
+```
+
+The app should be accessible at http://127.0.0.1:5000. You will be able to login in there.
+
+- *You will need to ask for an user account to the admin (as detailed in the initial page).*
