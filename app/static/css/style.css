@@ -16,7 +16,7 @@ body {
 
 /* Header and Navigation */
 header {
-    background-color: #007BFF;
+    background-color: #08801689;
     padding: 10px;
     margin-bottom: 20px;
 }
@@ -27,7 +27,7 @@ header {
     display: flex;
     justify-content: center;
     align-items: center;
-    gap: 10px; /* Space between title and logo */
+    gap: 10px;
 }
 
 /* Optional: Additional styling for the h1 element */
@@ -35,7 +35,7 @@ header {
     display: flex;
     align-items: center;
     font-size: 2em;
-    color: #fff; /* Ajuste a cor se necessário */
+    color: #fff;
 }
 
 /* Navigation Links */
@@ -117,14 +117,14 @@ form button {
 }
 
 form button {
-    background-color: #007BFF;
+    background-color: #046f44;
     color: #fff;
     border: none;
     cursor: pointer;
 }
 
 form button:hover {
-    background-color: #0056b3;
+    background-color: #014723;
 }
 
 /* Pagination Controls */
@@ -136,7 +136,7 @@ form button:hover {
 #pagination-controls a {
     margin: 0 5px;
     text-decoration: none;
-    color: #007BFF;
+    color: #046405;
 }
 
 #pagination-controls a:hover {
@@ -189,7 +189,7 @@ section.editing {
 
 /* Submit button styling inside editing section */
 section.editing button[type="submit"] {
-    background-color: #007BFF;
+    background-color: #046f16;
     color: #fff;
     border: none;
     padding: 12px 20px;
@@ -200,7 +200,7 @@ section.editing button[type="submit"] {
 }
 
 section.editing button[type="submit"]:hover {
-    background-color: #0056b3;
+    background-color: #03841a;
 }
 
 /* Edit buttons */
@@ -280,7 +280,7 @@ table {
 
 /* Table Header */
 thead {
-    background-color: #093669;
+    background-color: #0a4003;
     color: white;
     text-align: left;
     font-weight: bold;
@@ -312,7 +312,7 @@ tbody tr:hover {
 }
 
 .print-button, .view-custom-history-button {
-    background-color: #007bff;
+    background-color: #036b06;
     color: white;
     border: none;
     padding: 8px 12px;
@@ -321,7 +321,7 @@ tbody tr:hover {
 }
 
 .print-button:hover, .view-custom-history-button:hover {
-    background-color: #0056b3;
+    background-color: #00b31e;
 }
 
 /* Modern card with hover effect */
