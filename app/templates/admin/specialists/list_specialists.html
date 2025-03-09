@@ -1,50 +1,57 @@
 {% extends "base.html" %}
-{% block content %}
-    {% with messages = get_flashed_messages(with_categories=true) %}
-        {% if messages %}
-            {% for category, message in messages %}
-                <div class="alert alert-{{ category }}">
-                    <strong>{{ message }}</strong>
-                </div>
-            {% endfor %}
-            {% set _ = session.pop('_flashes', None) %}
-        {% endif %}
-    {% endwith %}
-    <h2>LISTA DE PROFISSIONAIS</h2>
-    <a href="{{ url_for('admin.add_specialist') }}">+ Adicionar novo(a) profissional</a>
-    <hr>
 
-    {% if not specialists %}
-        <p>Não há profissionais cadastrados.</p>
-    {% else %}
-        <div class="show-specialists">
-            <table>
-                <thead>
-                    <tr>
-                        <th>Nome</th>
-                        <th>CPF</th>
-                        <th>Telefone</th>
-                        <th>Email</th>
-                        <th>Ações</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for specialist in specialists %}
-                    <tr>
-                        <td>{{ specialist.name }}</td>
-                        <td>{{ specialist.cpf }}</td>
-                        <td>{{ specialist.tel_number }}</td>
-                        <td>{{ specialist.email }}</td>
-                        <td>
-                            <a href="{{ url_for('admin.edit_specialist', id=specialist.id) }}">Editar</a>
-                            <form action="{{ url_for('admin.delete_specialist', id=specialist.id) }}" method="POST" style="display:inline;">
-                                <button type="submit" onclick="return confirm('Tem certeza que deseja remover este profissional?')">Remover</button>
-                            </form>
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-    {% endif %}
+{% block content %}
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+{% if messages %}
+{% for category, message in messages %}
+<div class="alert alert-{{ category }}">
+    <strong>{{ message }}</strong>
+</div>
+{% endfor %}
+{% set _ = session.pop('_flashes', None) %}
+{% endif %}
+{% endwith %}
+
+<h2>LISTA DE PROFISSIONAIS</h2>
+<a href="{{ url_for('admin.add_specialist') }}">+ Adicionar novo(a) profissional</a>
+<hr>
+
+{% if not specialists %}
+<p>Não há profissionais cadastrados.</p>
+{% else %}
+<div class="show-specialists">
+    <table class="specialists-table">
+        <thead>
+            <tr>
+                <th>Nome</th>
+                <th>CPF</th>
+                <th>Telefone</th>
+                <th>Email</th>
+                <th>Ações</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for specialist in specialists %}
+            <tr>
+                <td>{{ specialist.name }}</td>
+                <td>{{ specialist.cpf }}</td>
+                <td>{{ specialist.tel_number }}</td>
+                <td>{{ specialist.email }}</td>
+                <td>
+                    <a class="edit-button" href="{{ url_for('admin.edit_specialist', id=specialist.id) }}">Editar</a>
+                    <form class="delete-specialist-form"
+                        action="{{ url_for('admin.delete_specialist', id=specialist.id) }}" method="POST"
+                        style="display:inline;">
+                        <button class="remove-button" type="submit"
+                            onclick="return confirm('Tem certeza que deseja remover este profissional?')">Remover</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endif %}
+
 {% endblock %}

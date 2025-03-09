@@ -1,38 +1,48 @@
 {% extends "base.html" %}
+
 {% block content %}
-    <h2>Agenda dos Profissionais</h2>
-    {% for specialist, schedules in schedules_by_specialist.items() %}
-        <h3>{{ specialist }}</h3>
-        {% if schedules %}
-            <table border="1" cellspacing="0" cellpadding="5">
-                <thead>
-                    <tr>
-                        <th>Paciente</th>
-                        <th>Data/Hora</th>
-                        <th>Status</th>
-                        <th>Ações</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for schedule in schedules %}
-                        <tr>
-                            <td>{{ schedule.patient_name }}</td>
-                            <td>{{ schedule.date_time.strftime("%d/%m/%Y %H:%M") }}</td>
-                            <td>{{ schedule.status }}</td>
-                            <td>
-                                <form method="POST" action="{{ url_for('schedules.delete_schedule', id=schedule.id) }}"
-                                    onsubmit="return confirm('Confirma o cancelamento?');">
-                                    <button type="submit">Cancelar</button>
-                                </form>
-                            </td>
-                        </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        {% else %}
-            <p>Nenhum agendamento para este profissional.</p>
-        {% endif %}
-    {% endfor %}
-    <hr>
-    <a href="{{ url_for('schedules.schedule_action') }}">➕ Agendar nova consulta</a>
+
+<h2>Agenda dos Profissionais</h2>
+
+<hr>
+
+{% for specialist, schedules in schedules_by_specialist.items() %}
+<h3>{{ specialist }}</h3>
+{% if schedules %}
+<table class="schedules-table" border="1" cellspacing="0" cellpadding="5">
+    <thead>
+        <tr>
+            <th>Paciente</th>
+            <th>Data/Hora</th>
+            <th>Status</th>
+            <th>Ações</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for schedule in schedules %}
+        <tr>
+            <td>{{ schedule.patient_name }}</td>
+            <td>{{ schedule.date_time.strftime("%d/%m/%Y %H:%M") }}</td>
+            <td>{{ schedule.status }}</td>
+            <td>
+                <form class="cancel-schedule-form" method="POST"
+                    action="{{ url_for('schedules.delete_schedule', id=schedule.id) }}"
+                    onsubmit="return confirm('Confirma o cancelamento?');">
+                    <button class="remove-button" type="submit">Cancelar</button>
+                </form>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<p>Nenhum agendamento para este profissional.</p>
+{% endif %}
+<br>
+
+<hr>
+
+{% endfor %}
+<a href="{{ url_for('schedules.schedule_action') }}">➕ Agendar nova consulta</a>
+
 {% endblock %}

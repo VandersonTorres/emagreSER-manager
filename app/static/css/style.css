@@ -1,0 +1,418 @@
+/* Basic Reset */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* Page Body Style */
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f2f2f2;
+    color: #333;
+    line-height: 1.6;
+    padding: 20px;
+}
+
+/* Header and Navigation */
+header {
+    background-color: #08801689;
+    padding: 10px;
+    margin-bottom: 20px;
+}
+
+/* Container for Logo and Title */
+.logo-title {
+    /* Use Flexbox to center items horizontally */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+}
+
+/* Optional: Additional styling for the h1 element */
+.logo-title h1 {
+    display: flex;
+    align-items: center;
+    font-size: 2em;
+    color: #fff;
+}
+
+/* Navigation Links */
+nav {
+    text-align: center;
+    margin-top: 10px;
+}
+
+nav a {
+    color: #fff;
+    text-decoration: none;
+    margin: 0 10px;
+    font-weight: bold;
+}
+
+nav a:hover {
+    text-decoration: underline;
+}
+
+/* Main Content */
+.main-content {
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+/* Alert Messages */
+.alert {
+    padding: 10px;
+    margin-bottom: 15px;
+    border-radius: 5px;
+}
+
+.alert.alert-success {
+    background-color: #d4edda;
+    color: #155724;
+}
+
+.alert.alert-error,
+.alert.alert-danger {
+    background-color: #f8d7da;
+    color: #721c24;
+}
+
+/* Styles for Listings (e.g., patients) */
+.listings ul {
+    list-style: none;
+    padding: 0;
+}
+
+.listings li {
+    padding: 10px;
+    border-bottom: 1px solid #ccc;
+}
+
+.listings li:last-child {
+    border-bottom: none;
+}
+
+/* Styles for Forms */
+form {
+    margin-top: 20px;
+}
+
+form label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+}
+
+form select,
+form input,
+form button {
+    padding: 10px;
+    margin-bottom: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+form button {
+    background-color: #046f44;
+    color: #fff;
+    border: none;
+    cursor: pointer;
+}
+
+form button:hover {
+    background-color: #014723;
+}
+
+/* Pagination Controls */
+#pagination-controls {
+    margin-top: 20px;
+    text-align: center;
+}
+
+#pagination-controls a {
+    margin: 0 5px;
+    text-decoration: none;
+    color: #046405;
+}
+
+#pagination-controls a:hover {
+    text-decoration: underline;
+}
+
+/* Special styling for editing sections */
+section.editing {
+    background-color: #ffffff;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 20px;
+    margin: 20px 0;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Styling for each editable field row */
+.edit-field-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+/* Checkbox container: fixed width for consistency */
+.edit-field-row .checkbox {
+    flex: 0 0 30px;
+}
+
+/* Label styling: fixed width to align all labels */
+.edit-field-row label {
+    flex: 0 0 150px;
+    font-weight: bold;
+}
+
+/* Container for the input field: occupies remaining space */
+.edit-field-row .field-container {
+    flex: 1;
+}
+
+/* Style for input fields inside the editing section */
+.edit-field-row .field-container input,
+.edit-field-row .field-container select,
+.edit-field-row .field-container textarea {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+/* Submit button styling inside editing section */
+section.editing button[type="submit"] {
+    background-color: #046f16;
+    color: #fff;
+    border: none;
+    padding: 12px 20px;
+    border-radius: 4px;
+    cursor: pointer;
+    display: block;
+    margin: 20px auto 0 auto;
+}
+
+section.editing button[type="submit"]:hover {
+    background-color: #03841a;
+}
+
+/* Edit buttons */
+button, .edit-button {
+    margin-bottom: 5px;
+    background-color: hsl(0, 0%, 50%);
+    font-size: 14px;
+    color: #fff;
+    border: none;
+    padding: 5px 20px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+button:hover, .edit-button:hover {
+    background-color: #313131;
+}
+
+/* Remove buttons */
+button, .remove-button {
+    margin-bottom: 5px;
+    background-color: hsl(0, 0%, 50%);
+    font-size: 14px;
+    color: #fff;
+    border: none;
+    padding: 5px 20px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+button:hover, .remove-button:hover {
+    background-color: #313131;
+}
+
+/* Back buttons */
+button, .back-button {
+    margin-bottom: 5px;
+    background-color: #6a6969cd;
+    font-size: 14px;
+    color: #fff;
+    border: none;
+    padding: 5px 20px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+button:hover, .back-button:hover {
+    background-color: #515151;
+}
+
+/* View buttons */
+button, .view-button {
+    margin-bottom: 5px;
+    background-color: hsl(0, 0%, 50%);
+    font-size: 14px;
+    color: #fff;
+    border: none;
+    padding: 5px 20px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+button:hover, .view-button:hover {
+    background-color: #313131;
+}
+
+/* Table Styling */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+    background-color: #fff;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+/* Table Header */
+thead {
+    background-color: #0a4003;
+    color: white;
+    text-align: left;
+    font-weight: bold;
+}
+
+/* Table Header & Cell Padding */
+th, td {
+    padding: 12px 15px;
+    border-bottom: 1px solid #ddd;
+}
+
+/* Zebra Striping for Better Readability */
+tbody tr:nth-child(even) {
+    background-color: #f9f9f9;
+}
+
+/* Hover Effect for Rows */
+tbody tr:hover {
+    background-color: #f1f1f1;
+}
+
+/* Responsive Table for Small Screens */
+@media screen and (max-width: 768px) {
+    table {
+        display: block;
+        overflow-x: auto;
+        white-space: nowrap;
+    }
+}
+
+.print-button, .view-custom-history-button {
+    background-color: #036b06;
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.print-button:hover, .view-custom-history-button:hover {
+    background-color: #00b31e;
+}
+
+/* Modern card with hover effect */
+.patient-card.modern-card {
+    background: #fff;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    margin-bottom: 20px;
+}
+
+.patient-card.modern-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 24px rgba(0,0,0,0.2);
+}
+
+/* Flexible layout container for details and images */
+.details-container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-top: 20px;
+}
+
+/* Styles for the patient details section */
+.patient-details {
+    flex: 1 1 60%;
+    font-family: 'Roboto', sans-serif;
+    color: #333;
+}
+
+/* Container for images, positioned on the right */
+.image-container {
+    flex: 1 1 35%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    margin-left: 20px;
+}
+
+/* Styles for header and extra images */
+.header-image, .side-image {
+    max-width: 100%;
+    border-radius: 10px;
+    margin-bottom: 10px;
+}
+
+/* Modern page title styling */
+.page-title {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 2em;
+    color: #2c3e50;
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+/* Print button styling */
+.print-button {
+    background: #27ae60;
+    color: #fff;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background 0.3s ease;
+}
+
+.print-button:hover {
+    background: #219150;
+}
+
+/* Back button styling */
+.back-button {
+    background: #2980b9;
+    color: #fff;
+    padding: 10px 15px;
+    border-radius: 5px;
+    text-decoration: none;
+    transition: background 0.3s ease;
+}
+
+.back-button:hover {
+    background: #1f6391;
+}
+
+/* Styling for the final message */
+.final-message {
+    font-size: 1.1em;
+    color: #e74c3c;
+    margin-top: 15px;
+}

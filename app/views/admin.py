@@ -202,6 +202,8 @@ def add_patient():
                 error_message = "Erro: Já existe um paciente com esse CPF cadastrado!"
 
             flash(error_message, "danger")
+        except Exception as e:
+            flash(f"Ocorreu o seguinte erro ao tentar cadastrar o paciente: {e}")
 
     return render_template("admin/patients/add_patient.html", specialists=specialists)
 
@@ -236,6 +238,9 @@ def add_anthro(patient_id):
             p_min=form.p_min.data,
             imc=form.imc.data,
             nutri_class=form.nutri_class.data,
+            necessidade_calorica=form.necessidade_calorica.data,
+            ingestao_liquido=form.ingestao_liquido.data,
+            idade_metabolica=form.idade_metabolica.data,
             grau_atv_fisica=form.grau_atv_fisica.data,
             pa=form.pa.data,
         )
@@ -257,15 +262,11 @@ def add_skinfold(patient_id):
         skinfold = SkinFolds(
             patient_id=patient.id,
             data_medicao=form.data_medicao.data,
-            triciptal=form.triciptal.data,
-            bicipital=form.bicipital.data,
-            subscapula=form.subscapula.data,
-            toracica=form.toracica.data,
-            axilar=form.axilar.data,
-            supra=form.supra.data,
+            massa_muscular=form.massa_muscular.data,
+            gordura=form.gordura.data,
             abdominal=form.abdominal.data,
-            coxa=form.coxa.data,
-            panturrilha=form.panturrilha.data,
+            cintura=form.cintura.data,
+            quadril=form.quadril.data,
         )
         db.session.add(skinfold)
         db.session.commit()
@@ -438,3 +439,63 @@ def send_diet(diet_id):
     )
 
     return jsonify({"message": response}), 200
+
+
+@admin_bp.route("/patients/<int:id>/view-custom-history?<pat_name>", methods=["GET", "POST"])
+@roles_required("admin")
+def view_custom_history(id, pat_name):
+    patient = Patients.query.get_or_404(id)
+    if len(patient.anthropometric_evaluations):
+        patient_age = patient.anthropometric_evaluations[-1].idade
+        initial_evaluation_date = patient.anthropometric_evaluations[0].data_avaliacao.strftime("%d/%m/%Y")
+        last_imc = patient.anthropometric_evaluations[-1].imc
+        height = patient.anthropometric_evaluations[-1].altura
+        all_evolutions = [evolution.evolucao for evolution in patient.anthropometric_evaluations]
+        initial_weight_evaluated = patient.anthropometric_evaluations[0].peso
+        last_weight_evaluated = patient.anthropometric_evaluations[-1].peso
+        ideal_weight = patient.anthropometric_evaluations[-1].p_ide
+        max_weight = patient.anthropometric_evaluations[-1].p_max
+
+        fat_percentual = "Ainda não houve registro do índice de gordura"
+        muscle_percentual = "Ainda não houve registro do índice de massa magra"
+        if len(patient.skinfolds):
+            fat_percentual = f"{patient.skinfolds[-1].gordura}%"
+            muscle_percentual = f"{patient.skinfolds[-1].massa_muscular}%"
+
+        if len(patient.anthropometric_evaluations) > 1:
+            final_weight_result = round(last_weight_evaluated - initial_weight_evaluated, 2)
+            if final_weight_result < 0:
+                final_weight_result = f"Perda de {final_weight_result} Kg".replace("-", "")
+            elif final_weight_result == 0:
+                final_weight_result = f"Manutenção do peso inicial: {initial_weight_evaluated} Kg"
+            else:
+                final_weight_result = f"Ganho de {final_weight_result} Kg"
+        else:
+            final_weight_result = "Paciente ainda está na primeira avaliação"
+
+        final_message = (
+            (f"Muito bom! Seu peso máximo é {max_weight}kg e você está com " f"{last_weight_evaluated}kg.")
+            if last_weight_evaluated < max_weight
+            else (
+                f"Força! Mantenha o foco! Seu peso máximo é {max_weight}kg e você está com "
+                f"{last_weight_evaluated}kg."
+            )
+        )
+        return render_template(
+            "admin/patients/view_custom_history.html",
+            patient=patient,
+            patient_age=patient_age,
+            initial_evaluation_date=initial_evaluation_date,
+            last_imc=last_imc,
+            height=height,
+            fat_percentual=fat_percentual,
+            muscle_percentual=muscle_percentual,
+            all_evolutions=all_evolutions[1:],
+            initial_weight_evaluated=initial_weight_evaluated,
+            last_weight_evaluated=last_weight_evaluated,
+            ideal_weight=ideal_weight,
+            final_weight_result=final_weight_result,
+            final_message=final_message,
+        )
+
+    return render_template("admin/patients/view_custom_history.html")

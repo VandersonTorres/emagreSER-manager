@@ -1,34 +1,101 @@
 {% extends "base.html" %}
 
 {% block content %}
-    {% with messages = get_flashed_messages(with_categories=true) %}
-        {% if messages %}
-            {% for category, message in messages %}
-                <div class="alert alert-{{ category }}">
-                    <strong>{{ message }}</strong>
-                </div>
-            {% endfor %}
-            {% set _ = session.pop('_flashes', None) %}
-        {% endif %}
-    {% endwith %}
 
+{% with messages = get_flashed_messages(with_categories=true) %}
+{% if messages %}
+{% for category, message in messages %}
+<div class="alert alert-{{ category }}">
+    <strong>{{ message }}</strong>
+</div>
+{% endfor %}
+{% set _ = session.pop('_flashes', None) %}
+{% endif %}
+{% endwith %}
+
+<!-- Custom styles for slider -->
+<style>
+    .swiper-container {
+        height: 400px;
+        margin: 0 auto;
+        border: 2px solid rgba(255, 255, 255, 0.5);
+        border-radius: 10px;
+        overflow: hidden;
+    }
+
+    .swiper-slide img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+</style>
+
+<!-- Include the CSS of Swiper -->
+<link rel="stylesheet" href="https://unpkg.com/swiper/swiper-bundle.min.css">
+
+<!-- Images Slider with Swiper -->
+<div class="swiper-container">
+    <div class="swiper-wrapper">
+        <div class="swiper-slide">
+            <img src="{{ url_for('static', filename='img/image0.jpg') }}" alt="Imagem 0">
+        </div>
+        <div class="swiper-slide">
+            <img src="{{ url_for('static', filename='img/image1.webp') }}" alt="Imagem 1">
+        </div>
+        <div class="swiper-slide">
+            <img src="{{ url_for('static', filename='img/image2.jpg') }}" alt="Imagem 2">
+        </div>
+        <div class="swiper-slide">
+            <img src="{{ url_for('static', filename='img/image3.avif') }}" alt="Imagem 3">
+        </div>
+        <div class="swiper-slide">
+            <img src="{{ url_for('static', filename='img/image4.jpg') }}" alt="Imagem 4">
+        </div>
+        <div class="swiper-slide">
+            <img src="{{ url_for('static', filename='img/image5.jpg') }}" alt="Imagem 5">
+        </div>
+    </div>
+    <div class="swiper-pagination"></div>
+    <div class="swiper-button-next"></div>
+    <div class="swiper-button-prev"></div>
+    <br>
+</div>
+
+<!-- Include the JS of Swiper -->
+<script src="https://unpkg.com/swiper/swiper-bundle.min.js"></script>
+<script>
+    var swiper = new Swiper('.swiper-container', {
+        loop: true,
+        autoplay: {
+            delay: 3000, // Setting up the automatic change
+            disableOnInteraction: false,
+        },
+        pagination: {
+            el: '.swiper-pagination',
+            clickable: true,
+        },
+        navigation: {
+            nextEl: '.swiper-button-next',
+            prevEl: '.swiper-button-prev',
+        },
+    });
+</script>
+
+<div class="display-info">
+    <br>
     <h2>Bem vindo, {{ current_user.email }}</h2>
     <p>Você está logado.</p>
-    <a href="{{ url_for('security.logout') }}">Sair</a>
     <br>
-    <a href="{{ url_for('security.change_password') }}">Trocar senha</a>
-    <br>
-    <a href="{{ url_for('admin.list_specialists') }}">Gerenciamento de Profissionais</a>
-    <br>
-    <a href="{{ url_for('admin.list_patients') }}">Gerenciamento de Pacientes</a>
-    <br>
-    <a href="{{ url_for('admin.list_diets') }}">Gerenciamento de Dietas</a>
-    <br>
-    <a href="{{ url_for('schedules.list_schedules') }}">Gerenciamento de Agendamentos</a>
-    <br>
-    <a href="{{ url_for('schedules.schedule_action') }}">Agendar Consulta</a>
+</div>
+
+<div class="options">
+    <a href="{{ url_for('admin.list_users') }}">Ver Usuários do Sistema</a>
     <br>
     <a href="{{ url_for('admin.create_user') }}">Cadastrar Novo Usuário</a>
     <br>
-    <a href="{{ url_for('admin.list_users') }}">Ver Usuários</a>
+    <a href="{{ url_for('security.logout') }}">Sair</a>
+    <br>
+    <a href="{{ url_for('security.change_password') }}">Trocar senha</a>
+</div>
+
 {% endblock %}

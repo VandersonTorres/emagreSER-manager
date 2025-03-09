@@ -1,17 +1,35 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Gerenciamento EmagreSER</title>
-    </head>
-    <body>
-        <h1>EmagreSER</h1>
-        <nav>
-            <a href="/">Home</a>
-        </nav>
-        <div>
-            {% block content %}{% endblock %}
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EmagreSER</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+
+<body>
+    <header>
+        <div class="logo-title">
+            <h1>
+                EmagreSER &nbsp;
+                <img width="100" src="{{ url_for('static', filename='img/logo.jpg') }}" alt="Logo EmagreSER" class="logo">
+            </h1>
         </div>
-    </body>
+        <nav>
+            <a href="/">Início</a>
+            {% if current_user.is_authenticated %}
+                <a href="{{ url_for('admin.list_specialists') }}">Gerenciamento de Profissionais</a>
+                <a href="{{ url_for('admin.list_patients') }}">Gerenciamento de Pacientes</a>
+                <a href="{{ url_for('admin.list_diets') }}">Gerenciamento de Dietas</a>
+                <a href="{{ url_for('schedules.list_schedules') }}">Gerenciamento de Agendamentos</a>
+                <a href="{{ url_for('schedules.schedule_action') }}">Agendar Consulta</a>
+            {% endif %}
+        </nav>
+    </header>
+    <div class="main-content">
+        {% block content %}{% endblock %}
+    </div>
+</body>
+
 </html>
