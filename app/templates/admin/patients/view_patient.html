@@ -2,10 +2,6 @@
 
 {% block content %}
 
-<div style="text-align: right; margin-bottom: 10px;">
-    <button onclick="window.print()" class="print-button">🖨️ Imprimir Histórico</button>
-</div>
-
 {% with messages = get_flashed_messages(with_categories=true) %}
 {% if messages %}
 {% for category, message in messages %}
@@ -20,6 +16,10 @@
 <h2>Histórico do Paciente</h2>
 
 {% if patient %}
+<div style="text-align: right; margin-bottom: 10px;">
+    <a class="view-custom-history-button" href="{{ url_for('admin.view_custom_history', id=patient.id, pat_name=patient.name) }}">Ver Histórico Personalizado</a>
+</div>
+
 <div class="patient-card">
     <p><strong>Nome:</strong> {{ patient.name }}</p>
     <p><strong>Sexo:</strong> {{ patient.gender }}</p>

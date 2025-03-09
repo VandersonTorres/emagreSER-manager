@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+{% if messages %}
+{% for category, message in messages %}
+<div class="alert alert-{{ category }}">
+    <strong>{{ message }}</strong>
+</div>
+{% endfor %}
+{% set _ = session.pop("_flashes", None) %}
+{% endif %}
+{% endwith %}
+
+<h2>Histórico do Paciente</h2>
+
+{% if patient %}
+<div style="text-align: right; margin-bottom: 10px;">
+    <button onclick="window.print()" class="print-button">🖨️ Imprimir Histórico</button>
+</div>
+
+<div class="patient-card">
+    <div class="patient-info">
+        <p><strong>Nome:</strong> {{ patient.name }}</p>
+        <p><strong>CPF:</strong> {{ patient.cpf }}</p>
+        <p><strong>Idade:</strong> {{ patient_age }}</p>
+        <p><strong>1ª Avaliação Física:</strong> {{ initial_evaluation_date }}</p>
+        {% if patient.specialist %}
+        <p><strong>Profissional:</strong> {{ patient.specialist.name }} - {{ patient.specialist.email }}</p>
+        {% endif %}
+    </div>
+
+    <br>
+    <hr>
+    <br>
+
+    <div class="patient-details">
+        <h3>Detalhamento</h3>
+        <br>
+        <p><strong>IMC Atual:</strong> {{ last_imc }}</p>
+        <p><strong>Altura:</strong> {{ height }}</p>
+        <p><strong>Percentual de Gordura:</strong> {{ fat_percentual }}</p>
+        <p><strong>Percentual de Massa Magra:</strong> {{ muscle_percentual }}</p>
+        <p>
+            <strong>Detalhamento de Evoluções:</strong>
+            {% for eval in all_evolutions %}
+            <br>
+            &nbsp; &nbsp;<span>- {{ eval }}</span>
+            {% endfor %}
+        </p>
+        <p><strong>Peso Inicial:</strong> {{ initial_weight_evaluated }}</p>
+        <p><strong>Peso Atual:</strong> {{ last_weight_evaluated }}</p>
+        <p><strong>Peso Ideal:</strong> {{ ideal_weight }}</p>
+        <p><strong>Resultado Final:</strong> {{ final_weight_result }}</p>
+        <br>
+        <p><strong>{{ final_message }}</p>
+    </div>
+</div>
+{% else %}
+<p>Nenhum paciente cadastrado.</p>
+{% endif %}
+
+<hr>
+
+<div class="nav-actions">
+    <a class="back-button" href="{{ url_for('admin.list_patients') }}">🔙 Voltar</a>
+</div>
+
+{% endblock %}

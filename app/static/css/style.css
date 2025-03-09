@@ -311,7 +311,7 @@ tbody tr:hover {
     }
 }
 
-.print-button {
+.print-button, .view-custom-history-button {
     background-color: #007bff;
     color: white;
     border: none;
@@ -320,6 +320,6 @@ tbody tr:hover {
     cursor: pointer;
 }
 
-.print-button:hover {
+.print-button:hover, .view-custom-history-button:hover {
     background-color: #0056b3;
 }
