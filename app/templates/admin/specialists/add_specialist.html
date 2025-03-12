@@ -3,7 +3,7 @@
 {% block content %}
 
 <h2>CADASTRAR PROFISSIONAL</h2>
-<form class="add-specialist-form" method="POST" action="{{ url_for('admin.add_specialist') }}">
+<form class="add-specialist-form" method="POST" action="{{ url_for('specialists.add_specialist') }}">
     {{ form.hidden_tag() }}
     <label for="name">Nome:</label>
     {{ form.name() }}
@@ -23,7 +23,7 @@
 <hr>
 <br>
 <div class="nav-actions">
-    <a class="back-button" href="{{ url_for('admin.list_specialists') }}">🔙 Voltar</a>
+    <a class="back-button" href="{{ url_for('specialists.list_specialists') }}">🔙 Voltar</a>
 </div>
 
 <script src="{{ url_for('static', filename='js/normalize_fields.js') }}"></script>

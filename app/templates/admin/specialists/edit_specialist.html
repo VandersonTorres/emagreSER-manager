@@ -4,7 +4,7 @@
 
 <h2>EDITAR PROFISSIONAL</h2>
 <section class="editing">
-    <form class="edit-specialist-form" method="POST" action="{{ url_for('admin.edit_specialist', id=specialist.id) }}">
+    <form class="edit-specialist-form" method="POST" action="{{ url_for('specialists.edit_specialist', id=specialist.id) }}">
         {{ form.hidden_tag() }}
         <label for="name">Nome:</label>
         {{ form.name() }}
@@ -25,7 +25,7 @@
 <hr>
 <br>
 <div class="nav-actions">
-    <a class="back-button" href="{{ url_for('admin.list_specialists') }}">🔙 Voltar</a>
+    <a class="back-button" href="{{ url_for('specialists.list_specialists') }}">🔙 Voltar</a>
 </div>
 
 <script src="{{ url_for('static', filename='js/normalize_fields.js') }}"></script>

@@ -14,17 +14,17 @@
 {% endwith %}
 
 <h2>Dietas Disponíveis</h2>
-<a href="{{ url_for('admin.add_diet') }}">+ Adicionar Dietas</a>
+<a href="{{ url_for('diets.add_diet') }}">+ Adicionar Dietas</a>
 {% if diets %}
 <ul>
     {% for diet in diets %}
     <li>{{ diet.name }} -
-        <a class="view-button" href="{{ url_for('admin.view_diet', id=diet.id) }}" target="_blank">Ver</a>
+        <a class="view-button" href="{{ url_for('diets.view_diet', id=diet.id) }}" target="_blank">Ver</a>
         &nbsp;
-        <a class="remove-button" href="{{ url_for('admin.delete_diet', id=diet.id) }}">Remover</a>
+        <a class="remove-button" href="{{ url_for('diets.delete_diet', id=diet.id) }}">Remover</a>
     </li>
     <li>
-        <form class="send-diet-form" method="POST" action="{{ url_for('admin.send_diet', diet_id=diet.id) }}">
+        <form class="send-diet-form" method="POST" action="{{ url_for('diets.send_diet', diet_id=diet.id) }}">
             <input type="text" name="telephone" placeholder="Telefone do paciente">
             <button type="submit">Enviar por WhatsApp</button>
         </form>

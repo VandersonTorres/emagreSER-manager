@@ -1,5 +1,4 @@
 from flask_wtf import FlaskForm
-from flask_wtf.file import FileAllowed
 from wtforms import (
     DateField,
     FileField,
@@ -13,7 +12,7 @@ from wtforms import (
 )
 from wtforms.validators import DataRequired, Optional
 
-from app.models import Specialists
+from app.models import Diet, Specialists
 
 
 class SpecialistForm(FlaskForm):
@@ -78,7 +77,7 @@ class PatientForm(FlaskForm):
 
 class AnthropometricAssessmentForm(FlaskForm):
     data_avaliacao = DateField("Data de Avaliação", format="%Y-%m-%d", validators=[DataRequired()])
-    ultima_guia = StringField("Nome da Última Guia", validators=[DataRequired()])
+    ultima_guia = StringField("Nome da Guia", validators=[DataRequired()])
     idade = IntegerField("Idade", validators=[DataRequired()])
     altura = FloatField("Altura (m)", validators=[DataRequired()])
     peso = FloatField("Peso (kg)", validators=[DataRequired()])
@@ -118,9 +117,16 @@ class SkinfoldMeasurementForm(FlaskForm):
 
 
 class DietForm(FlaskForm):
-    name = SelectField(
-        "Nome da Dieta",
-        choices=[
+    name = SelectField("Nome da Dieta", validators=[DataRequired()])
+    other_name = StringField("Outro (especifique)", validators=[Optional()])
+    description = TextAreaField("Descrição", validators=[Optional()])
+    pdf_file = FileField("Arquivo PDF", validators=[Optional()])
+    submit = SubmitField("Salvar")
+
+    def __init__(self, *args, **kwargs):
+        super(DietForm, self).__init__(*args, **kwargs)
+        # Static Options
+        fixed_choices = [
             ("Dieta Cetogênica", "Dieta Cetogênica"),
             ("Dieta Low Carb I", "Dieta Low Carb I"),
             ("Dieta Low Carb II", "Dieta Low Carb II"),
@@ -133,11 +139,11 @@ class DietForm(FlaskForm):
             ("Dieta Laxativa", "Dieta Laxativa"),
             ("Dieta Primavera", "Dieta Primavera"),
             ("Dieta Zero Açucar", "Dieta Zero Açucar"),
-            ("Outro", "Outro"),
-        ],
-        validators=[DataRequired()],
-    )
-    other_name = StringField("Outro (especifique)", validators=[Optional()])
-    description = TextAreaField("Descrição", validators=[Optional()])
-    pdf_file = FileField("Arquivo PDF", validators=[FileAllowed(["pdf"], "Apenas arquivos PDF são permitidos.")])
-    submit = SubmitField("Salvar")
+        ]
+        # Search for Diets added that stil are not present in the static choices
+        extra_choices = [
+            (diet.name, diet.name)
+            for diet in Diet.query.all()
+            if diet.name.lower() not in [choice[0].lower() for choice in fixed_choices]
+        ]
+        self.name.choices = fixed_choices + extra_choices + [("Outro", "Outro")]

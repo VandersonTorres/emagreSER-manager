@@ -17,13 +17,13 @@
 <section class="editing">
     <p><strong>Paciente:</strong> {{ evaluation.patient.name }}</p>
     <form class="edit-anthro-form" method="POST"
-        action="{{ url_for('admin.edit_anthro', patient_id=evaluation.patient_id, evaluation_id=evaluation.id) }}">
+        action="{{ url_for('patients.edit_anthro', patient_id=evaluation.patient_id, evaluation_id=evaluation.id) }}">
         {{ form.hidden_tag() }}
         <label for="data_avaliacao">Data de Avaliação:</label>
         {{ form.data_avaliacao(size=20) }}
         <br>
 
-        <label for="ultima_guia">Última Guia:</label>
+        <label for="ultima_guia">Guia:</label>
         {{ diet_form.name(id="diet-select") }}
         <span id="current-diet" style="font-size: 12px; margin-left: 10px; font-weight: bold; color: #555;">
             Atual: {{ evaluation.ultima_guia if evaluation.ultima_guia else "Nenhum" }}
@@ -124,7 +124,7 @@
 <hr>
 <br>
 <div class="nav-actions">
-    <a class="back-button" href="{{ url_for('admin.edit_patient', id=evaluation.patient_id) }}">🔙 Voltar</a>
+    <a class="back-button" href="{{ url_for('patients.edit_patient', id=evaluation.patient_id) }}">🔙 Voltar</a>
 </div>
 
 <script src="{{ url_for('static', filename='js/add_diet.js') }}"></script>

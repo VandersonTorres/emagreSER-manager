@@ -15,7 +15,7 @@
 
 <h2>Editar dados do paciente</h2>
 <section class="editing">
-    <form class="edit-patient-form" method="POST" action="{{ url_for('admin.edit_patient', id=patient.id) }}">
+    <form class="edit-patient-form" method="POST" action="{{ url_for('patients.edit_patient', id=patient.id) }}">
         {{ form.hidden_tag() }}
 
         <label>Escolha os campos que deseja editar:</label>
@@ -46,14 +46,14 @@
         <li>
             Data: {{ evaluation.data_avaliacao }} | Peso: {{ evaluation.peso }} kg | IMC: {{ evaluation.imc }}
             &nbsp;
-            <a href="{{ url_for('admin.edit_anthro', patient_id=patient.id, evaluation_id=evaluation.id) }}">Editar
+            <a href="{{ url_for('patients.edit_anthro', patient_id=patient.id, evaluation_id=evaluation.id) }}">Editar
                 Avaliação</a>
         </li>
         {% endfor %}
     </ul>
     {% else %}
     <p>Nenhuma avaliação registrada.</p>
-    <a href="{{ url_for('admin.add_anthro', patient_id=patient.id) }}">Adicionar avaliação</a>
+    <a href="{{ url_for('patients.add_anthro', patient_id=patient.id) }}">Adicionar avaliação</a>
     {% endif %}
 
     <hr>
@@ -65,19 +65,19 @@
             Data: {{ skinfold.data_medicao }} | Triciptal: {{ skinfold.triciptal }} | Bicipital: {{ skinfold.bicipital
             }}
             &nbsp;
-            <a href="{{ url_for('admin.edit_skinfold', patient_id=patient.id, skinfold_id=skinfold.id) }}">Editar Pregas
+            <a href="{{ url_for('patients.edit_skinfold', patient_id=patient.id, skinfold_id=skinfold.id) }}">Editar Pregas
                 Cutâneas</a>
         </li>
         {% endfor %}
     </ul>
     {% else %}
     <p>Nenhum registro de pregas cutâneas.</p>
-    <a href="{{ url_for('admin.add_skinfold', patient_id=patient.id) }}">Adicionar registro</a>
+    <a href="{{ url_for('patients.add_skinfold', patient_id=patient.id) }}">Adicionar registro</a>
     {% endif %}
     <hr>
     <br>
     <div class="nav-actions">
-        <a href="{{ url_for('admin.list_patients') }}" class="btn btn-secondary back-button">🔙 Voltar</a>
+        <a href="{{ url_for('patients.list_patients') }}" class="btn btn-secondary back-button">🔙 Voltar</a>
     </div>
 </section>
 

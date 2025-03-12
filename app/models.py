@@ -5,11 +5,9 @@ from flask_sqlalchemy import SQLAlchemy
 
 db = SQLAlchemy()
 
-# Define models
 fsqla.FsModels.set_db_info(db)
 
 
-# Flask-Security Models
 class Role(db.Model, fsqla.FsRoleMixin):
     pass
 
@@ -18,7 +16,6 @@ class User(db.Model, fsqla.FsUserMixin):
     pass
 
 
-# Specialits model
 class Specialists(db.Model):
     __tablename__ = "specialists"
 
@@ -32,7 +29,6 @@ class Specialists(db.Model):
         return f"<Specialist {self.name} | {self.cpf}>"
 
 
-# Patients model
 class Patients(db.Model):
     __tablename__ = "patients"
 
@@ -74,7 +70,6 @@ class Patients(db.Model):
         return f"<Patient {self.name} | {self.cpf}>"
 
 
-# Anthropometric model
 class AnthropometricEvaluation(db.Model):
     __tablename__ = "anthropometric_evaluations"
 
@@ -101,7 +96,6 @@ class AnthropometricEvaluation(db.Model):
         return f"<AnthropometricEvaluation {self.patient_id} | {self.data_avaliacao}>"
 
 
-# SkinFolds model
 class SkinFolds(db.Model):
     __tablename__ = "skinfolds"
 
@@ -118,7 +112,6 @@ class SkinFolds(db.Model):
         return f"<SkinFolds {self.patient_id} | {self.data_medicao}>"
 
 
-# Diet model
 class Diet(db.Model):
     __tablename__ = "diets"
 
@@ -131,7 +124,6 @@ class Diet(db.Model):
         return f"<Diet {self.name}>"
 
 
-# Schedules model
 class Schedules(db.Model):
     __tablename__ = "schedules"
 

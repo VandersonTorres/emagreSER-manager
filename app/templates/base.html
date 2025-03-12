@@ -19,9 +19,9 @@
         <nav>
             <a href="/">Início</a>
             {% if current_user.is_authenticated %}
-                <a href="{{ url_for('admin.list_specialists') }}">Gerenciamento de Profissionais</a>
-                <a href="{{ url_for('admin.list_patients') }}">Gerenciamento de Pacientes</a>
-                <a href="{{ url_for('admin.list_diets') }}">Gerenciamento de Dietas</a>
+                <a href="{{ url_for('specialists.list_specialists') }}">Gerenciamento de Profissionais</a>
+                <a href="{{ url_for('patients.list_patients') }}">Gerenciamento de Pacientes</a>
+                <a href="{{ url_for('diets.list_diets') }}">Gerenciamento de Dietas</a>
                 <a href="{{ url_for('schedules.list_schedules') }}">Gerenciamento de Agendamentos</a>
                 <a href="{{ url_for('schedules.schedule_action') }}">Agendar Consulta</a>
             {% endif %}

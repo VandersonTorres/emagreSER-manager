@@ -17,13 +17,13 @@
 {% if not specialists %}
 <h3>Ainda não existem profissionais cadastrados.</h3>
 <p>Se você adicionar um paciente, ele não estará vinculado à nenhuma profissional</p>
-<a href="{{ url_for('admin.add_specialist') }}">+ Adicionar novo(a) profissional</a>
+<a href="{{ url_for('specialists.add_specialist') }}">+ Adicionar novo(a) profissional</a>
 
 <hr>
 
 {% endif %}
 
-<form class="add-patient-form" method="POST" action="{{ url_for('admin.add_patient') }}">
+<form class="add-patient-form" method="POST" action="{{ url_for('patients.add_patient') }}">
     <h3>Dados pessoais:</h3>
     <label for="name">Nome:</label>
     <input type="text" name="name" required>
@@ -123,7 +123,7 @@
 <hr>
 <br>
 <div class="nav-actions">
-    <a class="back-button" href="{{ url_for('admin.list_patients') }}">🔙 Voltar</a>
+    <a class="back-button" href="{{ url_for('patients.list_patients') }}">🔙 Voltar</a>
 </div>
 
 {% endblock %}
