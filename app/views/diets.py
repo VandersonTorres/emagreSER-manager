@@ -39,7 +39,7 @@ def add_diet():
             pdf_path = os.path.join(current_app.config["UPLOAD_FOLDER"], pdf_filename)
             form.pdf_file.data.save(pdf_path)
 
-        diet_name = form.other_name.data if form.name.data == "outro" else form.name.data
+        diet_name = form.other_name.data if form.name.data == "Outro" else form.name.data
         diet = Diet(name=diet_name, description=form.description.data, pdf_file=pdf_filename)
         db.session.add(diet)
         db.session.commit()
