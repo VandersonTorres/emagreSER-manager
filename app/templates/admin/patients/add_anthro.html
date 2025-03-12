@@ -15,7 +15,7 @@
 
 <h2>Avaliação Antropométrica</h2>
 <p><strong>Paciente:</strong> {{ patient.name }}</p>
-<form class="add-anthro-form" method="POST" action="{{ url_for('admin.add_anthro', patient_id=patient.id) }}">
+<form class="add-anthro-form" method="POST" action="{{ url_for('patients.add_anthro', patient_id=patient.id) }}">
     {{ form.hidden_tag() }}
     <label for="data_avaliacao">Data de Avaliação:</label>
     {{ form.data_avaliacao(size=20) }}
@@ -106,7 +106,7 @@
 <hr>
 <br>
 <div class="nav-actions">
-    <a class="back-button" href="{{ url_for('admin.list_patients') }}">🔙 Voltar</a>
+    <a class="back-button" href="{{ url_for('patients.list_patients') }}">🔙 Voltar</a>
 </div>
 
 <script src="{{ url_for('static', filename='js/add_diet.js') }}"></script>

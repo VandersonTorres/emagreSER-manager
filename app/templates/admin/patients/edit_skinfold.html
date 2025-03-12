@@ -17,7 +17,7 @@
 <section class="editing">
     <p><strong>Paciente:</strong> {{ skinfold.patient.name }}</p>
     <form class="edit-skinfold-form" method="POST"
-        action="{{ url_for('admin.edit_skinfold', patient_id=skinfold.patient_id, skinfold_id=skinfold.id) }}">
+        action="{{ url_for('patients.edit_skinfold', patient_id=skinfold.patient_id, skinfold_id=skinfold.id) }}">
         {{ form.hidden_tag() }}
         <label for="data_medicao">Data de Medição:</label>
         {{ form.data_medicao() }}
@@ -44,7 +44,7 @@
 <hr>
 <br>
 <div class="nav-actions">
-    <a class="back-button" href="{{ url_for('admin.edit_patient', id=skinfold.patient_id) }}">🔙 Voltar</a>
+    <a class="back-button" href="{{ url_for('patients.edit_patient', id=skinfold.patient_id) }}">🔙 Voltar</a>
 </div>
 
 {% endblock %}

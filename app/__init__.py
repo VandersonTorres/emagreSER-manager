@@ -5,8 +5,11 @@ from flask_security import Security, SQLAlchemyUserDatastore
 
 from app.models import Role, User, db
 from app.views.admin import admin_bp
+from app.views.diets import diets_bp
 from app.views.main import main_bp
+from app.views.patients import patients_bp
 from app.views.schedules import schedules_bp
+from app.views.specialists import specialists_bp
 from config import Config
 
 
@@ -30,5 +33,8 @@ def create_app():
 
     app.register_blueprint(main_bp)
     app.register_blueprint(admin_bp, url_prefix="/admin")  # Admin-only routes
-    app.register_blueprint(schedules_bp, url_prefix="/admin")
+    app.register_blueprint(schedules_bp, url_prefix="/schedules-manager")
+    app.register_blueprint(patients_bp, url_prefix="/patients-manager")
+    app.register_blueprint(specialists_bp, url_prefix="/specialists-manager")
+    app.register_blueprint(diets_bp, url_prefix="/diets-manager")
     return app

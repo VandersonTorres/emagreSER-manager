@@ -17,7 +17,7 @@
 
 {% if patient %}
 <div style="text-align: right; margin-bottom: 10px;">
-    <a class="view-custom-history-button" href="{{ url_for('admin.view_custom_history', id=patient.id, pat_name=patient.name) }}">Ver Histórico Personalizado</a>
+    <a class="view-custom-history-button" href="{{ url_for('patients.view_custom_history', id=patient.id, pat_name=patient.name) }}">Ver Histórico Personalizado</a>
 </div>
 
 <div class="patient-card">
@@ -79,10 +79,10 @@
         </tbody>
     </table>
     <br>
-    <a href="{{ url_for('admin.add_anthro', patient_id=patient.id) }}">Adicionar Avaliação Antropométrica</a>
+    <a href="{{ url_for('patients.add_anthro', patient_id=patient.id) }}">Adicionar Avaliação Antropométrica</a>
     {% else %}
     <p>Não há avaliações antropométricas registradas.</p>
-    <a href="{{ url_for('admin.add_anthro', patient_id=patient.id) }}">Adicionar Avaliação Antropométrica</a>
+    <a href="{{ url_for('patients.add_anthro', patient_id=patient.id) }}">Adicionar Avaliação Antropométrica</a>
 
     {% endif %}
 
@@ -116,10 +116,10 @@
         </tbody>
     </table>
     <br>
-    <a href="{{ url_for('admin.add_skinfold', patient_id=patient.id) }}">Adicionar Pregas Cutâneas</a>
+    <a href="{{ url_for('patients.add_skinfold', patient_id=patient.id) }}">Adicionar Pregas Cutâneas</a>
     {% else %}
     <p>Não há registros de pregas cutâneas.</p>
-    <a href="{{ url_for('admin.add_skinfold', patient_id=patient.id) }}">Adicionar Pregas Cutâneas</a>
+    <a href="{{ url_for('patients.add_skinfold', patient_id=patient.id) }}">Adicionar Pregas Cutâneas</a>
     {% endif %}
 
     <br><br>
@@ -160,11 +160,11 @@
 <hr>
 <br>
 <div class="nav-actions">
-    <a class="back-button" href="{{ url_for('admin.list_patients') }}">🔙 Voltar</a>
+    <a class="back-button" href="{{ url_for('patients.list_patients') }}">🔙 Voltar</a>
     &nbsp;
-    <a class="edit-button" href="{{ url_for('admin.edit_patient', id=patient.id) }}">Editar</a>
+    <a class="edit-button" href="{{ url_for('patients.edit_patient', id=patient.id) }}">Editar</a>
     &nbsp;
-    <a class="remove-button" href="{{ url_for('admin.delete_patient', id=patient.id) }}">Remover</a>
+    <a class="remove-button" href="{{ url_for('patients.delete_patient', id=patient.id) }}">Remover</a>
 </div>
 
 {% endblock %}

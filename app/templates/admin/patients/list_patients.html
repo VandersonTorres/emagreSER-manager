@@ -14,7 +14,7 @@
 {% endwith %}
 
 <h2>Pacientes</h2>
-<a href="{{ url_for('admin.add_patient') }}">+ Cadastrar Paciente</a>
+<a href="{{ url_for('patients.add_patient') }}">+ Cadastrar Paciente</a>
 <br><br>
 {% if patients %}
 <!-- Alternate patients view -->
@@ -29,12 +29,12 @@
             {{ patient.name }} | CPF: {{ patient.cpf }} |
             Tel: {{ patient.tel_number }} | E-mail: {{ patient.email }}
             &nbsp;
-            <a class="view-button" href="{{ url_for('admin.view_patient', id=patient.id) }}" target="_blank">Ver
+            <a class="view-button" href="{{ url_for('patients.view_patient', id=patient.id) }}" target="_blank">Ver
                 Paciente</a>
             &nbsp;
-            <a class="edit-button" href="{{ url_for('admin.edit_patient', id=patient.id) }}">Editar</a>
+            <a class="edit-button" href="{{ url_for('patients.edit_patient', id=patient.id) }}">Editar</a>
             &nbsp;
-            <a class="remove-button" href="{{ url_for('admin.delete_patient', id=patient.id) }}">Remover</a>
+            <a class="remove-button" href="{{ url_for('patients.delete_patient', id=patient.id) }}">Remover</a>
         </li>
         {% endfor %}
     </ul>
@@ -79,8 +79,8 @@
 
 <!-- Assign global variables with dynamic URLs -->
 <script>
-    var addAnthroUrlTemplate = "{{ url_for('admin.add_anthro', patient_id=0) }}";
-    var addSkinfoldUrlTemplate = "{{ url_for('admin.add_skinfold', patient_id=0) }}";
+    var addAnthroUrlTemplate = "{{ url_for('patients.add_anthro', patient_id=0) }}";
+    var addSkinfoldUrlTemplate = "{{ url_for('patients.add_skinfold', patient_id=0) }}";
 </script>
 <script src="{{ url_for('static', filename='js/list_patients.js') }}"></script>
 

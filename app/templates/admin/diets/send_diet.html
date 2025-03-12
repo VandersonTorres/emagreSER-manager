@@ -3,7 +3,7 @@
 {% block content %}
 
 <h2>Enviar Dieta</h2>
-<form class="send-diet-form" method="POST" action="{{ url_for('admin.send_diet', diet_id=diet.id) }}">
+<form class="send-diet-form" method="POST" action="{{ url_for('diets.send_diet', diet_id=diet.id) }}">
     <label for="telefone">Número de telefone:</label>
     <input type="text" name="telefone" placeholder="(00) 00000-0000" required>
     <br>
@@ -12,6 +12,6 @@
 <hr>
 <br>
 <div class="nav-actions">
-    <a href="{{ url_for('admin.list_diets') }}" class="btn btn-secondary back-button">🔙 Voltar</a>
+    <a href="{{ url_for('diets.list_diets') }}" class="btn btn-secondary back-button">🔙 Voltar</a>
 </div>
 {% endblock %}

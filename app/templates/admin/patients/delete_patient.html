@@ -4,13 +4,13 @@
 
 <h2>Remover Paciente</h2>
 <p>Tem certeza de que deseja remover {{ patient.name }} - CPF: {{ patient.cpf }}?</p>
-<form class="delete-patient-form" method="POST" action="{{ url_for('admin.delete_patient', id=patient.id) }}">
+<form class="delete-patient-form" method="POST" action="{{ url_for('patients.delete_patient', id=patient.id) }}">
     <button type="submit">Confirmar Remoção</button>
-    <a class="remove-button" href="{{ url_for('admin.list_patients') }}">Cancelar</a>
+    <a class="remove-button" href="{{ url_for('patients.list_patients') }}">Cancelar</a>
 </form>
 <hr>
 <br>
 <div class="nav-actions">
-    <a href="{{ url_for('admin.list_patients') }}" class="btn btn-secondary back-button">🔙 Voltar</a>
+    <a href="{{ url_for('patients.list_patients') }}" class="btn btn-secondary back-button">🔙 Voltar</a>
 </div>
 {% endblock %}
