@@ -78,7 +78,7 @@ class PatientForm(FlaskForm):
 
 class AnthropometricAssessmentForm(FlaskForm):
     data_avaliacao = DateField("Data de Avaliação", format="%Y-%m-%d", validators=[DataRequired()])
-    ultima_guia = StringField("Nome da Última Guia", validators=[DataRequired()])
+    ultima_guia = StringField("Nome da Guia", validators=[DataRequired()])
     idade = IntegerField("Idade", validators=[DataRequired()])
     altura = FloatField("Altura (m)", validators=[DataRequired()])
     peso = FloatField("Peso (kg)", validators=[DataRequired()])

@@ -23,7 +23,7 @@
         {{ form.data_avaliacao(size=20) }}
         <br>
 
-        <label for="ultima_guia">Última Guia:</label>
+        <label for="ultima_guia">Guia:</label>
         {{ diet_form.name(id="diet-select") }}
         <span id="current-diet" style="font-size: 12px; margin-left: 10px; font-weight: bold; color: #555;">
             Atual: {{ evaluation.ultima_guia if evaluation.ultima_guia else "Nenhum" }}
