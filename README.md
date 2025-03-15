@@ -7,12 +7,12 @@ Management tools for emagreSer - Slimming and Auriculotherapy Clinic
 
 - Create virtual environment:
 ```bash
-python -m venv .venv
+$ python -m venv .venv
 ```
 
 - Activate the virtual environment
 ```bash
-source .venv/bin/activate
+$ source .venv/bin/activate
 ```
 
 - Install dependencies from `requirements.txt`, the project dependencies are already included there. Run into the terminal:
@@ -22,7 +22,8 @@ $ pip install -r requirements.txt
 
 - Install pre-commit
 ```bash
-pre-commit install
+$ pip install pre-commit
+$ pre-commit install
 ```
 
 ## Running the project
