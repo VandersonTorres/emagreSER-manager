@@ -1,26 +1,16 @@
 from datetime import datetime, timedelta
 
 from flask import Blueprint, flash, redirect, render_template, request, url_for
-from flask_security import roles_required
+from flask_security import current_user, roles_accepted
 
 from app.models import Patients, Schedules, Specialists, db
+from scripts.utils import is_valid_time
 
 schedules_bp = Blueprint("schedules", __name__)
 
 
-def is_valid_time(candidate, specialist):
-    """Function that checks if a schedule is available"""
-    lower_bound = candidate - timedelta(minutes=30)
-    upper_bound = candidate + timedelta(minutes=30)
-
-    conflict = Schedules.query.filter(
-        Schedules.specialist == specialist, Schedules.date_time >= lower_bound, Schedules.date_time <= upper_bound
-    ).first()
-    return conflict is None
-
-
 @schedules_bp.route("/schedules", methods=["GET"])
-@roles_required("admin")
+@roles_accepted("admin", "secretary", "nutritionist")
 def list_schedules():
     now = datetime.now()
 
@@ -31,6 +21,19 @@ def list_schedules():
 
     if expired_schedules:
         db.session.commit()
+
+    if "nutritionist" in [role.name for role in current_user.roles]:
+        # Get the nutritionist what is logged in
+        specialist = Specialists.query.filter_by(email=current_user.email).first()
+        if not specialist:
+            flash("Erro: Especialista não encontrado.")
+            return redirect(url_for("main.index"))
+
+        # Search only for the schedules from the nutritionist that is logged in
+        schedules = Schedules.query.filter_by(specialist=specialist.name).order_by(Schedules.date_time).all()
+        return render_template(
+            "admin/schedules/list_schedules.html", schedules_by_specialist={specialist.name: schedules}
+        )
 
     specialists = Specialists.query.all()
     schedules_by_specialist = {}
@@ -43,9 +46,20 @@ def list_schedules():
 
 
 @schedules_bp.route("/schedule_action", methods=["GET", "POST"])
-@roles_required("admin")
+@roles_accepted("admin", "secretary", "nutritionist")
 def schedule_action():
+    patients = Patients.query.all()
     specialists = Specialists.query.all()
+
+    if "nutritionist" in [role.name for role in current_user.roles]:
+        patients = Patients.query.join(Specialists).filter(Specialists.email == current_user.email).all()
+        # Get the nutritionist that is logged in
+        if specialist := Specialists.query.filter_by(email=current_user.email).first():
+            specialist = specialist.name
+        else:
+            flash("Erro: Especialista não encontrado.")
+            return redirect(url_for("main.index"))
+
     if request.method == "POST":
         patient_name = request.form["patient_name"]
         date_time_str = request.form["date_time"]
@@ -93,16 +107,22 @@ def schedule_action():
         db.session.add(schedule)
         db.session.commit()
 
-        flash("Consulta agendada com sucesso!")
+        flash(f"Consulta para '{patient_name}' agendada com o profissional '{specialist}' com sucesso!")
         return redirect(url_for("schedules.list_schedules"))
 
-    patients = Patients.query.all()
     return render_template("admin/schedules/schedule_action.html", patients=patients, specialists=specialists)
 
 
 @schedules_bp.route("/schedules/delete/<int:id>", methods=["POST"])
-@roles_required("admin")
+@roles_accepted("admin", "secretary", "nutritionist")
 def delete_schedule(id):
+    if "nutritionist" in [role.name for role in current_user.roles]:
+        # Get the nutritionist what is logged in
+        specialist = Specialists.query.filter_by(email=current_user.email).first()
+        if not specialist:
+            flash("Erro: Especialista não encontrado.")
+            return redirect(url_for("main.index"))
+
     schedule = Schedules.query.get_or_404(id)
     db.session.delete(schedule)
     db.session.commit()
