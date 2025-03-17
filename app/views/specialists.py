@@ -1,5 +1,5 @@
 from flask import Blueprint, flash, redirect, render_template, request, url_for
-from flask_security import roles_required
+from flask_security import roles_accepted
 from sqlalchemy.exc import IntegrityError
 
 from app.forms import SpecialistForm
@@ -9,14 +9,14 @@ specialists_bp = Blueprint("specialists", __name__)
 
 
 @specialists_bp.route("/specialists")
-@roles_required("admin")
+@roles_accepted("admin", "secretary", "nutritionist")
 def list_specialists():
     specialists = Specialists.query.all()
     return render_template("admin/specialists/list_specialists.html", specialists=specialists)
 
 
 @specialists_bp.route("/specialists/add", methods=["GET", "POST"])
-@roles_required("admin")
+@roles_accepted("admin", "secretary")
 def add_specialist():
     form = SpecialistForm()
 
@@ -37,7 +37,7 @@ def add_specialist():
 
 
 @specialists_bp.route("/specialists/edit/<int:id>", methods=["GET", "POST"])
-@roles_required("admin")
+@roles_accepted("admin", "secretary")
 def edit_specialist(id):
     specialist = Specialists.query.get_or_404(id)
     form = SpecialistForm()
@@ -64,7 +64,7 @@ def edit_specialist(id):
 
 
 @specialists_bp.route("/specialists/delete/<int:id>", methods=["POST"])
-@roles_required("admin")
+@roles_accepted("admin", "secretary")
 def delete_specialist(id):
     specialist = Specialists.query.get_or_404(id)
     try:

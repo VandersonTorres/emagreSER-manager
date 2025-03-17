@@ -11,7 +11,7 @@ from flask import (
     send_from_directory,
     url_for,
 )
-from flask_security import roles_required
+from flask_security import roles_accepted
 from twilio.rest import Client
 from werkzeug.utils import secure_filename
 
@@ -22,14 +22,14 @@ diets_bp = Blueprint("diets", __name__)
 
 
 @diets_bp.route("/diets")
-@roles_required("admin")
+@roles_accepted("admin", "secretary", "nutritionist")
 def list_diets():
     diets = Diet.query.all()
     return render_template("admin/diets/list_diets.html", diets=diets)
 
 
 @diets_bp.route("/diets/add", methods=["GET", "POST"])
-@roles_required("admin")
+@roles_accepted("admin", "secretary", "nutritionist")
 def add_diet():
     form = DietForm()
     if form.validate_on_submit():
@@ -51,14 +51,14 @@ def add_diet():
 
 
 @diets_bp.route("/diets/<int:id>", methods=["GET"])
-@roles_required("admin")
+@roles_accepted("admin", "secretary", "nutritionist")
 def view_diet(id):
     diet = Diet.query.get_or_404(id)
     return render_template("admin/diets/view_diet.html", diet=diet)
 
 
 @diets_bp.route("/diets/delete/<int:id>", methods=["GET", "POST"])
-@roles_required("admin")
+@roles_accepted("admin", "secretary", "nutritionist")
 def delete_diet(id):
     diet = Diet.query.get_or_404(id)
     if request.method == "POST":
@@ -77,13 +77,13 @@ def delete_diet(id):
 
 
 @diets_bp.route("/diets/download/<filename>")
-@roles_required("admin")
+@roles_accepted("admin", "secretary", "nutritionist")
 def download_diet(filename):
     return send_from_directory(current_app.config["UPLOAD_FOLDER"], filename, as_attachment=True)
 
 
 @diets_bp.route("/send_diet/<int:diet_id>", methods=["POST"])
-@roles_required("admin")
+@roles_accepted("admin", "secretary", "nutritionist")
 def send_diet(diet_id):
     def twilio_send_diet(patient, telephone, diet):
         client = Client(current_app.config["TWILIO_SID"], current_app.config["TWILIO_AUTH"])

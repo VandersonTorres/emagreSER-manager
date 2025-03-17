@@ -15,30 +15,25 @@ def create_user():
     if request.method == "POST":
         email = request.form.get("email")
         password = request.form.get("password")
-        role = request.form.get("role") == "yes"
-        if role:
-            # Check if the role already exists, otherwise create it
-            admin_role = Role.query.filter_by(name="admin").first()
-            if not admin_role:
-                admin_role = Role(name="admin")
-                db.session.add(admin_role)
-                db.session.commit()
-        if not email or not password:
-            return jsonify({"error": "Email e senha são obrigatórios!"}), 400
+        role_name = request.form.get("role")  # admin, nutritionist, secretary
 
-        # Check if user already exists
+        if not email or not password or not role_name:
+            return jsonify({"error": "Email, Senha e Função são obrigatórios!"}), 400
         existing_user = User.query.filter_by(email=email).first()
         if existing_user:
             return jsonify({"error": "Usuário já está cadastrado!"}), 400
 
-        # Create new user
         user = User(email=email, active=True, password=hash_password(password), fs_uniquifier=uuid.uuid4().hex)
-        if role:
-            user.roles.append(admin_role)  # Assign the 'admin' role to the user
+        role = Role.query.filter_by(name=role_name).first()
+        if not role:
+            role = Role(name=role_name)
+            db.session.add(role)
+            db.session.commit()
+        user.roles.append(role)
 
         db.session.add(user)
         db.session.commit()
-        flash(f"Usuário {email} cadastrado com sucesso", "success")
+        flash(f"Usuário {email} cadastrado com sucesso com a função {role_name}.", "success")
         return render_template("/home.html")
     return render_template("/create_user.html")
 
