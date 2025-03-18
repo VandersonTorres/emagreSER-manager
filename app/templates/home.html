@@ -3,6 +3,7 @@
 {% block content %}
 
 {% with messages = get_flashed_messages(with_categories=true) %}
+{% set _ = session.pop('_flashes', None) %}
 {% if messages %}
 {% for category, message in messages %}
 <div class="alert alert-{{ category }}">
@@ -55,7 +56,6 @@
             <img src="{{ url_for('static', filename='img/image5.jpg') }}" alt="Imagem 5">
         </div>
     </div>
-    <div class="swiper-pagination"></div>
     <div class="swiper-button-next"></div>
     <div class="swiper-button-prev"></div>
     <br>
@@ -85,17 +85,22 @@
     <br>
     <h2>Bem vindo, {{ current_user.email }}</h2>
     <p>Você está logado.</p>
-    <br>
 </div>
 
 <div class="options">
-    <a href="{{ url_for('admin.list_users') }}">Ver Usuários do Sistema</a>
-    <br>
-    <a href="{{ url_for('admin.create_user') }}">Cadastrar Novo Usuário</a>
-    <br>
     <a href="{{ url_for('security.logout') }}">Sair</a>
     <br>
     <a href="{{ url_for('security.change_password') }}">Trocar senha</a>
+    <br>
 </div>
+<hr>
+<footer>
+    <h3>Ferramentas do administrador</h3>
+    <fieldset>
+        <a href="{{ url_for('admin.list_users') }}">Ver Usuários do Sistema</a>
+        <br>
+        <a href="{{ url_for('admin.create_user') }}">Cadastrar Novo Usuário</a>
+    </fieldset>
+</footer>
 
 {% endblock %}

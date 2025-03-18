@@ -1,7 +1,7 @@
 import uuid
 
 from flask import Blueprint, flash, jsonify, redirect, render_template, request, url_for
-from flask_security import roles_required
+from flask_security import current_user, roles_accepted
 from flask_security.utils import hash_password
 
 from app.models import Role, User, db
@@ -10,8 +10,12 @@ admin_bp = Blueprint("admin", __name__)
 
 
 @admin_bp.route("/create_user", methods=["GET", "POST"])
-@roles_required("admin")
+@roles_accepted("admin", "secretary", "nutritionist")
 def create_user():
+    if "nutritionist" in [role.name for role in current_user.roles]:
+        flash("Acesso negado! Você não tem permissão para acessar essa seção.", "danger")
+        return redirect(url_for("main.index"))
+
     if request.method == "POST":
         email = request.form.get("email")
         password = request.form.get("password")
@@ -39,15 +43,23 @@ def create_user():
 
 
 @admin_bp.route("/users")
-@roles_required("admin")
+@roles_accepted("admin", "secretary", "nutritionist")
 def list_users():
+    if "nutritionist" in [role.name for role in current_user.roles]:
+        flash("Acesso negado! Você não tem permissão para acessar essa seção.", "danger")
+        return redirect(url_for("main.index"))
+
     users = User.query.all()
     return render_template("list_users.html", users=users)
 
 
 @admin_bp.route("/users/delete/<int:id>", methods=["GET", "POST"])
-@roles_required("admin")
+@roles_accepted("admin", "secretary", "nutritionist")
 def delete_user(id):
+    if "nutritionist" in [role.name for role in current_user.roles]:
+        flash("Acesso negado! Você não tem permissão para acessar essa seção.", "danger")
+        return redirect(url_for("main.index"))
+
     user = User.query.get_or_404(id)
     if request.method == "POST":
         db.session.delete(user)
