@@ -1,5 +1,5 @@
 from flask import Blueprint, flash, redirect, render_template, request, url_for
-from flask_security import roles_accepted
+from flask_security import current_user, roles_accepted
 from sqlalchemy.exc import IntegrityError
 
 from app.forms import SpecialistForm
@@ -16,8 +16,12 @@ def list_specialists():
 
 
 @specialists_bp.route("/specialists/add", methods=["GET", "POST"])
-@roles_accepted("admin", "secretary")
+@roles_accepted("admin", "secretary", "nutritionist")
 def add_specialist():
+    if "nutritionist" in [role.name for role in current_user.roles]:
+        flash("Acesso negado! Você não tem permissão para acessar essa seção.", "danger")
+        return redirect(url_for("specialists.list_specialists"))
+
     form = SpecialistForm()
 
     if request.method == "POST" and form.validate_on_submit():
@@ -37,8 +41,12 @@ def add_specialist():
 
 
 @specialists_bp.route("/specialists/edit/<int:id>", methods=["GET", "POST"])
-@roles_accepted("admin", "secretary")
+@roles_accepted("admin", "secretary", "nutritionist")
 def edit_specialist(id):
+    if "nutritionist" in [role.name for role in current_user.roles]:
+        flash("Acesso negado! Você não tem permissão para acessar essa seção.", "danger")
+        return redirect(url_for("specialists.list_specialists"))
+
     specialist = Specialists.query.get_or_404(id)
     form = SpecialistForm()
     if request.method == "POST" and form.validate_on_submit():
@@ -64,8 +72,12 @@ def edit_specialist(id):
 
 
 @specialists_bp.route("/specialists/delete/<int:id>", methods=["POST"])
-@roles_accepted("admin", "secretary")
+@roles_accepted("admin", "secretary", "nutritionist")
 def delete_specialist(id):
+    if "nutritionist" in [role.name for role in current_user.roles]:
+        flash("Acesso negado! Você não tem permissão para acessar essa seção.", "danger")
+        return redirect(url_for("specialists.list_specialists"))
+
     specialist = Specialists.query.get_or_404(id)
     try:
         db.session.delete(specialist)
