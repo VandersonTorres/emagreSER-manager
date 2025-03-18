@@ -271,7 +271,6 @@ def view_custom_history(id, pat_name):
             initial_evaluation_date = patient.anthropometric_evaluations[0].data_avaliacao.strftime("%d/%m/%Y")
             last_imc = patient.anthropometric_evaluations[-1].imc
             height = patient.anthropometric_evaluations[-1].altura
-            all_evolutions = [evolution.evolucao for evolution in patient.anthropometric_evaluations]
             initial_weight_evaluated = patient.anthropometric_evaluations[0].peso
             last_weight_evaluated = patient.anthropometric_evaluations[-1].peso
             ideal_weight = patient.anthropometric_evaluations[-1].p_ide
@@ -302,6 +301,13 @@ def view_custom_history(id, pat_name):
                     f"{last_weight_evaluated}kg."
                 )
             )
+
+            # Preparing data for evolution grafic
+            evaluation_dates = [
+                evaluation.data_avaliacao.strftime("%d/%m/%Y") for evaluation in patient.anthropometric_evaluations
+            ]
+            evaluation_weights = [evaluation.peso for evaluation in patient.anthropometric_evaluations]
+
             return render_template(
                 "admin/patients/view_custom_history.html",
                 patient=patient,
@@ -311,12 +317,13 @@ def view_custom_history(id, pat_name):
                 height=height,
                 fat_percentual=fat_percentual,
                 muscle_percentual=muscle_percentual,
-                all_evolutions=all_evolutions[1:],
                 initial_weight_evaluated=initial_weight_evaluated,
                 last_weight_evaluated=last_weight_evaluated,
                 ideal_weight=ideal_weight,
                 final_weight_result=final_weight_result,
                 final_message=final_message,
+                evaluation_dates=evaluation_dates,
+                evaluation_weights=evaluation_weights,
             )
 
         return render_template("admin/patients/view_custom_history.html")

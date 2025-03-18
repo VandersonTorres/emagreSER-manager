@@ -33,22 +33,25 @@
 
     <div class="details-container">
         <div class="patient-details">
-            <h3>Detalhamento</h3>
+            <h3 style="color: rgb(1, 134, 6);">Detalhamento</h3>
             <fieldset style="padding: 10px; ">
                 <p><strong>IMC Atual:</strong> {{ last_imc }}</p>
                 <p><strong>Altura:</strong> {{ height }}</p>
                 <p><strong>Percentual de Gordura:</strong> {{ fat_percentual }}</p>
                 <p><strong>Percentual de Massa Magra:</strong> {{ muscle_percentual }}</p>
-                <p>
-                    <strong>Detalhamento de Evoluções:</strong>
-                    {% for eval in all_evolutions %}
-                    <br>&nbsp;&nbsp;&nbsp;<span>- {{ eval }}</span>
-                    {% endfor %}
-                </p>
                 <p><strong>Peso Inicial:</strong> {{ initial_weight_evaluated }}</p>
                 <p><strong>Peso Atual:</strong> {{ last_weight_evaluated }}</p>
                 <p><strong>Peso Ideal:</strong> {{ ideal_weight }}</p>
                 <p><strong>Resultado Final:</strong> {{ final_weight_result }}</p>
+                <br>
+                <p>
+                    <strong>Histórico de Evoluções:</strong>
+                    <canvas id="evolutionsChart"
+                            data-dates='{{ evaluation_dates|tojson }}'
+                            data-weights='{{ evaluation_weights|tojson }}'
+                            style="display: block; margin: 0 auto;">
+                    </canvas>
+                </p>
                 <p class="final-message"><strong>{{ final_message }}</strong></p>
             </fieldset>
         </div>
@@ -56,6 +59,8 @@
             <img class="header-image" src="{{ url_for('static', filename='img/body_contour.jpeg') }}"
                 alt="Imagem de Cabeçalho">
         </div>
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        <script src="{{ url_for('static', filename='js/chart_config.js') }}"></script>
     </div>
 </div>
 {% else %}

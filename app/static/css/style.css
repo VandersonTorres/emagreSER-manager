@@ -450,3 +450,8 @@ footer a {
 footer a:hover {
     color: #00e0a0;
 }
+
+#evolutionsChart {
+    width: 500px !important;
+    height: 250px !important;
+}
