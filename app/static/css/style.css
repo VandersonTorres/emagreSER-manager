@@ -47,12 +47,14 @@ nav {
 nav a {
     color: #fff;
     text-decoration: none;
+    font-size: 1.1em;
     margin: 0 10px;
-    font-weight: bold;
+    transition: color 0.3s ease;
 }
 
 nav a:hover {
-    text-decoration: underline;
+    text-decoration: dotted;
+    color: #00e0a0;
 }
 
 /* Main Content */
@@ -448,7 +450,9 @@ footer a {
 }
 
 footer a:hover {
+    text-decoration: dotted;
     color: #00e0a0;
+    font-weight: bolder;
 }
 
 #evolutionsChart {
