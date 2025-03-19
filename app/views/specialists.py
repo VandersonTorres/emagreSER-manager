@@ -11,6 +11,10 @@ specialists_bp = Blueprint("specialists", __name__)
 @specialists_bp.route("/specialists")
 @roles_accepted("admin", "secretary", "nutritionist")
 def list_specialists():
+    if "nutritionist" in [role.name for role in current_user.roles]:
+        flash("Acesso negado! Você não tem permissão para acessar essa seção.", "danger")
+        return redirect(url_for("main.index"))
+
     specialists = Specialists.query.all()
     return render_template("admin/specialists/list_specialists.html", specialists=specialists)
 
