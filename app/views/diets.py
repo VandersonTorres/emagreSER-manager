@@ -1,4 +1,5 @@
 import os
+import re
 
 from flask import (
     Blueprint,
@@ -11,12 +12,13 @@ from flask import (
     send_from_directory,
     url_for,
 )
-from flask_security import roles_accepted
-from twilio.rest import Client
+from flask_security import current_user, roles_accepted
+from twilio.base.exceptions import TwilioRestException
 from werkzeug.utils import secure_filename
 
 from app.forms import DietForm
-from app.models import Diet, db
+from app.models import Diet, Patients, Specialists, db
+from scripts.utils import twilio_send_diet
 
 diets_bp = Blueprint("diets", __name__)
 
@@ -24,8 +26,12 @@ diets_bp = Blueprint("diets", __name__)
 @diets_bp.route("/diets")
 @roles_accepted("admin", "secretary", "nutritionist")
 def list_diets():
+    patients = Patients.query.all()
+    if "nutritionist" in [role.name for role in current_user.roles]:
+        patients = Patients.query.join(Specialists).filter(Specialists.email == current_user.email).all()
+
     diets = Diet.query.all()
-    return render_template("admin/diets/list_diets.html", diets=diets)
+    return render_template("admin/diets/list_diets.html", patients=patients, diets=diets)
 
 
 @diets_bp.route("/diets/add", methods=["GET", "POST"])
@@ -85,22 +91,40 @@ def download_diet(filename):
 @diets_bp.route("/send_diet/<int:diet_id>", methods=["POST"])
 @roles_accepted("admin", "secretary", "nutritionist")
 def send_diet(diet_id):
-    def twilio_send_diet(patient, telephone, diet):
-        client = Client(current_app.config["TWILIO_SID"], current_app.config["TWILIO_AUTH"])
-        message = f"Olá {patient}, aqui está sua dieta:\n{diet}"
-        client.messages.create(body=message, from_=current_app.config["TWILIO_PHONE"], to=telephone)
-
-    telephone = request.form.get("telefone")
-    if not telephone:
-        return jsonify({"error": "Número de telefone é obrigatório"}), 400
+    patient = Patients.query.get_or_404(request.form.get("patient_id"))
+    patient_name = patient.name
+    cleaned_telephone = re.sub(r"[\s(),-]", "", patient.tel_number)
+    if len(cleaned_telephone) == 11:
+        telephone = f"+55{cleaned_telephone}"
+    else:
+        telephone = f"+55{cleaned_telephone[:2]}9{cleaned_telephone[2:len(cleaned_telephone)]}"
 
     diet = Diet.query.get_or_404(diet_id)
     if not diet.pdf_file:
         return jsonify({"error": "Essa dieta não possui um arquivo PDF"}), 400
 
-    # Send diet by WhatsApp
-    response = twilio_send_diet(
-        patient="Paciente", telephone=telephone, diet_name=diet.name, pdf_filename=diet.pdf_file
-    )
+    # Generating public URL for the PDF
+    pdf_url = url_for("diets.serve_file", filename=diet.pdf_file, _external=True)
+    try:
+        # Send diet by WhatsApp
+        response = twilio_send_diet(
+            patient=patient_name,
+            telephone=telephone,
+            diet=diet.name,
+            pdf_url=pdf_url,
+            app=current_app,
+        )
+        flash(
+            f"Dieta '{diet.name}' enviada com sucesso para o paciente '{patient_name}'! "
+            f"ID de Confirmação: '{response}'",
+            "success",
+        )
+        return redirect(url_for("diets.list_diets"))
+    except TwilioRestException:
+        flash("Não foi possível enviar a dieta com sucesso. Consulte o suporte!", "danger")
+        return redirect(url_for("diets.list_diets"))
 
-    return jsonify({"message": response}), 200
+
+@diets_bp.route("/uploads/<filename>")
+def serve_file(filename):
+    return send_from_directory(current_app.config["UPLOAD_FOLDER"], filename)

@@ -1,6 +1,7 @@
 from datetime import timedelta
 
 from flask import flash, redirect, url_for
+from twilio.rest import Client
 
 from app.models import Schedules
 
@@ -22,3 +23,12 @@ def is_valid_time(candidate, specialist):
         Schedules.specialist == specialist, Schedules.date_time >= lower_bound, Schedules.date_time <= upper_bound
     ).first()
     return conflict is None
+
+
+def twilio_send_diet(patient, telephone, diet, pdf_url, app):
+    client = Client(app.config["TWILIO_SID"], app.config["TWILIO_AUTH"])
+    message_text = f"Olá {patient}, aqui está sua dieta dessa semana:\n{diet}"
+    message = client.messages.create(
+        body=message_text, from_=app.config["TWILIO_PHONE"], to=telephone, media_url=[pdf_url]
+    )
+    return message.sid
