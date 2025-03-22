@@ -13,6 +13,7 @@ document.addEventListener("DOMContentLoaded", function () {
     const necCalInput = document.getElementById("necessidade_calorica");
     const slimmingKCAL = 30;
     const maintenanceKCAL = 35;
+    const gainKCAL = 45;
     const mlWater = 35;
 
     // Get the previous weight evaluation (this is a 'hidden' input added on template)
@@ -43,7 +44,7 @@ document.addEventListener("DOMContentLoaded", function () {
             } else if (imc <= 24.9 && imc >= 18.5) {
                 calculateKcalMaintenance();
             } else {
-                necCalInput.value = "";
+                calculateKcalGainWeight();
             }
         } else {
             imcInput.value = "";
@@ -124,6 +125,17 @@ document.addEventListener("DOMContentLoaded", function () {
         }
         let amountKCAL = (weight * maintenanceKCAL);
         necCalInput.value = `${Math.round(amountKCAL)} Kcal/ Dia (Manutenção)`;
+    };
+
+    // Calculate daily KCAL for gain of weight
+    function calculateKcalGainWeight() {
+        let weight = parseFloat(pesoInput.value);
+        if (isNaN(weight)) {
+            necCalInput.value = "";
+            return;
+        }
+        let amountKCAL = (weight * gainKCAL);
+        necCalInput.value = `${Math.round(amountKCAL)} Kcal/ Dia (Ganhar Peso)`;
     };
 
     // Calculate the need of daily water ingestion
