@@ -6,13 +6,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>EmagreSER</title>
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        img {
+            max-width: 100%;
+            height: auto;
+        }
+    </style>
 </head>
 
 <body>
     <header>
         <div class="logo-title">
-            <img width="500" src="{{ url_for('static', filename='img/logo2.png') }}" alt="Logo EmagreSER" class="logo">
-            <img width="75" src="{{ url_for('static', filename='img/logo1.png') }}" alt="Logo EmagreSER" class="logo">
+            <img style="width: 30%;" src="{{ url_for('static', filename='img/logo2.png') }}" alt="Logo EmagreSER" class="logo">
+            <img style="width: 4%;" src="{{ url_for('static', filename='img/logo1.png') }}" alt="Logo EmagreSER" class="logo">
         </div>
         <nav>
             <a href="/">Início</a>
