@@ -25,8 +25,20 @@ class Config:
     # Uploads Settings
     UPLOAD_FOLDER = os.path.join(BASE_DIR, "uploads")
     ALLOWED_EXTENSIONS = {"pdf"}
+    os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
     # WhatsApp API Settings
-    TWILIO_SID = os.getenv("EMAGRESER_TWILIO_SID", "Missing TWILIO SID")
-    TWILIO_AUTH = os.getenv("EMAGRESER_TWILIO_AUTH", "Missing TWILIO AUTH")
-    TWILIO_PHONE = os.getenv("EMAGRESER_TWILIO_NUMBER", "Missing TWILIO NUMBER")
+    # https://console.twilio.com/
+    TWILIO_SID = os.getenv("TWILIO_ACCOUNT_SID", "Missing TWILIO SID")
+    TWILIO_AUTH = os.getenv("TWILIO_AUTH_TOKEN", "Missing TWILIO AUTH")
+    TWILIO_PHONE = os.getenv("TWILIO_PHONE", "Missing TWILIO NUMBER")
+
+    # Mail Settings
+    MAIL_SERVER = "smtp.gmail.com"
+    MAIL_PORT = 465  # 465 for SSL, 587 for TLS
+    MAIL_USE_TLS = False
+    MAIL_USE_SSL = True
+    # Need to activate 2 factors auth and create an "app password"
+    MAIL_USERNAME = os.getenv("EMAGRESER_MAIL_USERNAME", "emagreser.auriculo@gmail.com")
+    MAIL_PASSWORD = os.getenv("EMAGRESER_MAIL_PASSWORD", "Missing Gmail Password")
+    MAIL_DEFAULT_SENDER = ("EmagreSER", "emagreser.auriculo@gmail.com")

@@ -22,12 +22,19 @@
         <a class="view-button" href="{{ url_for('diets.view_diet', id=diet.id) }}" target="_blank">Ver</a>
         &nbsp;
         <a class="remove-button" href="{{ url_for('diets.delete_diet', id=diet.id) }}">Remover</a>
-    </li>
-    <li>
-        <form class="send-diet-form" method="POST" action="{{ url_for('diets.send_diet', diet_id=diet.id) }}">
-            <input type="text" name="telephone" placeholder="Telefone do paciente">
-            <button type="submit">Enviar por WhatsApp</button>
-        </form>
+        <form id="send-diet-form-{{ diet.id }}" method="POST">
+            <select name="patient_id" required>
+                {% for patient in patients %}
+                <option value="{{ patient.id }}">{{ patient.name }}</option>
+                {% endfor %}
+            </select>
+            <button type="submit" formaction="{{ url_for('diets.send_diet_wpp', diet_id=diet.id) }}">
+                Enviar por WhatsApp
+            </button>
+            <button type="submit" formaction="{{ url_for('diets.send_diet_email', diet_id=diet.id) }}">
+                Enviar por Email
+            </button>
+          </form>
     </li>
     {% endfor %}
 </ul>
