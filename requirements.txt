@@ -40,6 +40,7 @@ passlib==1.7.4
 platformdirs==4.3.6
 pre_commit==4.1.0
 propcache==0.2.1
+psycopg2-binary
 PyJWT==2.10.1
 PyYAML==6.0.2
 requests==2.32.3
