@@ -18,7 +18,8 @@
 {% if diets %}
 <ul>
     {% for diet in diets %}
-    <li>{{ diet.name }} -
+    <br>
+    <li><strong>{{ diet.name }}</strong> -
         <a class="view-button" href="{{ url_for('diets.view_diet', id=diet.id) }}" target="_blank">Ver</a>
         &nbsp;
         <a class="remove-button" href="{{ url_for('diets.delete_diet', id=diet.id) }}">Remover</a>
@@ -36,6 +37,8 @@
             </button>
           </form>
     </li>
+    <br>
+    <hr>
     {% endfor %}
 </ul>
 {% else %}
