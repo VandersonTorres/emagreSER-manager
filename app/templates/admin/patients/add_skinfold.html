@@ -13,7 +13,7 @@
 {% endif %}
 {% endwith %}
 
-<h2>Pregas Cutâneas</h2>
+<h2>Bioimpedância</h2>
 <p><strong>Paciente:</strong> {{ patient.name }}</p>
 <form class="add-skinfold-form" method="POST" action="{{ url_for('patients.add_skinfold', patient_id=patient.id) }}">
     {{ form.hidden_tag() }}

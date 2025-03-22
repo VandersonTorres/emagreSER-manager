@@ -61,7 +61,7 @@
 <hr>
 
 <div class="add-skinfold-info">
-    <h3>Adicionar Dados de Pregas Cutâneas</h3>
+    <h3>Adicionar Dados de Bioimpedância</h3>
     <form class="add-skinfold-form" id="skinfold-form" method="GET">
         <label for="patient_select_skinfold">Selecione o Paciente:</label>
         <select id="patient_select_skinfold" name="patient_id">
@@ -70,7 +70,7 @@
             <option value="{{ patient.id }}">{{ patient.name }} | CPF: {{ patient.cpf }}</option>
             {% endfor %}
         </select>
-        <button type="submit" onclick="redirectSkinfold(event)">Aferir Pregas Cutâneas</button>
+        <button type="submit" onclick="redirectSkinfold(event)">Aferir Bioimpedância</button>
     </form>
 </div>
 {% else %}
