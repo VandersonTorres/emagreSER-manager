@@ -128,7 +128,7 @@ class Schedules(db.Model):
     __tablename__ = "schedules"
 
     id = db.Column(db.Integer, primary_key=True)
-    patient_name = db.Column(db.String(255), db.ForeignKey("patients.name"), nullable=False)
+    patient_id = db.Column(db.Integer, db.ForeignKey("patients.id", ondelete="CASCADE"), nullable=False)
     date_time = db.Column(db.DateTime, nullable=False)
     specialist = db.Column(db.String, nullable=False)
     status = db.Column(db.String, default="pendente")
@@ -136,4 +136,4 @@ class Schedules(db.Model):
     patient = db.relationship("Patients", backref="schedules")
 
     def __repr__(self):
-        return f"<Schedule {self.patient_name} | {self.specialist} | {self.date_time}>"
+        return f"<Schedule {self.patient_id} | {self.specialist} | {self.date_time}>"

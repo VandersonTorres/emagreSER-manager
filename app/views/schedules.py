@@ -61,7 +61,7 @@ def schedule_action():
             return redirect(url_for("main.index"))
 
     if request.method == "POST":
-        patient_name = request.form["patient_name"]
+        patient_id = request.form["patient_id"]
         date_time_str = request.form["date_time"]
         specialist = request.form["specialist"]
         date_time = datetime.strptime(date_time_str, "%Y-%m-%dT%H:%M")
@@ -103,11 +103,11 @@ def schedule_action():
             )
             return redirect(url_for("schedules.schedule_action"))
 
-        schedule = Schedules(patient_name=patient_name, date_time=date_time, specialist=specialist)
+        schedule = Schedules(patient_id=patient_id, date_time=date_time, specialist=specialist)
         db.session.add(schedule)
         db.session.commit()
 
-        flash(f"Consulta para '{patient_name}' agendada com o profissional '{specialist}' com sucesso!")
+        flash(f"Consulta para '{schedule.patient.name}' agendada com o profissional '{specialist}' com sucesso!")
         return redirect(url_for("schedules.list_schedules"))
 
     return render_template("admin/schedules/schedule_action.html", patients=patients, specialists=specialists)

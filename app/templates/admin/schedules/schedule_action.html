@@ -16,9 +16,9 @@
 <h2>Agendar Consulta</h2>
 <form class="add-schedule-form" method="POST" action="{{ url_for('schedules.schedule_action') }}">
     <label>Paciente:</label>
-    <select name="patient_name">
+    <select name="patient_id">
         {% for patient in patients %}
-        <option value="{{ patient.name }}">{{ patient.name }}</option>
+        <option value="{{ patient.id }}">{{ patient.name }}</option>
         {% endfor %}
     </select>
     <br>
