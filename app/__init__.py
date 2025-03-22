@@ -1,8 +1,8 @@
 from flask import Flask
-from flask_mail import Mail
 from flask_migrate import Migrate
 from flask_security import Security, SQLAlchemyUserDatastore
 
+from app.extensions import mail
 from app.models import Role, User, db
 from app.views.admin import admin_bp
 from app.views.diets import diets_bp
@@ -21,12 +21,12 @@ def create_app():
 
     # Initialize extensions
     db.init_app(app)
+    mail.init_app(app)
 
     # Setup Flask-Security
     user_datastore = SQLAlchemyUserDatastore(db, User, Role)
     security = Security(app, user_datastore)  # noqa F841
     migrate = Migrate(app, db)  # noqa: F841
-    mail = Mail(app)  # noqa: F841
 
     with app.app_context():
         db.create_all()  # Create database tables if they don't exist

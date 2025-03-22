@@ -40,7 +40,7 @@ class Patients(db.Model):
     birth_date = db.Column(db.Date, nullable=False)
     cpf = db.Column(db.String(14), unique=True, nullable=False)
     tel_number = db.Column(db.String(20), nullable=False)
-    email = db.Column(db.String(100), unique=True, nullable=False)
+    email = db.Column(db.String(100), unique=True, nullable=True)
     started_at = db.Column(db.DateTime, default=datetime.now(timezone.utc))
     specialist_id = db.Column(db.Integer, db.ForeignKey("specialists.id"), nullable=True)
 

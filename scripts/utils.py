@@ -29,6 +29,9 @@ def twilio_send_diet(patient, telephone, diet, pdf_url, app):
     client = Client(app.config["TWILIO_SID"], app.config["TWILIO_AUTH"])
     message_text = f"Olá {patient}, aqui está sua dieta dessa semana:\n{diet}"
     message = client.messages.create(
-        body=message_text, from_=app.config["TWILIO_PHONE"], to=telephone, media_url=[pdf_url]
+        body=message_text,
+        from_=f'whatsapp:{app.config["TWILIO_PHONE"]}',
+        to=f"whatsapp:{telephone}",
+        media_url=[pdf_url],
     )
     return message.sid
