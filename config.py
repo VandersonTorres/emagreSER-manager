@@ -19,7 +19,9 @@ class Config:
     SECURITY_MSG_INVALID_PASSWORD = ("Senha inválida, tente novamente", "error")
 
     # SQL Settings
-    SQLALCHEMY_DATABASE_URI = os.environ.get("DATABASE_URL", f"sqlite:///{os.path.join(BASE_DIR, 'database.db')}")
+    SQLALCHEMY_DATABASE_URI = os.environ.get(
+        "SQLALCHEMY_DATABASE_URI", f"sqlite:///{os.path.join(BASE_DIR, 'database.db')}"
+    )
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
     # Uploads Settings
