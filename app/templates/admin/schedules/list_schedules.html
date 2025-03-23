@@ -32,7 +32,7 @@
     <tbody>
         {% for schedule in schedules %}
         <tr>
-            <td>{{ schedule.patient_name }}</td>
+            <td>{{ schedule.patient.name }}</td>
             <td>{{ schedule.date_time.strftime("%d/%m/%Y %H:%M") }}</td>
             <td>{{ schedule.status }}</td>
             <td>
