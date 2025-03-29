@@ -22,6 +22,12 @@
         <label for="data_medicao">Data de Medição:</label>
         {{ form.data_medicao() }}
         <br>
+        <label for="altura">Altura (m):</label>
+        {{ form.altura(step="0.001", class="form-control", id="altura", placeholder="1.60") }}
+        <br>
+        <label for="peso">Peso (Kg):</label>
+        {{ form.peso(step="0.01") }}
+        <br>
         <label for="massa_muscular">Massa Muscular:</label>
         {{ form.massa_muscular(step="0.01") }}
         <br>
@@ -36,6 +42,10 @@
         <br>
         <label for="quadril">Quadril:</label>
         {{ form.quadril(step="0.01") }}
+        <br>
+        <label for="idade_metabolica">Idade Metabólica:</label>
+        {{ form.idade_metabolica(step="0", class="form-control", id="idade_metabolica") }}
+        <input type="hidden" id="idade_metabolica" value="{{ idade_metabolica }}">
         <br><br>
         <button type="submit">Salvar Pregas</button>
     </form>

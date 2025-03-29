@@ -10,7 +10,7 @@ from wtforms import (
     TextAreaField,
     TimeField,
 )
-from wtforms.validators import DataRequired, Optional
+from wtforms.validators import DataRequired, InputRequired, Optional
 
 from app.models import Diet, Specialists
 
@@ -79,8 +79,6 @@ class AnthropometricAssessmentForm(FlaskForm):
     data_avaliacao = DateField("Data de Avaliação", format="%Y-%m-%d", validators=[DataRequired()])
     ultima_guia = StringField("Nome da Guia", validators=[DataRequired()])
     idade = IntegerField("Idade", validators=[DataRequired()])
-    altura = FloatField("Altura (m)", validators=[DataRequired()])
-    peso = FloatField("Peso (kg)", validators=[DataRequired()])
     evolucao = StringField("Evolução", validators=[Optional()])
     p_max = FloatField("Peso Máximo", validators=[DataRequired()])
     p_ide = FloatField("Peso Ideal", validators=[DataRequired()])
@@ -89,7 +87,6 @@ class AnthropometricAssessmentForm(FlaskForm):
     nutri_class = StringField("Classificação Nutricional", validators=[DataRequired()])
     necessidade_calorica = StringField("Necessidade Calórica", validators=[Optional()])
     ingestao_liquido = FloatField("Ingestão de Líquido", validators=[DataRequired()])
-    idade_metabolica = IntegerField("Idade Metabólica", validators=[DataRequired()])
     grau_atv_fisica = SelectField(
         "Grau de Atividade Física",
         choices=[
@@ -107,11 +104,14 @@ class AnthropometricAssessmentForm(FlaskForm):
 
 class SkinfoldMeasurementForm(FlaskForm):
     data_medicao = DateField("Data de Medição", format="%Y-%m-%d", validators=[DataRequired()])
-    massa_muscular = FloatField("Massa Muscular", validators=[DataRequired()])
-    gordura = FloatField("Gordura", validators=[DataRequired()])
-    abdominal = FloatField("Abdominal", validators=[DataRequired()])
-    cintura = FloatField("Cintura", validators=[DataRequired()])
-    quadril = FloatField("Quadril", validators=[DataRequired()])
+    altura = FloatField("Altura (m)", validators=[DataRequired()])
+    peso = FloatField("Peso (kg)", validators=[InputRequired()])
+    massa_muscular = FloatField("Massa Muscular", validators=[InputRequired()])
+    gordura = FloatField("Gordura", validators=[InputRequired()])
+    abdominal = FloatField("Abdominal", validators=[InputRequired()])
+    cintura = FloatField("Cintura", validators=[InputRequired()])
+    quadril = FloatField("Quadril", validators=[InputRequired()])
+    idade_metabolica = IntegerField("Idade Metabólica", validators=[InputRequired()])
 
     submit = SubmitField("Salvar")
 

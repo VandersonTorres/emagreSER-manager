@@ -40,8 +40,6 @@
                 <th>Data Avaliação</th>
                 <th>Nome da Guia</th>
                 <th>Idade</th>
-                <th>Altura</th>
-                <th>Peso</th>
                 <th>Evolução</th>
                 <th>Peso Max</th>
                 <th>Peso Ideal</th>
@@ -50,7 +48,6 @@
                 <th>Classificação Nutricional</th>
                 <th>Necessidade Calórica</th>
                 <th>Ingestão de Líquido</th>
-                <th>Idade Metabólica</th>
                 <th>Grau Atv. Física</th>
                 <th>Pressão Arterial</th>
             </tr>
@@ -61,8 +58,6 @@
                 <td>{{ evaluation.data_avaliacao }}</td>
                 <td>{{ evaluation.ultima_guia }}</td>
                 <td>{{ evaluation.idade }}</td>
-                <td>{{ evaluation.altura }}</td>
-                <td>{{ evaluation.peso }}</td>
                 <td>{{ evaluation.evolucao }}</td>
                 <td>{{ evaluation.p_max }}</td>
                 <td>{{ evaluation.p_ide }}</td>
@@ -71,7 +66,6 @@
                 <td>{{ evaluation.nutri_class }}</td>
                 <td>{{ evaluation.necessidade_calorica }}</td>
                 <td>{{ evaluation.ingestao_liquido }}</td>
-                <td>{{ evaluation.idade_metabolica }}</td>
                 <td>{{ evaluation.grau_atv_fisica }}</td>
                 <td>{{ evaluation.pa }}</td>
             </tr>
@@ -95,22 +89,28 @@
         <thead>
             <tr>
                 <th>Data Medição</th>
+                <th>Altura</th>
+                <th>Peso</th>
                 <th>Massa Muscular</th>
                 <th>Gordura</th>
                 <th>Abdominal</th>
                 <th>Cintura</th>
                 <th>Quadril</th>
+                <th>Idade Metabólica</th>
             </tr>
         </thead>
         <tbody>
             {% for fold in patient.skinfolds %}
             <tr>
                 <td>{{ fold.data_medicao }}</td>
+                <td>{{ fold.altura }}</td>
+                <td>{{ fold.peso }}</td>
                 <td>{{ fold.massa_muscular }}</td>
                 <td>{{ fold.gordura }}</td>
                 <td>{{ fold.abdominal }}</td>
                 <td>{{ fold.cintura }}</td>
                 <td>{{ fold.quadril }}</td>
+                <td>{{ fold.idade_metabolica }}</td>
             </tr>
             {% endfor %}
         </tbody>
@@ -118,7 +118,7 @@
     <br>
     <a href="{{ url_for('patients.add_skinfold', patient_id=patient.id) }}">Adicionar Bioimpedância</a>
     {% else %}
-    <p>Não há registros de pregas cutâneas.</p>
+    <p>Não há registros de Bioimpedância.</p>
     <a href="{{ url_for('patients.add_skinfold', patient_id=patient.id) }}">Adicionar Bioimpedância</a>
     {% endif %}
 

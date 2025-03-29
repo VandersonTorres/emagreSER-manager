@@ -20,6 +20,12 @@ document.addEventListener("DOMContentLoaded", function () {
     let peso_anteriorInput = document.getElementById("peso_anterior");
     let peso_anterior = peso_anteriorInput ? parseFloat(peso_anteriorInput.value) : 0;
 
+    normalizeAltura();
+    calculateIMC();
+    calculateEvolucao();
+    calculateWaterIngestion();
+    recalcWeights();
+
     // Ensure height in meters
     function normalizeAltura() {
         let altura = parseFloat(alturaInput.value);
@@ -173,19 +179,6 @@ document.addEventListener("DOMContentLoaded", function () {
         }
         paInput.value = sys + "/" + dia;
     }
-
-    // Update the values while user is typing
-    pesoInput.addEventListener("input", function () {
-        calculateIMC();
-        calculateEvolucao();
-        calculateWaterIngestion();
-    });
-
-    alturaInput.addEventListener("blur", function () {
-        normalizeAltura();
-        calculateIMC();
-        recalcWeights();
-    });
 
     if (paInput) {
         paInput.addEventListener("blur", normalizePA);
