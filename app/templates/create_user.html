@@ -6,6 +6,8 @@
 <br>
 <form class="create-user-form" method="POST" action="{{ url_for('admin.create_user') }}">
     <div class="email-board">
+        <label for="name">Name:</label>
+        <input type="text" name="name" required>
         <label for="email">Email:</label>
         <input type="text" name="email" required>
     </div>

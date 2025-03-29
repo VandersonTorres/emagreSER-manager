@@ -88,6 +88,7 @@ class AnthropometricEvaluation(db.Model):
     ingestao_liquido = db.Column(db.Float, nullable=False)
     grau_atv_fisica = db.Column(db.String(20), nullable=False)
     pa = db.Column(db.String(6), nullable=False)
+    specialist_name = db.Column(db.String(100), nullable=True)
 
     def __repr__(self):
         return f"<AnthropometricEvaluation {self.patient_id} | {self.data_avaliacao}>"

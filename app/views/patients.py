@@ -126,6 +126,7 @@ def add_anthro(patient_id):
                 ingestao_liquido=form.ingestao_liquido.data,
                 grau_atv_fisica=form.grau_atv_fisica.data,
                 pa=form.pa.data,
+                specialist_name=current_user.username,
             )
             db.session.add(anthro)
             db.session.commit()
