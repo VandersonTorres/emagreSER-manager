@@ -5,7 +5,7 @@ from flask_security import current_user, roles_accepted
 from sqlalchemy.exc import IntegrityError
 
 from app.forms import AnthropometricAssessmentForm, DietForm, PatientForm, SkinfoldMeasurementForm
-from app.models import AnthropometricEvaluation, Patients, SkinFolds, Specialists, db
+from app.models import AnthropometricEvaluation, Patients, Schedules, SkinFolds, Specialists, db
 from scripts.utils import block_access_to_patients
 
 patients_bp = Blueprint("patients", __name__)
@@ -15,7 +15,13 @@ patients_bp = Blueprint("patients", __name__)
 @roles_accepted("admin", "secretary", "nutritionist")
 def list_patients():
     if "nutritionist" in [role.name for role in current_user.roles]:
-        patients = Patients.query.join(Specialists).filter(Specialists.email == current_user.email).all()
+        now = datetime.now()
+        patients = (
+            Patients.query.join(Schedules, Patients.id == Schedules.patient_id)
+            .filter(Schedules.specialist == current_user.username, Schedules.date_time >= now)
+            .distinct()
+            .all()
+        )
     else:
         patients = Patients.query.all()
     return render_template("admin/patients/list_patients.html", patients=patients)

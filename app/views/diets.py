@@ -1,5 +1,6 @@
 import os
 import re
+from datetime import datetime
 from smtplib import SMTPAuthenticationError, SMTPSenderRefused
 
 from flask import Blueprint, current_app, flash, redirect, render_template, request, send_from_directory, url_for
@@ -10,7 +11,7 @@ from werkzeug.utils import secure_filename
 
 from app.extensions import mail
 from app.forms import DietForm
-from app.models import Diet, Patients, Specialists, db
+from app.models import Diet, Patients, Schedules, db
 from scripts.utils import twilio_send_diet
 
 diets_bp = Blueprint("diets", __name__)
@@ -21,7 +22,13 @@ diets_bp = Blueprint("diets", __name__)
 def list_diets():
     patients = Patients.query.all()
     if "nutritionist" in [role.name for role in current_user.roles]:
-        patients = Patients.query.join(Specialists).filter(Specialists.email == current_user.email).all()
+        now = datetime.now()
+        patients = (
+            Patients.query.join(Schedules, Patients.id == Schedules.patient_id)
+            .filter(Schedules.specialist == current_user.username, Schedules.date_time >= now)
+            .distinct()
+            .all()
+        )
 
     diets = Diet.query.all()
     return render_template("admin/diets/list_diets.html", patients=patients, diets=diets)
