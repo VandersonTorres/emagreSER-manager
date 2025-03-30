@@ -17,8 +17,14 @@ def list_patients():
     if "nutritionist" in [role.name for role in current_user.roles]:
         now = datetime.now()
         patients = (
-            Patients.query.join(Schedules, Patients.id == Schedules.patient_id)
-            .filter(Schedules.specialist == current_user.username, Schedules.date_time >= now)
+            Patients.query.join(Specialists, Patients.specialist_id == Specialists.id)  # Link Patients to Specialists
+            .outerjoin(Schedules, Patients.id == Schedules.patient_id)  # Outer Linking Patients to Schedules
+            .filter(
+                (Specialists.email == current_user.email)
+                | (  # Getting only Nutri's Patients
+                    (Schedules.specialist == current_user.username) & (Schedules.date_time >= now)
+                )  # And her external appointments
+            )
             .distinct()
             .all()
         )

@@ -11,7 +11,7 @@ from werkzeug.utils import secure_filename
 
 from app.extensions import mail
 from app.forms import DietForm
-from app.models import Diet, Patients, Schedules, db
+from app.models import Diet, Patients, Schedules, Specialists, db
 from scripts.utils import twilio_send_diet
 
 diets_bp = Blueprint("diets", __name__)
@@ -24,8 +24,14 @@ def list_diets():
     if "nutritionist" in [role.name for role in current_user.roles]:
         now = datetime.now()
         patients = (
-            Patients.query.join(Schedules, Patients.id == Schedules.patient_id)
-            .filter(Schedules.specialist == current_user.username, Schedules.date_time >= now)
+            Patients.query.join(Specialists, Patients.specialist_id == Specialists.id)  # Link Patients to Specialists
+            .outerjoin(Schedules, Patients.id == Schedules.patient_id)  # Outer Linking Patients to Schedules
+            .filter(
+                (Specialists.email == current_user.email)
+                | (  # Getting only Nutri's Patients
+                    (Schedules.specialist == current_user.username) & (Schedules.date_time >= now)
+                )  # And her external appointments
+            )
             .distinct()
             .all()
         )

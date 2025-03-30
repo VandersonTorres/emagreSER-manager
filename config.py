@@ -14,7 +14,7 @@ class Config:
     SECURITY_CHANGEABLE = True  # Enable password change functionality
     SECURITY_SEND_PASSWORD_CHANGE_EMAIL = False
     SECURITY_POST_LOGIN_VIEW = "/"
-    SECURITY_POST_CHANGE_VIEW = "/profile"
+    SECURITY_POST_CHANGE_VIEW = "/"
     SECURITY_POST_LOGOUT_VIEW = "/login"
     SECURITY_MSG_INVALID_PASSWORD = ("Senha inválida, tente novamente", "error")
 

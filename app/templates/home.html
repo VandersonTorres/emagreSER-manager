@@ -106,5 +106,12 @@
         <a href="{{ url_for('admin.create_user') }}">Cadastrar Novo Usuário</a>
     </fieldset>
 </footer>
-
+<script>
+    // Remove flash messages after 3 econds
+    setTimeout(function() {
+      document.querySelectorAll(".alert").forEach(function(alert) {
+        alert.style.display = "none";
+      });
+    }, 3000);
+  </script>
 {% endblock %}
