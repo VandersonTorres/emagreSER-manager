@@ -5,7 +5,7 @@ from flask_security import current_user, roles_accepted
 from sqlalchemy.exc import IntegrityError
 
 from app.forms import AnthropometricAssessmentForm, DietForm, PatientForm, SkinfoldMeasurementForm
-from app.models import AnthropometricEvaluation, Patients, SkinFolds, Specialists, db
+from app.models import AnthropometricEvaluation, Patients, Schedules, SkinFolds, Specialists, db
 from scripts.utils import block_access_to_patients
 
 patients_bp = Blueprint("patients", __name__)
@@ -15,7 +15,13 @@ patients_bp = Blueprint("patients", __name__)
 @roles_accepted("admin", "secretary", "nutritionist")
 def list_patients():
     if "nutritionist" in [role.name for role in current_user.roles]:
-        patients = Patients.query.join(Specialists).filter(Specialists.email == current_user.email).all()
+        now = datetime.now()
+        patients = (
+            Patients.query.join(Schedules, Patients.id == Schedules.patient_id)
+            .filter(Schedules.specialist == current_user.username, Schedules.date_time >= now)
+            .distinct()
+            .all()
+        )
     else:
         patients = Patients.query.all()
     return render_template("admin/patients/list_patients.html", patients=patients)
@@ -88,12 +94,26 @@ def add_anthro(patient_id):
         diet_form = DietForm()
         diet_form.name.data = form.ultima_guia.data
         # Search for the last evaluation of the patient (except the current, if there was one)
-        previous_anthro = (
-            AnthropometricEvaluation.query.filter_by(patient_id=patient.id)
-            .order_by(AnthropometricEvaluation.data_avaliacao.desc())
-            .first()
-        )
-        peso_anterior = previous_anthro.peso if previous_anthro else 0
+        last_skinfold = SkinFolds.query.filter_by(patient_id=patient.id).order_by(SkinFolds.data_medicao.desc()).first()
+
+        if last_skinfold:
+            ultimo_peso = last_skinfold.peso
+            ultima_altura = last_skinfold.altura
+            evaluation_date = last_skinfold.data_medicao
+            # Searching for the previous record to last weight
+            previous_skinfold = (
+                SkinFolds.query.filter(
+                    SkinFolds.patient_id == patient.id, SkinFolds.data_medicao < last_skinfold.data_medicao
+                )
+                .order_by(SkinFolds.data_medicao.desc())
+                .first()
+            )
+            peso_anterior = previous_skinfold.peso if previous_skinfold else 0
+        else:
+            ultimo_peso = 0
+            peso_anterior = 0
+            ultima_altura = 0
+            evaluation_date = ""
         if form.validate_on_submit():
             diet_name = diet_form.other_name.data if diet_form.name.data == "outro" else diet_form.name.data
             form.ultima_guia.data = diet_name
@@ -102,8 +122,6 @@ def add_anthro(patient_id):
                 data_avaliacao=form.data_avaliacao.data,
                 ultima_guia=form.ultima_guia.data,
                 idade=form.idade.data,
-                altura=form.altura.data,
-                peso=form.peso.data,
                 evolucao=form.evolucao.data,
                 p_max=form.p_max.data,
                 p_ide=form.p_ide.data,
@@ -112,9 +130,9 @@ def add_anthro(patient_id):
                 nutri_class=form.nutri_class.data,
                 necessidade_calorica=form.necessidade_calorica.data,
                 ingestao_liquido=form.ingestao_liquido.data,
-                idade_metabolica=form.idade_metabolica.data,
                 grau_atv_fisica=form.grau_atv_fisica.data,
                 pa=form.pa.data,
+                specialist_name=current_user.username,
             )
             db.session.add(anthro)
             db.session.commit()
@@ -126,6 +144,9 @@ def add_anthro(patient_id):
             diet_form=diet_form,
             patient=patient,
             peso_anterior=peso_anterior,
+            ultimo_peso=ultimo_peso,
+            ultima_altura=ultima_altura,
+            evaluation_date=evaluation_date,
         )
 
 
@@ -139,22 +160,28 @@ def add_skinfold(patient_id):
         msg="Acesso negado: Você só pode adicionar dados para os seus próprios pacientes.",
         to_redirect="patients.list_patients",
     ):
+        last_patient_height = patient.skinfolds[-1].altura if len(patient.skinfolds) else None
         form = SkinfoldMeasurementForm()
         if form.validate_on_submit():
             skinfold = SkinFolds(
                 patient_id=patient.id,
                 data_medicao=form.data_medicao.data,
+                altura=last_patient_height if last_patient_height else form.altura.data,
+                peso=form.peso.data,
                 massa_muscular=form.massa_muscular.data,
                 gordura=form.gordura.data,
                 abdominal=form.abdominal.data,
                 cintura=form.cintura.data,
                 quadril=form.quadril.data,
+                idade_metabolica=form.idade_metabolica.data,
             )
             db.session.add(skinfold)
             db.session.commit()
-            flash("Pregas cutâneas adicionadas com sucesso!", "success")
+            flash("Bioimpedância adicionada com sucesso!", "success")
             return redirect(url_for("patients.view_patient", id=patient.id))
-        return render_template("admin/patients/add_skinfold.html", form=form, patient=patient)
+        return render_template(
+            "admin/patients/add_skinfold.html", form=form, patient=patient, last_patient_height=last_patient_height
+        )
 
 
 @patients_bp.route("/patients/edit/<int:id>", methods=["GET", "POST"])
@@ -214,7 +241,7 @@ def edit_skinfold(patient_id, skinfold_id):
     if form.validate_on_submit():
         form.populate_obj(skinfold)
         db.session.commit()
-        flash("Dados de pregas cutâneas atualizados com sucesso!", "success")
+        flash("Dados de Bioimpedância atualizados com sucesso!", "success")
         return redirect(url_for("patients.view_patient", id=patient_id))
     return render_template("admin/patients/edit_skinfold.html", form=form, skinfold=skinfold)
 
@@ -270,9 +297,9 @@ def view_custom_history(id, pat_name):
             patient_age = patient.anthropometric_evaluations[-1].idade
             initial_evaluation_date = patient.anthropometric_evaluations[0].data_avaliacao.strftime("%d/%m/%Y")
             last_imc = patient.anthropometric_evaluations[-1].imc
-            height = patient.anthropometric_evaluations[-1].altura
-            initial_weight_evaluated = patient.anthropometric_evaluations[0].peso
-            last_weight_evaluated = patient.anthropometric_evaluations[-1].peso
+            height = patient.skinfolds[-1].altura
+            initial_weight_evaluated = patient.skinfolds[0].peso
+            last_weight_evaluated = patient.skinfolds[-1].peso
             ideal_weight = patient.anthropometric_evaluations[-1].p_ide
             max_weight = patient.anthropometric_evaluations[-1].p_max
 
@@ -303,10 +330,8 @@ def view_custom_history(id, pat_name):
             )
 
             # Preparing data for evolution grafic
-            evaluation_dates = [
-                evaluation.data_avaliacao.strftime("%d/%m/%Y") for evaluation in patient.anthropometric_evaluations
-            ]
-            evaluation_weights = [evaluation.peso for evaluation in patient.anthropometric_evaluations]
+            evaluation_dates = [skinfold.data_medicao.strftime("%d/%m/%Y") for skinfold in patient.skinfolds]
+            evaluation_weights = [skinfold.peso for skinfold in patient.skinfolds]
 
             return render_template(
                 "admin/patients/view_custom_history.html",

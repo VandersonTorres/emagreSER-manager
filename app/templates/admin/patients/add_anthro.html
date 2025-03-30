@@ -15,6 +15,7 @@
 
 <h2>Avaliação Antropométrica</h2>
 <p><strong>Paciente:</strong> {{ patient.name }}</p>
+{% if ultimo_peso %}
 <form class="add-anthro-form" method="POST" action="{{ url_for('patients.add_anthro', patient_id=patient.id) }}">
     {{ form.hidden_tag() }}
     <label for="data_avaliacao">Data de Avaliação:</label>
@@ -35,10 +36,15 @@
     {{ form.idade(size=5) }}
     <br>
     <label for="altura">Altura (m):</label>
-    {{ form.altura(step="0.001", class="form-control", id="altura", placeholder="1.60") }}
+    <input type="number" step="0.1" class="form-control" id="altura" name="altura" value="{{ ultima_altura }}" readonly>
     <br>
     <label for="peso">Peso (kg):</label>
-    {{ form.peso(step="0.1", class="form-control", id="peso", placeholder="62.5") }}
+    <input type="number" step="0.1" class="form-control" id="peso" name="peso" placeholder="Ex: 62.5" value="{{ ultimo_peso }}" readonly>
+    <span id="auto_calc_info" style="font-size: 9px; margin-left: 10px; color: #555;">
+        <strong>Última medição em {{ evaluation_date.strftime("%d/%m/%Y") }}</strong>
+    </span>
+    &nbsp;
+    <span title="Se a medição estiver desatualizada, solicite uma nova Bioimpedância antes de submeter esta avaliação." style="cursor: help;"> ℹ️ </span>
     <input type="hidden" id="peso_anterior" value="{{ peso_anterior }}">
     <br>
     <label for="evolucao">Evolução:</label>
@@ -89,10 +95,6 @@
         Calculado automaticamente
     </span>
     <br>
-    <label for="idade_metabolica">Idade Metabólica:</label>
-    {{ form.idade_metabolica(step="0", class="form-control", id="idade_metabolica") }}
-    <input type="hidden" id="idade_metabolica" value="{{ idade_metabolica }}">
-    <br>
     <label for="grau_atv_fisica">Grau de Atividade Física:</label>
     {{ form.grau_atv_fisica() }}
     <br>
@@ -102,6 +104,10 @@
     <br><br>
     <button type="submit">Salvar Avaliação</button>
 </form>
+{% else %}
+<h3>Este paciente ainda não passou pela avaliação de Bioimpedância.</h3>
+<a class="add-skinfold-button" href="{{ url_for('patients.add_skinfold', patient_id=patient.id) }}">Realizar Avaliação de Bioimpedância</a>
+{% endif %}
 
 <hr>
 <br>

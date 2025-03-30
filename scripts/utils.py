@@ -1,4 +1,4 @@
-from datetime import timedelta
+from datetime import datetime, timedelta
 
 from flask import flash, redirect, url_for
 from twilio.rest import Client
@@ -9,9 +9,22 @@ from app.models import Schedules
 def block_access_to_patients(patient, user, msg, to_redirect):
     """Function to restrict a improper access in Patients Routes"""
     if "nutritionist" in [role.name for role in user.roles]:
-        if patient.specialist.email != user.email:
-            flash(msg, "danger")
-            return redirect(url_for(to_redirect))
+        # If the nutri is original responsible for the patient
+        if patient.specialist.email == user.email:
+            return False  # Allow Access
+
+        # Verify if the patient has an appointment with the specialist
+        now = datetime.now()
+        has_future_schedule = Schedules.query.filter(
+            Schedules.patient_id == patient.id, Schedules.specialist == user.username, Schedules.date_time >= now
+        ).first()
+
+        if has_future_schedule:
+            return False  # Allow Access
+
+        # Block the access
+        flash(msg, "danger")
+        return redirect(url_for(to_redirect))
 
 
 def is_valid_time(candidate, specialist):

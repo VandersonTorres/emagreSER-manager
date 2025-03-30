@@ -17,6 +17,7 @@ def create_user():
         return redirect(url_for("main.index"))
 
     if request.method == "POST":
+        name = request.form.get("name")
         email = request.form.get("email")
         password = request.form.get("password")
         role_name = request.form.get("role")  # admin, nutritionist, secretary
@@ -27,7 +28,9 @@ def create_user():
         if existing_user:
             return jsonify({"error": "Usuário já está cadastrado!"}), 400
 
-        user = User(email=email, active=True, password=hash_password(password), fs_uniquifier=uuid.uuid4().hex)
+        user = User(
+            username=name, email=email, active=True, password=hash_password(password), fs_uniquifier=uuid.uuid4().hex
+        )
         role = Role.query.filter_by(name=role_name).first()
         if not role:
             role = Role(name=role_name)

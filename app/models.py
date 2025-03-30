@@ -78,8 +78,6 @@ class AnthropometricEvaluation(db.Model):
     data_avaliacao = db.Column(db.Date, nullable=False, default=datetime.now(timezone.utc))
     ultima_guia = db.Column(db.String(20), nullable=False, default="Nenhuma")
     idade = db.Column(db.Integer, nullable=False)
-    altura = db.Column(db.Float, nullable=False)
-    peso = db.Column(db.Float, nullable=False)
     evolucao = db.Column(db.Text, nullable=True)
     p_max = db.Column(db.Float, nullable=False)
     p_ide = db.Column(db.Float, nullable=False)
@@ -88,9 +86,9 @@ class AnthropometricEvaluation(db.Model):
     nutri_class = db.Column(db.String(20), nullable=False)
     necessidade_calorica = db.Column(db.String(100), nullable=True)
     ingestao_liquido = db.Column(db.Float, nullable=False)
-    idade_metabolica = db.Column(db.Integer, nullable=False)
     grau_atv_fisica = db.Column(db.String(20), nullable=False)
     pa = db.Column(db.String(6), nullable=False)
+    specialist_name = db.Column(db.String(100), nullable=True)
 
     def __repr__(self):
         return f"<AnthropometricEvaluation {self.patient_id} | {self.data_avaliacao}>"
@@ -102,11 +100,14 @@ class SkinFolds(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     patient_id = db.Column(db.Integer, db.ForeignKey("patients.id", ondelete="CASCADE"), nullable=False)
     data_medicao = db.Column(db.Date, nullable=False, default=datetime.now(timezone.utc))
-    massa_muscular = db.Column(db.Float, nullable=False)
-    gordura = db.Column(db.Float, nullable=False)
-    abdominal = db.Column(db.Float, nullable=False)
-    cintura = db.Column(db.Float, nullable=False)
-    quadril = db.Column(db.Float, nullable=False)
+    altura = db.Column(db.Float, nullable=False)
+    peso = db.Column(db.Float, nullable=False)
+    massa_muscular = db.Column(db.Float, default=0, nullable=False)
+    gordura = db.Column(db.Float, default=0, nullable=False)
+    abdominal = db.Column(db.Float, default=0, nullable=False)
+    cintura = db.Column(db.Float, default=0, nullable=False)
+    quadril = db.Column(db.Float, default=0, nullable=False)
+    idade_metabolica = db.Column(db.Integer, nullable=False)
 
     def __repr__(self):
         return f"<SkinFolds {self.patient_id} | {self.data_medicao}>"
