@@ -69,7 +69,11 @@ def add_patient():
             return redirect(url_for("patients.list_patients"))
         except IntegrityError as e:
             db.session.rollback()
-            field_name = str(e).split("UNIQUE constraint failed: ")[1].split(" ")[0]
+            field_name = str(e).split("UNIQUE constraint failed: ")
+            if len(field_name) > 1:
+                field_name = field_name[1].split(" ")[0]
+            else:
+                field_name = field_name
             error_message = (
                 f"Erro ao cadastrar paciente. O seguinte campo já foi atribuído à outro paciente: {field_name}"
             )
@@ -269,24 +273,22 @@ def view_patient(id):
 @roles_accepted("admin", "secretary", "nutritionist")
 def delete_patient(id):
     patient = Patients.query.get_or_404(id)
-    if not block_access_to_patients(
-        patient=patient,
-        user=current_user,
-        msg="Acesso negado: Você só pode remover seus próprios pacientes.",
-        to_redirect="patients.list_patients",
-    ):
-        if request.method == "POST":
-            for schedule in patient.schedules:
-                db.session.delete(schedule)
-            for evaluation in patient.anthropometric_evaluations:
-                db.session.delete(evaluation)
-            for skinfold in patient.skinfolds:
-                db.session.delete(skinfold)
-            db.session.delete(patient)
-            db.session.commit()
-            flash(f"Paciente '{patient.name}' removido com sucesso!", "success")
-            return redirect(url_for("patients.list_patients"))
-        return render_template("admin/patients/delete_patient.html", patient=patient)
+    if "nutritionist" in [role.name for role in current_user.roles]:
+        flash("Acesso negado! Você não tem permissão para remover pacientes.", "danger")
+        return redirect(url_for("patients.list_patients"))
+
+    if request.method == "POST":
+        for schedule in patient.schedules:
+            db.session.delete(schedule)
+        for evaluation in patient.anthropometric_evaluations:
+            db.session.delete(evaluation)
+        for skinfold in patient.skinfolds:
+            db.session.delete(skinfold)
+        db.session.delete(patient)
+        db.session.commit()
+        flash(f"Paciente '{patient.name}' removido com sucesso!", "success")
+        return redirect(url_for("patients.list_patients"))
+    return render_template("admin/patients/delete_patient.html", patient=patient)
 
 
 @patients_bp.route("/patients/<int:id>/view-custom-history?<pat_name>", methods=["GET", "POST"])
