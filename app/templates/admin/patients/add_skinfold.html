@@ -47,6 +47,10 @@
     <br>
     <label for="idade_metabolica">Idade Metabólica:</label>
     {{ form.idade_metabolica(step="0", class="form-control", id="idade_metabolica") }}
+    <br>
+    <label for="pa">Pressão Arterial:</label>
+    {{ form.pa(id="pa", placeholder="ex: 120/80 ou 12/8") }}
+    <span id="paError" style="color: red;"></span>
     <br><br>
     <button type="submit">Salvar Bioimpedância</button>
 </form>

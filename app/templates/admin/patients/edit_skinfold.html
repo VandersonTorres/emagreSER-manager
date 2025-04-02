@@ -46,10 +46,15 @@
         <label for="idade_metabolica">Idade Metabólica:</label>
         {{ form.idade_metabolica(step="0", class="form-control", id="idade_metabolica") }}
         <input type="hidden" id="idade_metabolica" value="{{ idade_metabolica }}">
+        <br>
+        <label for="pa">Pressão Arterial:</label>
+        {{ form.pa(id="pa", placeholder="ex: 120/80 ou 12/8") }}
+        <span id="paError" style="color: red;"></span>
         <br><br>
         <button type="submit">Salvar Pregas</button>
     </form>
 </section>
+<script src="{{ url_for('static', filename='js/automate_anthro_fields.js') }}"></script>
 
 <hr>
 <br>

@@ -137,7 +137,6 @@ def add_anthro(patient_id):
                 necessidade_calorica=form.necessidade_calorica.data,
                 ingestao_liquido=form.ingestao_liquido.data,
                 grau_atv_fisica=form.grau_atv_fisica.data,
-                pa=form.pa.data,
                 specialist_name=current_user.username,
             )
             db.session.add(anthro)
@@ -180,6 +179,7 @@ def add_skinfold(patient_id):
                 cintura=form.cintura.data,
                 quadril=form.quadril.data,
                 idade_metabolica=form.idade_metabolica.data,
+                pa=form.pa.data,
             )
             db.session.add(skinfold)
             db.session.commit()

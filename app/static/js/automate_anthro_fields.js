@@ -11,6 +11,7 @@ document.addEventListener("DOMContentLoaded", function () {
     const paError = document.getElementById("paError");
     const ingLiqInput = document.getElementById("ingestao_liquido");
     const necCalInput = document.getElementById("necessidade_calorica");
+    const form = document.querySelector("form.add-skinfold-form");
     const slimmingKCAL = 30;
     const maintenanceKCAL = 35;
     const gainKCAL = 45;
@@ -20,14 +21,16 @@ document.addEventListener("DOMContentLoaded", function () {
     let peso_anteriorInput = document.getElementById("peso_anterior");
     let peso_anterior = peso_anteriorInput ? parseFloat(peso_anteriorInput.value) : 0;
 
-    normalizeAltura();
-    calculateIMC();
-    calculateEvolucao();
-    calculateWaterIngestion();
-    recalcWeights();
+    if (alturaInput) normalizeAltura();
+    if (imcInput) calculateIMC();
+    if (pesoInput && evolucaoInput) calculateEvolucao();
+    if (pesoInput && ingLiqInput) calculateWaterIngestion();
+    if (alturaInput && pMinInput && pMaxInput && pIdeInput) recalcWeights();
 
     // Ensure height in meters
     function normalizeAltura() {
+        if (!alturaInput) return;
+
         let altura = parseFloat(alturaInput.value);
         if (!isNaN(altura) && altura > 3) {
             altura = altura / 100;
@@ -37,6 +40,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // Calculate BMI and update the field
     function calculateIMC() {
+        if (!imcInput) return;
+
         let peso = parseFloat(pesoInput.value);
         let altura = parseFloat(alturaInput.value);
         if (!isNaN(peso) && !isNaN(altura) && altura > 0) {
@@ -78,6 +83,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // Calculate evolution (diff between current and previous weight )
     function calculateEvolucao() {
+        if (!pesoInput) return;
+
         let peso = parseFloat(pesoInput.value);
         if (isNaN(peso)) {
             evolucaoInput.value = "";
@@ -96,6 +103,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // Recalculate best weight, min weight and max weight
     function recalcWeights() {
+        if (!alturaInput) return;
+
         let altura = parseFloat(alturaInput.value);
         if (!isNaN(altura) && altura > 0) {
             // Max Weight (IMC == 25)
@@ -113,6 +122,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // Calculate daily KCAL for losing weight
     function calculateKcalLoseWeight() {
+        if (!pesoInput) return;
+
         let weight = parseFloat(pesoInput.value);
         if (isNaN(weight)) {
             necCalInput.value = "";
@@ -124,6 +135,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // Calculate maintenance of daily KCAL
     function calculateKcalMaintenance() {
+        if (!pesoInput) return;
+
         let weight = parseFloat(pesoInput.value);
         if (isNaN(weight)) {
             necCalInput.value = "";
@@ -135,6 +148,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // Calculate daily KCAL for gain of weight
     function calculateKcalGainWeight() {
+        if (!pesoInput) return;
+
         let weight = parseFloat(pesoInput.value);
         if (isNaN(weight)) {
             necCalInput.value = "";
@@ -146,6 +161,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // Calculate the need of daily water ingestion
     function calculateWaterIngestion() {
+        if (!pesoInput) return;
+
         let peso = parseFloat(pesoInput.value);
         if (isNaN(peso)) {
             ingLiqInput.value = "";
@@ -157,6 +174,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // Function to normalize PA Field
     function normalizePA() {
+        if (!paInput) return;
+
         paError.textContent = "";
         let paValue = paInput.value.trim();
         if (paValue === "") return;
@@ -182,5 +201,15 @@ document.addEventListener("DOMContentLoaded", function () {
 
     if (paInput) {
         paInput.addEventListener("blur", normalizePA);
+    }
+
+    if (form) {
+        form.addEventListener("submit", function(e) {
+            normalizePA();
+            if (paError.textContent !== "") {
+                e.preventDefault();
+                alert("Por favor, corrija o formato da Pressão Arterial (ex: 000/00).");
+            }
+        });
     }
 });

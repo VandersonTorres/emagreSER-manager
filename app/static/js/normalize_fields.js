@@ -1,5 +1,10 @@
 document.addEventListener("DOMContentLoaded", function () {
     function validateCPF(input, onSubmit = false) {
+        if (input.value.trim() === "") {
+            input.setCustomValidity("");
+            return;
+        }
+
         let cpf = input.value.replace(/\D/g, "");
         // If there are moren than 11 digits, truncate to 11
         if (cpf.length > 11) {

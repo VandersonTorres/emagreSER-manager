@@ -97,7 +97,6 @@ class AnthropometricAssessmentForm(FlaskForm):
         ],
         validators=[DataRequired()],
     )
-    pa = StringField("Pressão Arterial", validators=[DataRequired()])
 
     submit = SubmitField("Salvar")
 
@@ -112,6 +111,7 @@ class SkinfoldMeasurementForm(FlaskForm):
     cintura = FloatField("Cintura", validators=[InputRequired()])
     quadril = FloatField("Quadril", validators=[InputRequired()])
     idade_metabolica = IntegerField("Idade Metabólica", validators=[InputRequired()])
+    pa = StringField("Pressão Arterial", validators=[InputRequired()])
 
     submit = SubmitField("Salvar")
 

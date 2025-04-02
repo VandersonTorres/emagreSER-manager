@@ -49,7 +49,6 @@
                 <th>Necessidade Calórica</th>
                 <th>Ingestão de Líquido</th>
                 <th>Grau Atv. Física</th>
-                <th>Pressão Arterial</th>
                 <th>Última Avaliação</th>
             </tr>
         </thead>
@@ -68,7 +67,6 @@
                 <td>{{ evaluation.necessidade_calorica }}</td>
                 <td>{{ evaluation.ingestao_liquido }}</td>
                 <td>{{ evaluation.grau_atv_fisica }}</td>
-                <td>{{ evaluation.pa }}</td>
                 <td>{{ evaluation.specialist_name }}</td>
             </tr>
             {% endfor %}
@@ -99,6 +97,7 @@
                 <th>Cintura</th>
                 <th>Quadril</th>
                 <th>Idade Metabólica</th>
+                <th>Pressão Arterial</th>
             </tr>
         </thead>
         <tbody>
@@ -113,6 +112,7 @@
                 <td>{{ fold.cintura }}</td>
                 <td>{{ fold.quadril }}</td>
                 <td>{{ fold.idade_metabolica }}</td>
+                <td>{{ fold.pa }}</td>
             </tr>
             {% endfor %}
         </tbody>

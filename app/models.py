@@ -38,7 +38,7 @@ class Patients(db.Model):
     name = db.Column(db.String(100), nullable=False)
     gender = db.Column(db.String(10), nullable=False)
     birth_date = db.Column(db.Date, nullable=False)
-    cpf = db.Column(db.String(14), unique=True, nullable=False)
+    cpf = db.Column(db.String(14), unique=True, nullable=True)
     tel_number = db.Column(db.String(20), nullable=False)
     email = db.Column(db.String(100), unique=True, nullable=True)
     started_at = db.Column(db.DateTime, default=datetime.now(timezone.utc))
@@ -61,9 +61,9 @@ class Patients(db.Model):
     objective = db.Column(db.Text, nullable=False)
 
     anthropometric_evaluations = db.relationship(
-        "AnthropometricEvaluation", backref="patient", cascade="all, delete-orphan", passive_deletes=True
+        "AnthropometricEvaluation", backref="patients", cascade="all, delete-orphan", passive_deletes=True
     )
-    skinfolds = db.relationship("SkinFolds", backref="patient", cascade="all, delete-orphan", passive_deletes=True)
+    skinfolds = db.relationship("SkinFolds", backref="patients", cascade="all, delete-orphan", passive_deletes=True)
     specialist = db.relationship("Specialists", backref="patients")
 
     def __repr__(self):
@@ -87,7 +87,6 @@ class AnthropometricEvaluation(db.Model):
     necessidade_calorica = db.Column(db.String(100), nullable=True)
     ingestao_liquido = db.Column(db.Float, nullable=False)
     grau_atv_fisica = db.Column(db.String(20), nullable=False)
-    pa = db.Column(db.String(6), nullable=False)
     specialist_name = db.Column(db.String(100), nullable=True)
 
     def __repr__(self):
@@ -108,6 +107,7 @@ class SkinFolds(db.Model):
     cintura = db.Column(db.Float, default=0, nullable=False)
     quadril = db.Column(db.Float, default=0, nullable=False)
     idade_metabolica = db.Column(db.Integer, nullable=False)
+    pa = db.Column(db.String(6), nullable=False)
 
     def __repr__(self):
         return f"<SkinFolds {self.patient_id} | {self.data_medicao}>"
