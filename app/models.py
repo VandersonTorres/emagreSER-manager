@@ -61,9 +61,9 @@ class Patients(db.Model):
     objective = db.Column(db.Text, nullable=False)
 
     anthropometric_evaluations = db.relationship(
-        "AnthropometricEvaluation", backref="patients", cascade="all, delete-orphan", passive_deletes=True
+        "AnthropometricEvaluation", backref="patient", cascade="all, delete-orphan", passive_deletes=True
     )
-    skinfolds = db.relationship("SkinFolds", backref="patients", cascade="all, delete-orphan", passive_deletes=True)
+    skinfolds = db.relationship("SkinFolds", backref="patient", cascade="all, delete-orphan", passive_deletes=True)
     specialist = db.relationship("Specialists", backref="patients")
 
     def __repr__(self):

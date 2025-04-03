@@ -21,11 +21,19 @@ document.addEventListener("DOMContentLoaded", function () {
     let peso_anteriorInput = document.getElementById("peso_anterior");
     let peso_anterior = peso_anteriorInput ? parseFloat(peso_anteriorInput.value) : 0;
 
+    if (pesoInput) normalizePeso();
     if (alturaInput) normalizeAltura();
     if (imcInput) calculateIMC();
     if (pesoInput && evolucaoInput) calculateEvolucao();
     if (pesoInput && ingLiqInput) calculateWaterIngestion();
     if (alturaInput && pMinInput && pMaxInput && pIdeInput) recalcWeights();
+
+    // Replace commas with dots
+    function normalizePeso() {
+        pesoInput.addEventListener("input", function () {
+            this.value = this.value.replace(",", ".");
+        });
+    }
 
     // Ensure height in meters
     function normalizeAltura() {

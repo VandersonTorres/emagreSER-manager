@@ -102,10 +102,10 @@ def add_anthro(patient_id):
     ):
         form = AnthropometricAssessmentForm()
         diet_form = DietForm()
-        diet_form.name.data = form.ultima_guia.data
+        diet_form.name.data = form.ultima_guia.data or ""
+
         # Search for the last evaluation of the patient (except the current, if there was one)
         last_skinfold = SkinFolds.query.filter_by(patient_id=patient.id).order_by(SkinFolds.data_medicao.desc()).first()
-
         if last_skinfold:
             ultimo_peso = last_skinfold.peso
             ultima_altura = last_skinfold.altura
@@ -125,8 +125,12 @@ def add_anthro(patient_id):
             ultima_altura = 0
             evaluation_date = ""
         if form.validate_on_submit():
-            diet_name = diet_form.other_name.data if diet_form.name.data == "outro" else diet_form.name.data
-            form.ultima_guia.data = diet_name
+            if diet_form.name.data.lower() == "outro":
+                ultima_guia_value = request.form.get("other_name")
+            else:
+                ultima_guia_value = diet_form.name.data
+            form.ultima_guia.data = ultima_guia_value
+
             anthro = AnthropometricEvaluation(
                 patient_id=patient.id,
                 data_avaliacao=form.data_avaliacao.data,
@@ -234,7 +238,7 @@ def edit_anthro(patient_id, evaluation_id):
     form = AnthropometricAssessmentForm(obj=evaluation)
     diet_form = DietForm(name=evaluation.ultima_guia)
     if form.validate_on_submit():
-        diet_name = diet_form.other_name.data if diet_form.name.data == "outro" else diet_form.name.data
+        diet_name = diet_form.other_name.data if diet_form.name.data.lower() == "outro" else diet_form.name.data
         form.populate_obj(evaluation)
         evaluation.ultima_guia = diet_name
         db.session.commit()

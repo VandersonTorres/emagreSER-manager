@@ -53,9 +53,9 @@
             </tr>
         </thead>
         <tbody>
-            {% for evaluation in patient.anthropometric_evaluations %}
+            {% for evaluation in patient.anthropometric_evaluations|sort(attribute="data_avaliacao") %}
             <tr>
-                <td>{{ evaluation.data_avaliacao }}</td>
+                <td>{{ evaluation.data_avaliacao.strftime("%d/%m/%Y") }}</td>
                 <td>{{ evaluation.ultima_guia }}</td>
                 <td>{{ evaluation.idade }}</td>
                 <td>{{ evaluation.evolucao }}</td>
@@ -101,9 +101,9 @@
             </tr>
         </thead>
         <tbody>
-            {% for fold in patient.skinfolds %}
+            {% for fold in patient.skinfolds|sort(attribute="data_medicao") %}
             <tr>
-                <td>{{ fold.data_medicao }}</td>
+                <td>{{ fold.data_medicao.strftime("%d/%m/%Y") }}</td>
                 <td>{{ fold.altura }}</td>
                 <td>{{ fold.peso }}</td>
                 <td>{{ fold.massa_muscular }}</td>
