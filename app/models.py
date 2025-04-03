@@ -38,9 +38,9 @@ class Patients(db.Model):
     name = db.Column(db.String(100), nullable=False)
     gender = db.Column(db.String(10), nullable=False)
     birth_date = db.Column(db.Date, nullable=False)
-    cpf = db.Column(db.String(14), unique=True, nullable=True)
+    cpf = db.Column(db.String(14), nullable=True)  # Can not be unique because it is still Optional
     tel_number = db.Column(db.String(20), nullable=False)
-    email = db.Column(db.String(100), unique=True, nullable=True)
+    email = db.Column(db.String(100), nullable=True)  # Can not be unique because it is still Optional
     started_at = db.Column(db.DateTime, default=datetime.now(timezone.utc))
     specialist_id = db.Column(db.Integer, db.ForeignKey("specialists.id"), nullable=True)
 

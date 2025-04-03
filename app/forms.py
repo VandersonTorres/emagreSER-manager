@@ -33,9 +33,9 @@ class PatientForm(FlaskForm):
         validators=[DataRequired()],
     )
     birth_date = DateField("Data de nascimento", format="%Y-%m-%d", validators=[DataRequired()])
-    cpf = StringField("CPF", validators=[DataRequired()])
+    cpf = StringField("CPF", validators=[Optional()])
     tel_number = StringField("Telefone", validators=[DataRequired()])
-    email = StringField("E-mail", validators=[DataRequired()])
+    email = StringField("E-mail", validators=[Optional()])
     specialist_id = SelectField("Profissional", coerce=int, validators=[DataRequired()])
 
     # História Clínica
