@@ -106,7 +106,7 @@ class SkinFolds(db.Model):
     abdominal = db.Column(db.Float, default=0, nullable=False)
     cintura = db.Column(db.Float, default=0, nullable=False)
     quadril = db.Column(db.Float, default=0, nullable=False)
-    idade_metabolica = db.Column(db.Integer, nullable=False)
+    idade_metabolica = db.Column(db.Integer, default=0, nullable=False)
     pa = db.Column(db.String(6), nullable=False)
 
     def __repr__(self):
