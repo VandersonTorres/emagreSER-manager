@@ -2,6 +2,7 @@ from datetime import datetime
 
 from flask import Blueprint, flash, redirect, render_template, request, url_for
 from flask_security import current_user, roles_accepted
+from sqlalchemy import or_
 from sqlalchemy.exc import IntegrityError
 
 from app.forms import AnthropometricAssessmentForm, DietForm, PatientForm, SkinfoldMeasurementForm
@@ -14,23 +15,39 @@ patients_bp = Blueprint("patients", __name__)
 @patients_bp.route("/patients")
 @roles_accepted("admin", "secretary", "nutritionist")
 def list_patients():
+    search_query = request.args.get("search", "").strip()
     if "nutritionist" in [role.name for role in current_user.roles]:
         now = datetime.now()
-        patients = (
-            Patients.query.join(Specialists, Patients.specialist_id == Specialists.id)  # Link Patients to Specialists
-            .outerjoin(Schedules, Patients.id == Schedules.patient_id)  # Outer Linking Patients to Schedules
+        base_query = (
+            Patients.query.join(Specialists, Patients.specialist_id == Specialists.id)
+            .outerjoin(Schedules, Patients.id == Schedules.patient_id)
             .filter(
                 (Specialists.email == current_user.email)
-                | (  # Getting only Nutri's Patients
-                    (Schedules.specialist == current_user.username) & (Schedules.date_time >= now)
-                )  # And her external appointments
+                | ((Schedules.specialist == current_user.username) & (Schedules.date_time >= now))
             )
             .distinct()
-            .all()
         )
     else:
-        patients = Patients.query.all()
-    return render_template("admin/patients/list_patients.html", patients=patients)
+        base_query = Patients.query
+
+    search_empty = False  # flag that indicates if the search didn't find nothing
+
+    if search_query:
+        filtered_patients = base_query.filter(
+            or_(Patients.name.ilike(f"%{search_query}%"), Patients.cpf.ilike(f"%{search_query}%"))
+        ).all()
+        if filtered_patients:
+            patients = filtered_patients
+        else:
+            # The search didn't match
+            search_empty = True
+            patients = base_query.all()
+    else:
+        patients = base_query.all()
+
+    return render_template(
+        "admin/patients/list_patients.html", patients=patients, search_empty=search_empty, search_query=search_query
+    )
 
 
 @patients_bp.route("/patients/add", methods=["GET", "POST"])
