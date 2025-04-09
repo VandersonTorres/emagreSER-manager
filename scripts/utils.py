@@ -2,6 +2,7 @@ from datetime import datetime, timedelta
 from zoneinfo import ZoneInfo
 
 from flask import flash, redirect, url_for
+from sqlalchemy import func
 from twilio.rest import Client
 
 from app.models import Schedules
@@ -15,9 +16,11 @@ def block_access_to_patients(patient, user, msg, to_redirect):
             return False  # Allow Access
 
         # Verify if the patient has an appointment with the specialist
-        now = datetime.now(ZoneInfo("America/Sao_Paulo"))
+        now = datetime.now(ZoneInfo("America/Sao_Paulo")).date()
         has_future_schedule = Schedules.query.filter(
-            Schedules.patient_id == patient.id, Schedules.specialist == user.username, Schedules.date_time >= now
+            Schedules.patient_id == patient.id,
+            Schedules.specialist == user.username,
+            func.date(Schedules.date_time) >= now,
         ).first()
 
         if has_future_schedule:

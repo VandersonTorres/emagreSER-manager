@@ -3,7 +3,7 @@ from zoneinfo import ZoneInfo
 
 from flask import Blueprint, flash, redirect, render_template, request, url_for
 from flask_security import current_user, roles_accepted
-from sqlalchemy import or_
+from sqlalchemy import func, or_
 from sqlalchemy.exc import IntegrityError
 
 from app.forms import AnthropometricAssessmentForm, DietForm, PatientForm, SkinfoldMeasurementForm
@@ -18,13 +18,13 @@ patients_bp = Blueprint("patients", __name__)
 def list_patients():
     search_query = request.args.get("search", "").strip()
     if "nutritionist" in [role.name for role in current_user.roles]:
-        now = datetime.now(ZoneInfo("America/Sao_Paulo"))
+        now = datetime.now(ZoneInfo("America/Sao_Paulo")).date()
         base_query = (
             Patients.query.join(Specialists, Patients.specialist_id == Specialists.id)
             .outerjoin(Schedules, Patients.id == Schedules.patient_id)
             .filter(
                 (Specialists.email == current_user.email)
-                | ((Schedules.specialist == current_user.username) & (Schedules.date_time >= now))
+                | ((Schedules.specialist == current_user.username) & (func.date(Schedules.date_time) >= now))
             )
             .distinct()
         )

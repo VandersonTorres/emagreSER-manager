@@ -3,6 +3,7 @@ from zoneinfo import ZoneInfo
 
 from flask import Blueprint, flash, redirect, render_template, request, url_for
 from flask_security import current_user, roles_accepted
+from sqlalchemy import func
 
 from app.models import Patients, Schedules, Specialists, db
 from scripts.utils import is_valid_time
@@ -13,10 +14,12 @@ schedules_bp = Blueprint("schedules", __name__)
 @schedules_bp.route("/schedules", methods=["GET"])
 @roles_accepted("admin", "secretary", "nutritionist")
 def list_schedules():
-    now = datetime.now(ZoneInfo("America/Sao_Paulo"))
+    now = datetime.now(ZoneInfo("America/Sao_Paulo")).date()
 
     # Update status of expired schedules
-    expired_schedules = Schedules.query.filter(Schedules.date_time < now, Schedules.status == "pendente").all()
+    expired_schedules = Schedules.query.filter(
+        func.date(Schedules.date_time) < now, Schedules.status == "pendente"
+    ).all()
     for schedule in expired_schedules:
         schedule.status = "finalizado"
 

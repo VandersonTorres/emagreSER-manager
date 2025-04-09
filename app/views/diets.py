@@ -9,6 +9,7 @@ from docx import Document
 from flask import Blueprint, current_app, flash, redirect, render_template, request, send_from_directory, url_for
 from flask_mail import Message
 from flask_security import current_user, roles_accepted
+from sqlalchemy import func
 from twilio.base.exceptions import TwilioRestException
 from werkzeug.utils import secure_filename
 
@@ -25,15 +26,13 @@ diets_bp = Blueprint("diets", __name__)
 def list_diets():
     patients = Patients.query.all()
     if "nutritionist" in [role.name for role in current_user.roles]:
-        now = datetime.now(ZoneInfo("America/Sao_Paulo"))
+        now = datetime.now(ZoneInfo("America/Sao_Paulo")).date()
         patients = (
-            Patients.query.join(Specialists, Patients.specialist_id == Specialists.id)  # Link Patients to Specialists
-            .outerjoin(Schedules, Patients.id == Schedules.patient_id)  # Outer Linking Patients to Schedules
+            Patients.query.join(Specialists, Patients.specialist_id == Specialists.id)
+            .outerjoin(Schedules, Patients.id == Schedules.patient_id)
             .filter(
                 (Specialists.email == current_user.email)
-                | (  # Getting only Nutri's Patients
-                    (Schedules.specialist == current_user.username) & (Schedules.date_time >= now)
-                )  # And her external appointments
+                | ((Schedules.specialist == current_user.username) & (func.date(Schedules.date_time) >= now))
             )
             .distinct()
             .all()
