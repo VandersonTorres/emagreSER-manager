@@ -312,6 +312,34 @@ def delete_patient(id):
     return render_template("admin/patients/delete_patient.html", patient=patient)
 
 
+@patients_bp.route("/patients/<int:patient_id>/evaluation/delete/<int:evaluation_id>", methods=["POST"])
+@roles_accepted("admin", "secretary", "nutritionist")
+def delete_anthropometric_evaluation(patient_id, evaluation_id):
+    evaluation = AnthropometricEvaluation.query.filter_by(id=evaluation_id, patient_id=patient_id).first_or_404()
+    try:
+        db.session.delete(evaluation)
+        db.session.commit()
+        flash("Avaliação antropométrica removida com sucesso!", "success")
+    except Exception as e:
+        db.session.rollback()
+        flash("Erro ao remover avaliação: " + str(e), "danger")
+    return redirect(url_for("patients.view_patient", id=patient_id))
+
+
+@patients_bp.route("/patients/<int:patient_id>/skinfold/delete/<int:skinfold_id>", methods=["POST"])
+@roles_accepted("admin", "secretary", "nutritionist")
+def delete_skinfold(patient_id, skinfold_id):
+    skinfold = SkinFolds.query.filter_by(id=skinfold_id, patient_id=patient_id).first_or_404()
+    try:
+        db.session.delete(skinfold)
+        db.session.commit()
+        flash("Medição de bioimpedância removida com sucesso!", "success")
+    except Exception as e:
+        db.session.rollback()
+        flash("Erro ao remover medição: " + str(e), "danger")
+    return redirect(url_for("patients.view_patient", id=patient_id))
+
+
 @patients_bp.route("/patients/<int:id>/view-custom-history?<pat_name>", methods=["GET", "POST"])
 @roles_accepted("admin", "secretary", "nutritionist")
 def view_custom_history(id, pat_name):
