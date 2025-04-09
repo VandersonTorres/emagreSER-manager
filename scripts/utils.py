@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta
+from zoneinfo import ZoneInfo
 
 from flask import flash, redirect, url_for
 from twilio.rest import Client
@@ -14,7 +15,7 @@ def block_access_to_patients(patient, user, msg, to_redirect):
             return False  # Allow Access
 
         # Verify if the patient has an appointment with the specialist
-        now = datetime.now()
+        now = datetime.now(ZoneInfo("America/Sao_Paulo"))
         has_future_schedule = Schedules.query.filter(
             Schedules.patient_id == patient.id, Schedules.specialist == user.username, Schedules.date_time >= now
         ).first()
@@ -38,13 +39,13 @@ def is_valid_time(candidate, specialist):
     return conflict is None
 
 
-def twilio_send_diet(patient, telephone, diet, pdf_url, app):
+def twilio_send_diet(patient, telephone, diet, diet_file_url, app):
     client = Client(app.config["TWILIO_SID"], app.config["TWILIO_AUTH"])
     message_text = f"Olá {patient}, aqui está sua dieta dessa semana:\n{diet}"
     message = client.messages.create(
         body=message_text,
         from_=f'whatsapp:{app.config["TWILIO_PHONE"]}',
         to=f"whatsapp:{telephone}",
-        media_url=[pdf_url],
+        media_url=[diet_file_url],
     )
     return message.sid

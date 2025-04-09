@@ -26,7 +26,7 @@ class Config:
 
     # Uploads Settings
     UPLOAD_FOLDER = os.path.join(BASE_DIR, "uploads")
-    ALLOWED_EXTENSIONS = {"pdf"}
+    ALLOWED_EXTENSIONS = {"doc", "docx"}
     os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
     # WhatsApp API Settings

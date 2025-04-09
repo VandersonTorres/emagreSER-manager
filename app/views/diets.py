@@ -2,7 +2,10 @@ import os
 import re
 from datetime import datetime
 from smtplib import SMTPAuthenticationError, SMTPSenderRefused
+from zoneinfo import ZoneInfo
 
+import pdfkit
+from docx import Document
 from flask import Blueprint, current_app, flash, redirect, render_template, request, send_from_directory, url_for
 from flask_mail import Message
 from flask_security import current_user, roles_accepted
@@ -22,7 +25,7 @@ diets_bp = Blueprint("diets", __name__)
 def list_diets():
     patients = Patients.query.all()
     if "nutritionist" in [role.name for role in current_user.roles]:
-        now = datetime.now()
+        now = datetime.now(ZoneInfo("America/Sao_Paulo"))
         patients = (
             Patients.query.join(Specialists, Patients.specialist_id == Specialists.id)  # Link Patients to Specialists
             .outerjoin(Schedules, Patients.id == Schedules.patient_id)  # Outer Linking Patients to Schedules
@@ -45,14 +48,14 @@ def list_diets():
 def add_diet():
     form = DietForm()
     if form.validate_on_submit():
-        pdf_filename = None
-        if form.pdf_file.data:
-            pdf_filename = secure_filename(form.pdf_file.data.filename)
-            pdf_path = os.path.join(current_app.config["UPLOAD_FOLDER"], pdf_filename)
-            form.pdf_file.data.save(pdf_path)
+        diet_filename = None
+        if form.diet_file.data:
+            diet_filename = secure_filename(form.diet_file.data.filename)
+            diet_file_path = os.path.join(current_app.config["UPLOAD_FOLDER"], diet_filename)
+            form.diet_file.data.save(diet_file_path)
 
         diet_name = form.other_name.data if form.name.data == "Outro" else form.name.data
-        diet = Diet(name=diet_name, description=form.description.data, pdf_file=pdf_filename)
+        diet = Diet(name=diet_name, description=form.description.data, diet_file=diet_filename)
         db.session.add(diet)
         db.session.commit()
 
@@ -75,10 +78,10 @@ def delete_diet(id):
     diet = Diet.query.get_or_404(id)
     if request.method == "POST":
         # Remove the file
-        if diet.pdf_file:
-            pdf_path = os.path.join(current_app.config["UPLOAD_FOLDER"], diet.pdf_file)
-            if os.path.exists(pdf_path):
-                os.remove(pdf_path)
+        if diet.diet_file:
+            diet_file_path = os.path.join(current_app.config["UPLOAD_FOLDER"], diet.diet_file)
+            if os.path.exists(diet_file_path):
+                os.remove(diet_file_path)
 
         # Remove from database
         db.session.delete(diet)
@@ -105,12 +108,12 @@ def send_diet_email(diet_id):
         return redirect(url_for("diets.list_diets"))
 
     diet = Diet.query.get_or_404(diet_id)
-    if not diet.pdf_file:
-        flash("Essa dieta não possui um arquivo PDF.", "danger")
+    if not diet.diet_file:
+        flash("Essa dieta não possui um arquivo.", "danger")
         return redirect(url_for("diets.list_diets"))
 
-    # Generating public URL for the PDF
-    pdf_url = url_for("diets.serve_file", filename=diet.pdf_file, _external=True)
+    # Generating public URL for the File
+    diet_file_url = url_for("diets.serve_file", filename=diet.diet_file, _external=True)
 
     msg = Message(
         subject=f"Dieta {diet.name}", recipients=[patient.email], sender=current_app.config.get("MAIL_DEFAULT_SENDER")
@@ -119,19 +122,19 @@ def send_diet_email(diet_id):
     msg.body = (
         f"Olá, {patient_name},\n\n"
         f"Segue a sua dieta '{diet.name}' dessa semana.\n\n"
-        f"Você pode acessar o arquivo PDF através do link abaixo, ou encontrá-lo em anexo:\n"
-        f"{pdf_url}\n\n"
+        f"Você pode acessar o arquivo através do link abaixo, ou encontrá-lo em anexo:\n"
+        f"{diet_file_url}\n\n"
         "At.te, Equipe EmagreSER"
     )
 
-    pdf_path = os.path.join(current_app.config.get("UPLOAD_FOLDER"), diet.pdf_file)
-    if not os.path.exists(pdf_path):
-        flash("Arquivo PDF não encontrado no servidor.", "danger")
+    diet_file_path = os.path.join(current_app.config.get("UPLOAD_FOLDER"), diet.diet_file)
+    if not os.path.exists(diet_file_path):
+        flash("Arquivo não encontrado no servidor.", "danger")
         return redirect(url_for("diets.list_diets"))
     try:
-        with current_app.open_resource(pdf_path, "rb") as fp:
-            pdf_data = fp.read()
-            msg.attach(filename=diet.pdf_file, content_type="application/pdf", data=pdf_data)
+        with current_app.open_resource(diet_file_path, "rb") as fp:
+            diet_file_data = fp.read()
+            msg.attach(filename=diet.diet_file, content_type="application/pdf", data=diet_file_data)
 
         mail.send(msg)
         flash(f"Dieta '{diet.name}' enviada com sucesso para o e-mail do paciente '{patient_name}'!", "success")
@@ -154,19 +157,19 @@ def send_diet_wpp(diet_id):
         telephone = f"+55{cleaned_telephone[:2]}9{cleaned_telephone[2:len(cleaned_telephone)]}"
 
     diet = Diet.query.get_or_404(diet_id)
-    if not diet.pdf_file:
-        flash("Essa dieta não possui um arquivo PDF.", "danger")
+    if not diet.diet_file:
+        flash("Essa dieta não possui um arquivo.", "danger")
         return redirect(url_for("diets.list_diets"))
 
-    # Generating public URL for the PDF
-    pdf_url = url_for("diets.serve_file", filename=diet.pdf_file, _external=True)
+    # Generating public URL for the File
+    diet_file_url = url_for("diets.serve_file", filename=diet.diet_file, _external=True)
     try:
         # Send diet by WhatsApp
         response = twilio_send_diet(
             patient=patient_name,
             telephone=telephone,
             diet=diet.name,
-            pdf_url=pdf_url,
+            diet_file_url=diet_file_url,
             app=current_app,
         )
         flash(
@@ -183,3 +186,49 @@ def send_diet_wpp(diet_id):
 @diets_bp.route("/uploads/<filename>")
 def serve_file(filename):
     return send_from_directory(current_app.config["UPLOAD_FOLDER"], filename)
+
+
+@diets_bp.route("/diets/edit/<int:id>", methods=["GET", "POST"])
+@roles_accepted("admin", "secretary", "nutritionist")
+def edit_diet(id):
+    diet = Diet.query.get_or_404(id)
+    # Verifica se o arquivo existe e se é do tipo Word (você pode fazer uma verificação pela extensão)
+    if diet.diet_file and diet.diet_file.lower().endswith((".doc", ".docx")):
+        file_path = os.path.join(current_app.config["UPLOAD_FOLDER"], diet.diet_file)
+        try:
+            document = Document(file_path)
+            # Extrai todo o texto do documento
+            content = "\n".join([para.text for para in document.paragraphs])
+        except Exception as err:
+            flash(f"Erro ao ler o arquivo Word. {err}", "danger")
+            return redirect(url_for("diets.list_diets"))
+    else:
+        flash("Arquivo não é um documento Word.", "danger")
+        return redirect(url_for("diets.list_diets"))
+
+    # Se o método for POST, processa o formulário
+    if request.method == "POST":
+        if "save" in request.form:
+            edited_text = request.form.get("content")
+            # Gere um novo nome para o arquivo PDF, por exemplo:
+            pdf_filename = secure_filename(f"{diet.name}_editado.pdf")
+            pdf_path = os.path.join(current_app.config["UPLOAD_FOLDER"], pdf_filename)
+            try:
+                # Exemplo: usando pdfkit (ou outra biblioteca) para converter o texto em PDF.
+                # Para pdfkit, você pode gerar um HTML simples com o conteúdo.
+                html_content = f"<html><body><pre>{edited_text}</pre></body></html>"
+                pdfkit.from_string(html_content, pdf_path)
+                # Atualize o registro para usar o PDF editado
+                diet.diet_file = pdf_filename
+                db.session.commit()
+                flash("Arquivo editado e salvo como PDF com sucesso!", "success")
+            except Exception as e:
+                current_app.logger.error(f"Erro ao converter para PDF: {e}")
+                flash("Erro ao salvar as alterações.", "danger")
+            return redirect(url_for("diets.list_diets"))
+        elif "discard" in request.form:
+            flash("Alterações descartadas.", "info")
+            return redirect(url_for("diets.list_diets"))
+
+    # Exibe a página de edição
+    return render_template("admin/diets/edit_diet.html", diet=diet, content=content)

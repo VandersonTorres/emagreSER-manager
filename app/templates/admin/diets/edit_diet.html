@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block content %}
+  <h2>Editar Arquivo da Dieta: {{ diet.name }}</h2>
+  <form method="POST">
+      <textarea name="content" rows="20" cols="80">{{ content }}</textarea>
+      <br><br>
+      <button type="submit" name="save">Salvar Alterações (PDF)</button>
+      <button type="submit" name="discard">Descartar Alterações</button>
+  </form>
+{% endblock %}

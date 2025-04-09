@@ -120,7 +120,7 @@ class DietForm(FlaskForm):
     name = SelectField("Nome da Dieta", validators=[DataRequired()])
     other_name = StringField("Outro (especifique)", validators=[Optional()])
     description = TextAreaField("Descrição", validators=[Optional()])
-    pdf_file = FileField("Arquivo PDF", validators=[Optional()])
+    diet_file = FileField("Arquivo da Dieta", validators=[Optional()])
     submit = SubmitField("Salvar")
 
     def __init__(self, *args, **kwargs):
