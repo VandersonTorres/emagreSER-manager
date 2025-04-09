@@ -37,6 +37,7 @@ multidict==6.1.0
 nodeenv==1.9.1
 packaging==24.2
 passlib==1.7.4
+pdfkit
 platformdirs==4.3.6
 pre_commit==4.1.0
 propcache==0.2.1
