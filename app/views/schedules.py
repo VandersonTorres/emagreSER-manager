@@ -66,8 +66,8 @@ def schedule_action():
         specialist = request.form["specialist"]
         date_time = datetime.strptime(date_time_str, "%Y-%m-%dT%H:%M")
 
-        lower_bound = date_time - timedelta(minutes=30)
-        upper_bound = date_time + timedelta(minutes=30)
+        lower_bound = date_time - timedelta(minutes=15)
+        upper_bound = date_time + timedelta(minutes=15)
         conflict = Schedules.query.filter(
             Schedules.specialist == specialist, Schedules.date_time >= lower_bound, Schedules.date_time <= upper_bound
         ).first()
