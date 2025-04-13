@@ -26,8 +26,10 @@ class Config:
 
     # Uploads Settings
     UPLOAD_FOLDER = os.path.join(BASE_DIR, "uploads")
-    ALLOWED_EXTENSIONS = {"doc", "docx"}
+    TEMP_UPLOAD_FOLDER = os.path.join(BASE_DIR, "uploads/temp_files")
+    ALLOWED_EXTENSIONS = {"pdf"}
     os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+    os.makedirs(TEMP_UPLOAD_FOLDER, exist_ok=True)
 
     # WhatsApp API Settings
     # https://console.twilio.com/

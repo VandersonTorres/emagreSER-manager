@@ -1,10 +1,58 @@
 {% extends "base.html" %}
+
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/pdf_editor.css') }}">
+{% endblock %}
+
 {% block content %}
-  <h2>Editar Arquivo da Dieta: {{ diet.name }}</h2>
-  <form method="POST">
-      <textarea name="content" rows="20" cols="80">{{ content }}</textarea>
-      <br><br>
-      <button type="submit" name="save">Salvar Alterações (PDF)</button>
-      <button type="submit" name="discard">Descartar Alterações</button>
-  </form>
+<div id="pdf-container">
+    <canvas id="pdf-canvas"></canvas>
+</div>
+
+<div style="text-align: center; margin: 20px;">
+    <button id="save-changes-btn">Salvar alterações</button>
+    &nbsp;
+    <a class="back-button" href="{{ url_for('diets.list_diets') }}">🔙 Voltar</a>
+</div>
+
+<div id="text-modal" class="modal" style="display: none;">
+    <div class="modal-content">
+        <label for="text-input">Insira o texto:</label>
+        <input id="text-input" type="text">
+        <label for="text-size">Tamanho:</label>
+        <input id="text-size" type="number" min="10" max="100" value="16">
+        <label for="text-color">Cor:</label>
+        <input id="text-color" type="color" value="#000000">
+        <div class="modal-actions">
+            <button id="add-text-btn">Adicionar</button>
+            <button id="cancel-btn">Cancelar</button>
+        </div>
+    </div>
+</div>
+
+<div id="edit-text-modal" class="modal" style="display: none;">
+  <div class="modal-content edit">
+    <textarea id="edit-text-input"></textarea>
+    <input type="number" id="edit-text-size" placeholder="Tamanho" />
+    <input type="color" id="edit-text-color" />
+    <div class="modal-buttons">
+      <button id="save-edit-btn">Salvar</button>
+      <button id="remove-text-btn">Remover</button>
+      <button id="cancel-edit-btn">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<!-- PDF.js -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js"></script>
+<script>
+  pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js";
+</script>
+
+<script>
+  const pdfUrl = "{{ pdf_url }}";
+  const dietId = "{{ diet.id }}";
+</script>
+
+<script src="{{ url_for('static', filename='js/pdf_editor.js') }}" defer></script>
 {% endblock %}

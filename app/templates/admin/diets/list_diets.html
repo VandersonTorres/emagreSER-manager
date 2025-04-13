@@ -22,9 +22,14 @@
     <li><strong>{{ diet.name }}</strong> -
         <a class="view-button" href="{{ url_for('diets.view_diet', id=diet.id) }}" target="_blank">Ver</a>
         &nbsp;
-        <a class="edit-button" href="{{ url_for('diets.edit_diet', id=diet.id) }}">Editar Arquivo</a>
-        &nbsp;
         <a class="remove-button" href="{{ url_for('diets.delete_diet', id=diet.id) }}">Remover</a>
+        &nbsp;
+        <a class="edit-button" href="{{ url_for('diets.edit_diet', id=diet.id) }}">Editar para Enviar</a>
+        {% if diet.temp_diet_file %}
+        &nbsp;
+        <a class="edit-button" href="{{ url_for('diets.view_last_edition', id=diet.id) }}">Ver Última Edição</a>
+        {% endif %}
+
         <form id="send-diet-form-{{ diet.id }}" method="POST">
             <select name="patient_id" required>
                 {% for patient in patients %}

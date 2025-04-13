@@ -6,7 +6,7 @@
 <p><strong>Descrição:</strong> {{ diet.description }}</p>
 
 {% if diet.diet_file %}
-<p><a href="{{ url_for('diets.download_diet', filename=diet.diet_file, type_='original') }}" target="_blank">📄 Abrir Arquivo Original</a></p>
+<p><a href="{{ url_for('diets.download_diet', filename=diet.temp_diet_file, type_='temp') }}" target="_blank">📄 Abrir Arquivo Editado</a></p>
 {% endif %}
 
 <hr>
