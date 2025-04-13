@@ -1,0 +1,60 @@
+#pdf-container {
+    position: relative;
+    width: 100%;
+    max-width: 1000px;
+    margin: 20px auto;
+    padding: 10px;
+    box-sizing: border-box;
+    background: #f9f9f9;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+}
+
+canvas {
+    width: 100%;
+    border: 1px solid #000;
+}
+
+.draggable-text {
+    cursor: move;
+    padding: 2px 4px;
+    background: rgba(255, 255, 255, 0.7);
+    border: 1px solid #000;
+    border-radius: 4px;
+}
+
+#text-modal {
+    display: none;
+}
+
+.modal {
+    display: none;
+    position: fixed;
+    left: 0;
+    top: 0;
+    overflow: auto;
+}
+
+.modal.show {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-content {
+    background-color: rgba(0, 163, 16, 0.55);
+    padding: 20px;
+    border-radius: 8px;
+    width: 300px;
+    max-width: 90%;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+}
+
+.modal-content.edit {
+    background-color: rgba(163, 163, 0, 0.55);
+    padding: 20px;
+    border-radius: 8px;
+    width: 300px;
+    max-width: 90%;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+}

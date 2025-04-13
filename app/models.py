@@ -120,6 +120,7 @@ class Diet(db.Model):
     name = db.Column(db.String(255), nullable=False)
     description = db.Column(db.Text, nullable=False)
     diet_file = db.Column(db.String(255), nullable=True)
+    temp_diet_file = db.Column(db.String(255), nullable=True)
 
     def __repr__(self):
         return f"<Diet {self.name}>"

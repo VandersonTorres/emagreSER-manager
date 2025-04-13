@@ -52,3 +52,11 @@ def twilio_send_diet(patient, telephone, diet, diet_file_url, app):
         media_url=[diet_file_url],
     )
     return message.sid
+
+
+def hex_to_rgb_normalized(hex_color):
+    hex_color = hex_color.lstrip("#")
+    if len(hex_color) != 6:
+        return 0, 0, 0  # fallback
+    r, g, b = [int(hex_color[i : i + 2], 16) / 255 for i in (0, 2, 4)]
+    return r, g, b
