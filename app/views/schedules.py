@@ -26,25 +26,42 @@ def list_schedules():
     if expired_schedules:
         db.session.commit()
 
+    # Check if a date was sent via query param
+    date_str = request.args.get("date")
+    date_filter = None
+    if date_str:
+        date_filter = datetime.strptime(date_str, "%Y-%m-%d").date()
+
+    def filter_schedules(specialist_name):
+        query = Schedules.query.filter_by(specialist=specialist_name)
+        if not date_filter:
+            # Show all, except 'finalizados' after 1 day
+            return (
+                query.filter(
+                    ~((Schedules.status == "finalizado") & (func.date(Schedules.date_time) < now - timedelta(days=1)))
+                )
+                .order_by(Schedules.date_time)
+                .all()
+            )
+        else:
+            return query.filter(func.date(Schedules.date_time) == date_filter).order_by(Schedules.date_time).all()
+
     if "nutritionist" in [role.name for role in current_user.roles]:
-        # Get the nutritionist what is logged in
+        # Get the nutritionist that is logged in
         specialist = Specialists.query.filter_by(email=current_user.email).first()
         if not specialist:
             flash("Erro: Especialista não encontrado.")
             return redirect(url_for("main.index"))
 
-        # Search only for the schedules from the nutritionist that is logged in
-        schedules = Schedules.query.filter_by(specialist=specialist.name).order_by(Schedules.date_time).all()
+        schedules = filter_schedules(specialist.name)
         return render_template(
             "admin/schedules/list_schedules.html", schedules_by_specialist={specialist.name: schedules}
         )
 
-    specialists = Specialists.query.all()
-    schedules_by_specialist = {}
-    for specialist in specialists:
-        schedules_by_specialist[specialist.name] = (
-            Schedules.query.filter_by(specialist=specialist.name).order_by(Schedules.date_time).all()
-        )
+    # Admin or secretary see all
+    schedules_by_specialist = {
+        specialist.name: filter_schedules(specialist.name) for specialist in Specialists.query.all()
+    }
 
     return render_template("admin/schedules/list_schedules.html", schedules_by_specialist=schedules_by_specialist)
 

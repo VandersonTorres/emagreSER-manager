@@ -17,8 +17,21 @@
 
 <hr>
 
+<form method="get" action="{{ url_for('schedules.list_schedules') }}">
+    <label for="date">Exibir agendamentos por data:</label>
+    <input type="date" name="date" id="date" value="{{ request.args.get('date', '') }}">
+    <button type="submit">Filtrar</button>
+    {% if request.args.get('date') %}
+        <a href="{{ url_for('schedules.list_schedules') }}">Limpar filtro</a>
+    {% endif %}
+</form>
+<br>
+
+<hr>
+
 {% for specialist, schedules in schedules_by_specialist.items() %}
 <h3>{{ specialist }}</h3>
+
 {% if schedules %}
 <table class="schedules-table" border="1" cellspacing="0" cellpadding="5">
     <thead>
@@ -47,7 +60,7 @@
     </tbody>
 </table>
 {% else %}
-<p>Nenhum agendamento para este profissional.</p>
+<p>Nenhum agendamento pendente para este profissional.</p>
 {% endif %}
 <br>
 

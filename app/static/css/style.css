@@ -459,3 +459,40 @@ footer a:hover {
     width: 500px !important;
     height: 250px !important;
 }
+
+.anthro-row,
+.skinfold-row {
+    display: table-row;
+}
+
+.anthro-row:nth-child(n+6),
+.skinfold-row:nth-child(n+6) {
+    display: none;
+}
+
+button#toggleAnthro,
+button#toggleSkinfold {
+    margin-top: 10px;
+    padding: 6px 12px;
+    font-size: 14px;
+}
+
+#pagination-buttons button {
+    margin: 0 6px 10px;
+    padding: 6px 12px;
+    font-size: 14px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    background-color: #989595;
+    transition: background-color 0.2s ease;
+}
+
+#pagination-buttons button:hover {
+    background-color: #5793a7;
+}
+
+#pagination-buttons button.active {
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+}

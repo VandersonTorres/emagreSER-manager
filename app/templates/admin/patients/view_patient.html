@@ -34,6 +34,7 @@
 
     <h3>Avaliação Antropométrica:</h3>
     {% if patient.anthropometric_evaluations|length > 0 %}
+    {% set evaluations = patient.anthropometric_evaluations|sort(attribute="data_avaliacao", reverse=true) %}
     <table class="anthro-table" border="1">
         <thead>
             <tr>
@@ -54,8 +55,8 @@
             </tr>
         </thead>
         <tbody>
-            {% for evaluation in patient.anthropometric_evaluations|sort(attribute="data_avaliacao") %}
-            <tr>
+            {% for evaluation in evaluations %}
+            <tr class="anthro-row {% if loop.index > 5 %}hidden-anthro{% endif %}">
                 <td>{{ evaluation.data_avaliacao.strftime("%d/%m/%Y") }}</td>
                 <td>{{ evaluation.ultima_guia }}</td>
                 <td>{{ evaluation.idade }}</td>
@@ -79,7 +80,14 @@
             {% endfor %}
         </tbody>
     </table>
+    {% if evaluations|length > 5 %}
+    <div style="text-align: center; margin-top: 10px;">
+        <button id="toggleAnthro" class="btn btn-secondary">Mostrar mais avaliações</button>
+    </div>
+    {% endif %}
+
     <br>
+
     <a href="{{ url_for('patients.add_anthro', patient_id=patient.id) }}">Adicionar Avaliação Antropométrica</a>
     {% else %}
     <p>Não há avaliações antropométricas registradas.</p>
@@ -92,6 +100,7 @@
 
     <h3>Bioimpedância:</h3>
     {% if patient.skinfolds|length > 0 %}
+    {% set skinfolds = patient.skinfolds|sort(attribute="data_medicao", reverse=true) %}
     <table class="skinfolds-table" border="1">
         <thead>
             <tr>
@@ -109,8 +118,8 @@
             </tr>
         </thead>
         <tbody>
-            {% for fold in patient.skinfolds|sort(attribute="data_medicao") %}
-            <tr>
+            {% for fold in skinfolds %}
+            <tr class="skinfold-row {% if loop.index > 5 %}hidden-skinfold{% endif %}">
                 <td>{{ fold.data_medicao.strftime("%d/%m/%Y") }}</td>
                 <td>{{ fold.altura }}</td>
                 <td>{{ fold.peso }}</td>
@@ -129,9 +138,17 @@
                 </td>
             </tr>
             {% endfor %}
+
         </tbody>
     </table>
+    {% if skinfolds|length > 5 %}
+    <div style="text-align: center; margin-top: 10px;">
+        <button id="toggleSkinfold" class="btn btn-secondary">Mostrar mais medições</button>
+    </div>
+    {% endif %}
+
     <br>
+
     <a href="{{ url_for('patients.add_skinfold', patient_id=patient.id) }}">Adicionar Bioimpedância</a>
     {% else %}
     <p>Não há registros de Bioimpedância.</p>
@@ -182,5 +199,7 @@
     &nbsp;
     <a class="remove-button" href="{{ url_for('patients.delete_patient', id=patient.id) }}">Remover</a>
 </div>
+
+<script src="{{ url_for('static', filename='js/patient_view.js') }}"></script>
 
 {% endblock %}

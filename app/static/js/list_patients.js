@@ -89,7 +89,7 @@ function updatePaginationButtons(currentPage, totalPages) {
     // If there is a previous group, add a "Previous" button to go to the previous group
     if (groupStart > 1) {
         var prevBtn = document.createElement("button");
-        prevBtn.textContent = "Previous";
+        prevBtn.textContent = "⬅️ Anterior";
         prevBtn.addEventListener("click", function() {
             // Jump to the last page of the previous group
             showPage(groupStart - 1);
@@ -103,7 +103,10 @@ function updatePaginationButtons(currentPage, totalPages) {
         btn.textContent = i;
         btn.setAttribute("data-page", i);
         if (i === currentPage) {
-            btn.style.fontWeight = "bold"; // Highlight the current page
+            btn.style.fontWeight = "bold";
+            btn.style.backgroundColor = "#007bff"; // azul Bootstrap
+            btn.style.color = "#fff";
+            btn.style.border = "none";
         }
         btn.addEventListener("click", function() {
             var pageNum = parseInt(this.getAttribute("data-page"));
@@ -115,14 +118,14 @@ function updatePaginationButtons(currentPage, totalPages) {
     // If there is a subsequent group, add "Next" and "Last" buttons
     if (groupEnd < totalPages) {
         var nextBtn = document.createElement("button");
-        nextBtn.textContent = "Next";
+        nextBtn.textContent = "Próxima ➡️";
         nextBtn.addEventListener("click", function() {
             showPage(groupEnd + 1);
         });
         paginationButtons.appendChild(nextBtn);
 
         var lastBtn = document.createElement("button");
-        lastBtn.textContent = "Last";
+        lastBtn.textContent = "⏩ Última";
         lastBtn.addEventListener("click", function() {
             showPage(totalPages);
         });
