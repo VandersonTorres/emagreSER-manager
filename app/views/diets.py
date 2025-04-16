@@ -104,14 +104,17 @@ def delete_diet(id):
     return render_template("admin/diets/delete_diet.html", diet=diet)
 
 
-@diets_bp.route("/diets/download/<type_>/<filename>")
+@diets_bp.route("/diets/download/<filename>")
 @roles_accepted("admin", "secretary", "nutritionist")
-def download_diet(filename, type_="original"):
-    if type_ == "temp":
-        folder = current_app.config["TEMP_UPLOAD_FOLDER"]
-    else:
-        folder = current_app.config["UPLOAD_FOLDER"]
+def download_diet(filename):
+    folder = current_app.config["UPLOAD_FOLDER"]
+    return send_from_directory(folder, filename, as_attachment=True)
 
+
+@diets_bp.route("/diets/download-temp/<filename>")
+@roles_accepted("admin", "secretary", "nutritionist")
+def download_temp_diet(filename):
+    folder = current_app.config["UPLOAD_FOLDER"]
     return send_from_directory(folder, filename, as_attachment=True)
 
 
@@ -135,7 +138,7 @@ def send_diet_email(diet_id):
         return redirect(url_for("diets.list_diets"))
 
     # Generating public URL for the File
-    diet_file_url = url_for("diets.serve_file", filename=temp_diet_file, type_="temp", _external=True)
+    diet_file_url = url_for("diets.serve_temp_file", filename=temp_diet_file, _external=True)
 
     msg = Message(
         subject=f"Dieta {diet.name}", recipients=[patient.email], sender=current_app.config.get("MAIL_DEFAULT_SENDER")
@@ -188,7 +191,7 @@ def send_diet_wpp(diet_id):
         return redirect(url_for("diets.list_diets"))
 
     # Generating public URL for the File
-    diet_file_url = url_for("diets.serve_file", filename=temp_diet_file, type_="temp", _external=True)
+    diet_file_url = url_for("diets.serve_temp_file", filename=temp_diet_file, _external=True)
     try:
         # Send diet by WhatsApp
         response = twilio_send_diet(
@@ -209,12 +212,14 @@ def send_diet_wpp(diet_id):
         return redirect(url_for("diets.list_diets"))
 
 
-@diets_bp.route("/uploads/<type_>/<filename>")
-def serve_file(filename, type_="original"):
-    if type_ == "temp":
-        return send_from_directory(current_app.config["TEMP_UPLOAD_FOLDER"], filename)
-    else:
-        return send_from_directory(current_app.config["UPLOAD_FOLDER"], filename)
+@diets_bp.route("/uploads/<filename>")
+def serve_file(filename):
+    return send_from_directory(current_app.config["UPLOAD_FOLDER"], filename)
+
+
+@diets_bp.route("/uploads/temp_files/<filename>")
+def serve_temp_file(filename):
+    return send_from_directory(current_app.config["TEMP_UPLOAD_FOLDER"], filename)
 
 
 @diets_bp.route("/diets/edit_diet/<int:id>", methods=["GET", "POST"])
@@ -315,7 +320,7 @@ def edit_diet(id):
             current_app.logger.error(f"Erro ao salvar PDF editado: {e}")
             return jsonify({"status": "error", "message": "Erro ao atualizar o PDF"}), 500
 
-    pdf_url = url_for("diets.serve_file", filename=diet.diet_file, type_="temp", _external=True)
+    pdf_url = url_for("diets.serve_file", filename=diet.diet_file, _external=True)
     return render_template("admin/diets/edit_diet.html", diet=diet, pdf_url=pdf_url)
 
 
@@ -323,5 +328,5 @@ def edit_diet(id):
 @roles_accepted("admin", "secretary", "nutritionist")
 def view_last_edition(id):
     diet = Diet.query.get_or_404(id)
-    pdf_url = url_for("diets.serve_file", filename=diet.temp_diet_file, type_="temp", _external=True)
+    pdf_url = url_for("diets.serve_temp_file", filename=diet.temp_diet_file, _external=True)
     return render_template("admin/diets/view_last_edition.html", diet=diet, pdf_url=pdf_url)

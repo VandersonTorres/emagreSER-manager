@@ -20,7 +20,7 @@
 </div>
 
 {% if diet.diet_file %}
-<p><a href="{{ url_for('diets.download_diet', filename=diet.temp_diet_file, type_='temp') }}" target="_blank">📄 Baixar Arquivo Editado</a></p>
+<p><a href="{{ url_for('diets.download_temp_diet', filename=diet.temp_diet_file) }}" target="_blank">📄 Baixar Arquivo Editado</a></p>
 {% endif %}
 
 <hr>
