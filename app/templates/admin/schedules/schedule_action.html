@@ -17,6 +17,7 @@
 <form class="add-schedule-form" method="POST" action="{{ url_for('schedules.schedule_action') }}">
     <label>Paciente:</label>
     <select name="patient_id">
+        <option value="">Selecione</option>
         {% for patient in patients %}
         <option value="{{ patient.id }}">{{ patient.name }}</option>
         {% endfor %}

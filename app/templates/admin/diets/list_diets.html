@@ -15,6 +15,8 @@
 
 <h2>Dietas Disponíveis</h2>
 <a href="{{ url_for('diets.add_diet') }}">+ Adicionar Dietas</a>
+<br>
+<hr>
 {% if diets %}
 <ul>
     {% for diet in diets %}
@@ -32,6 +34,7 @@
 
         <form id="send-diet-form-{{ diet.id }}" method="POST">
             <select name="patient_id" required>
+                <option value="">Selecione</option>
                 {% for patient in patients %}
                 <option value="{{ patient.id }}">{{ patient.name }}</option>
                 {% endfor %}

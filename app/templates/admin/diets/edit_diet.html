@@ -9,18 +9,25 @@
     <canvas id="pdf-canvas"></canvas>
 </div>
 
+<div style="text-align: center; margin: 10px 0;">
+    <button id="prev-page">⬅ Página anterior</button>
+    <span id="page-info">Página 1</span>
+    <button id="next-page">Próxima página ➡</button>
+</div>
+
 <div style="text-align: center; margin: 20px;">
     <button id="save-changes-btn">Salvar alterações</button>
     &nbsp;
     <a class="back-button" href="{{ url_for('diets.list_diets') }}">🔙 Voltar</a>
 </div>
 
+<!-- Modal to add text -->
 <div id="text-modal" class="modal" style="display: none;">
     <div class="modal-content">
         <label for="text-input">Insira o texto:</label>
         <input id="text-input" type="text">
         <label for="text-size">Tamanho:</label>
-        <input id="text-size" type="number" min="10" max="100" value="16">
+        <input id="text-size" type="number" min="10" max="20" value="11">
         <label for="text-color">Cor:</label>
         <input id="text-color" type="color" value="#000000">
         <div class="modal-actions">
@@ -30,20 +37,20 @@
     </div>
 </div>
 
+<!-- Modal to edit/remove text -->
 <div id="edit-text-modal" class="modal" style="display: none;">
-  <div class="modal-content edit">
-    <textarea id="edit-text-input"></textarea>
-    <input type="number" id="edit-text-size" placeholder="Tamanho" />
-    <input type="color" id="edit-text-color" />
-    <div class="modal-buttons">
-      <button id="save-edit-btn">Salvar</button>
-      <button id="remove-text-btn">Remover</button>
-      <button id="cancel-edit-btn">Cancelar</button>
+    <div class="modal-content edit">
+        <textarea id="edit-text-input"></textarea>
+        <input type="number" id="edit-text-size" placeholder="Tamanho" />
+        <input type="color" id="edit-text-color" />
+        <div class="modal-buttons">
+            <button id="save-edit-btn">Salvar</button>
+            <button id="remove-text-btn">Remover</button>
+            <button id="cancel-edit-btn">Cancelar</button>
+        </div>
     </div>
-  </div>
 </div>
 
-<!-- PDF.js -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js"></script>
 <script>
   pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js";

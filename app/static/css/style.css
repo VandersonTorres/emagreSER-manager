@@ -496,3 +496,7 @@ button#toggleSkinfold {
     color: #fff;
     border: none;
 }
+
+a {
+    text-decoration: dotted;
+}
