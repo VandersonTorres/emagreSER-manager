@@ -33,6 +33,12 @@
         {% endif %}
 
         <form id="send-diet-form-{{ diet.id }}" method="POST">
+            {% if diet.temp_diet_file %}
+            <span id="auto_calc_info" style="font-size: 9px; margin-left: 10px; color: #e90000;">
+                ANTES DE ENVIAR A DIETA, CERTIFIQUE DE REVISAR AS ALTERAÇÕES NO BOTÃO <strong>"Ver Última Edição"</strong>
+            </span>
+            <br>
+            {% endif %}
             <select name="patient_id" required>
                 <option value="">Selecione</option>
                 {% for patient in patients %}
