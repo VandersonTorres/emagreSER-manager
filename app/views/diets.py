@@ -92,6 +92,7 @@ def delete_diet(id):
             if os.path.exists(diet_file_path):
                 os.remove(diet_file_path)
 
+        if diet.temp_diet_file:
             temp_diet_file_path = os.path.join(current_app.config["TEMP_UPLOAD_FOLDER"], diet.temp_diet_file)
             if os.path.exists(temp_diet_file_path):
                 os.remove(temp_diet_file_path)
