@@ -248,7 +248,7 @@ def edit_diet(id):
 
                 page = doc.load_page(page_number)
                 text = ann.get("text", "")
-                font_size = max(ann.get("fontSize", 11), 11)
+                font_size = max(ann.get("fontSize", 9), 9)
                 color = ann.get("color", "#000000")
                 rgb = hex_to_rgb_normalized(color)
 
