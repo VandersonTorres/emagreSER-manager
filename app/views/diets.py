@@ -59,18 +59,13 @@ def add_diet():
         diet_filename = None
         if form.diet_file.data:
             diet_filename = secure_filename(form.diet_file.data.filename)
-            # Ensure the dir exists
-            upload_folder = current_app.config["UPLOAD_FOLDER"]
-            os.makedirs(upload_folder, exist_ok=True)
-
-            diet_file_path = os.path.join(upload_folder, diet_filename)
+            diet_file_path = os.path.join(current_app.config["UPLOAD_FOLDER"], diet_filename)
             form.diet_file.data.save(diet_file_path)
 
         diet_name = form.other_name.data if form.name.data == "Outro" else form.name.data
         diet = Diet(name=diet_name, description=form.description.data, diet_file=diet_filename)
         db.session.add(diet)
         db.session.commit()
-        current_app.logger.warning(f"Salvando PDF {diet_filename} em: {diet_file_path}")
 
         flash("Dieta cadastrada com sucesso!")
         return redirect(url_for("diets.list_diets"))
