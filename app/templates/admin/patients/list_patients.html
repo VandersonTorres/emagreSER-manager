@@ -57,6 +57,10 @@
     <h3>Adicionar Informações Antropométricas</h3>
     <form class="add-anthro-form" id="anthro-form" method="GET">
         <label for="patient_select">Selecione o Paciente:</label>
+        <span style="font-size: 10px; margin-left: 11px; color: #555;">
+            Ao clicar, experimente começar a digitar o nome do paciente para uma busca mais rápida
+        </span>
+        <br>
         <select id="patient_select" name="patient_id">
             <option value="">Selecione um paciente</option>
             {% for patient in patients %}
@@ -73,6 +77,10 @@
     <h3>Adicionar Dados de Bioimpedância</h3>
     <form class="add-skinfold-form" id="skinfold-form" method="GET">
         <label for="patient_select_skinfold">Selecione o Paciente:</label>
+        <span style="font-size: 10px; margin-left: 11px; color: #555;">
+            Ao clicar, experimente começar a digitar o nome do paciente para uma busca mais rápida
+        </span>
+        <br>
         <select id="patient_select_skinfold" name="patient_id">
             <option value="">Selecione um paciente</option>
             {% for patient in patients %}
