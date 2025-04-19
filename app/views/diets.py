@@ -66,7 +66,7 @@ def add_diet():
         diet = Diet(name=diet_name, description=form.description.data, diet_file=diet_filename)
         db.session.add(diet)
         db.session.commit()
-        current_app.logger.info(f"Salvando PDF {diet_filename} em: {diet_file_path}")
+        current_app.logger.warning(f"Salvando PDF {diet_filename} em: {diet_file_path}")
 
         flash("Dieta cadastrada com sucesso!")
         return redirect(url_for("diets.list_diets"))
