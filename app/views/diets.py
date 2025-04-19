@@ -250,7 +250,7 @@ def edit_diet(id):
                 text = ann.get("text", "")
                 font_size = max(ann.get("fontSize", 9), 9)
                 color = ann.get("color", "#000000")
-                rgb = hex_to_rgb_normalized(color)
+                rgb = hex_to_rgb_normalized(color, current_app)
 
                 # Get the canvas dimensions from the front
                 x_canvas = ann.get("x", 0)
@@ -281,11 +281,10 @@ def edit_diet(id):
                 text_height = (ascender - descender) * font_size
 
                 # Fix position
-                x_pdf_adjusted = x_pdf - text_width / 2  # horizontal centralizer
                 y_pdf_adjusted = y_pdf - text_height / 2  # vertical centralizer
 
                 # safe border
-                x_pdf_adjusted = max(0, min(x_pdf_adjusted, page_width - text_width))
+                x_pdf_adjusted = max(0, min(x_pdf, page_width - text_width))
                 y_pdf_adjusted = max(0, min(y_pdf_adjusted, page_height - text_height))
 
                 page.insert_text(

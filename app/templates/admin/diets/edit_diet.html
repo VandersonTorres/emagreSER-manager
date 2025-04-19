@@ -7,13 +7,22 @@
 {% block content %}
 <div class="alert">
     <p>
-        <span style="font-size: 11px; margin-left: 10px; color: #99a400;">
+        <span style="font-size: 12px; margin-left: 10px; color: #99a400;">
             <strong>Atenção:</strong> Evite aplicar zoom à tela durante a edição pois isso pode causar o desalinhamento dos textos
         </span><br>
-        <span style="font-size: 11px; margin-left: 10px; color: #6a6a6a;">
+        <span style="font-size: 12px; margin-left: 10px; color: #6a6a6a;">
             <i>Se houver problemas de posicionamento, certifique de que o Zoom esteja em <strong>"100%"</strong></i>
         </span>
     </p>
+    <br>
+    <aside style="padding: 5px; align-content: center;">
+        <span style="font-size: 12px; margin-left: 10px; color: #6a6a6a;">
+            <strong>Dicas de edição:</strong><br>
+            &nbsp; &nbsp; 1. Posicione os textos no inicio das linhas; <br>
+            &nbsp; &nbsp; 2. Evite textos longos <i>(ex: priorize nomes simples em vez de nomes completos)</i>; <br>
+            &nbsp; &nbsp; 3. Sempre revise antes de enviar a dieta. <br>
+        </span>
+    </aside>
 </div>
 
 <div id="pdf-container">
@@ -38,7 +47,7 @@
         <label for="text-input">Insira o texto:</label>
         <input id="text-input" type="text">
         <label for="text-size">Tamanho:</label>
-        <input id="text-size" type="number" min="9" max="11" value="9">
+        <input id="text-size" type="number" min="9" max="10" value="9">
         <label for="text-color">Cor:</label>
         <input id="text-color" type="color" value="#000000">
         <div class="modal-actions">
@@ -52,7 +61,7 @@
 <div id="edit-text-modal" class="modal" style="display: none;">
     <div class="modal-content edit">
         <textarea id="edit-text-input"></textarea>
-        <input type="number" id="edit-text-size" placeholder="Tamanho" />
+        <input type="number" id="edit-text-size" placeholder="Tamanho" min="9" max="10" />
         <input type="color" id="edit-text-color" />
         <div class="modal-buttons">
             <button id="save-edit-btn">Salvar</button>

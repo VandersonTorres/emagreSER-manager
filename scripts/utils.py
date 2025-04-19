@@ -1,3 +1,4 @@
+import re
 from datetime import datetime, timedelta
 from zoneinfo import ZoneInfo
 
@@ -54,9 +55,23 @@ def twilio_send_diet(patient, telephone, diet, diet_file_url, app):
     return message.sid
 
 
-def hex_to_rgb_normalized(hex_color):
-    hex_color = hex_color.lstrip("#")
-    if len(hex_color) != 6:
-        return 0, 0, 0  # fallback
-    r, g, b = [int(hex_color[i : i + 2], 16) / 255 for i in (0, 2, 4)]
-    return r, g, b
+def hex_to_rgb_normalized(color_str, app):
+    try:
+        # Case 1: rgb(255, 0, 0)
+        if color_str.startswith("rgb"):
+            rgb = re.findall(r"\d+", color_str)
+            if len(rgb) == 3:
+                r, g, b = [int(c) / 255.0 for c in rgb]
+                return r, g, b
+
+        # Case 2: #FF0000
+        color_str = color_str.lstrip("#")
+        if len(color_str) == 6:
+            r = int(color_str[0:2], 16) / 255.0
+            g = int(color_str[2:4], 16) / 255.0
+            b = int(color_str[4:6], 16) / 255.0
+            return r, g, b
+    except Exception as e:
+        app.logger.warning(f"Erro ao converter cor: {color_str}, {e}")
+
+    return 0, 0, 0  # fallback
