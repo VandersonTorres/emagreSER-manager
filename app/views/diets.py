@@ -59,7 +59,11 @@ def add_diet():
         diet_filename = None
         if form.diet_file.data:
             diet_filename = secure_filename(form.diet_file.data.filename)
-            diet_file_path = os.path.join(current_app.config["UPLOAD_FOLDER"], diet_filename)
+            # Ensure the dir exists
+            upload_folder = current_app.config["UPLOAD_FOLDER"]
+            os.makedirs(upload_folder, exist_ok=True)
+
+            diet_file_path = os.path.join(upload_folder, diet_filename)
             form.diet_file.data.save(diet_file_path)
 
         diet_name = form.other_name.data if form.name.data == "Outro" else form.name.data
