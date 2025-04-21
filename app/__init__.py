@@ -1,3 +1,4 @@
+import cloudinary
 from flask import Flask
 from flask_migrate import Migrate
 from flask_security import Security, SQLAlchemyUserDatastore
@@ -18,6 +19,12 @@ def create_app():
     app = Flask(__name__, template_folder="templates")
     app.config.from_object(Config)
     app.config["TEMPLATES_AUTO_RELOAD"] = True
+    cloudinary.config(
+        cloud_name=app.config["CLOUDINARY_CLOUD_NAME"],
+        api_key=app.config["CLOUDINARY_API_KEY"],
+        api_secret=app.config["CLOUDINARY_API_SECRET"],
+        secure=True,
+    )
 
     # Initialize extensions
     db.init_app(app)

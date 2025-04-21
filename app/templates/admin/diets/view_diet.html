@@ -20,7 +20,9 @@
 </div>
 
 {% if diet.diet_file %}
-<p><a href="{{ url_for('diets.download_diet', filename=diet.diet_file) }}" target="_blank">📄 Baixar Arquivo Original</a></p>
+<p>
+    📄 <a href="{{ diet.diet_file }}" target="_blank" download>Baixar Arquivo Original</a>
+</p>
 {% endif %}
 
 <hr>
