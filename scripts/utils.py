@@ -1,5 +1,7 @@
+import os
 import re
 from datetime import datetime, timedelta
+from urllib.parse import urlparse
 from zoneinfo import ZoneInfo
 
 from flask import flash, redirect, url_for
@@ -48,7 +50,7 @@ def twilio_send_diet(patient, telephone, diet, diet_file_url, app):
     message_text = f"Olá {patient}, aqui está sua dieta dessa semana:\n{diet}"
     message = client.messages.create(
         body=message_text,
-        from_=f'whatsapp:{app.config["TWILIO_PHONE"]}',
+        from_=f"whatsapp:{app.config['TWILIO_PHONE']}",
         to=f"whatsapp:{telephone}",
         media_url=[diet_file_url],
     )
@@ -75,3 +77,18 @@ def hex_to_rgb_normalized(color_str, app):
         app.logger.warning(f"Erro ao converter cor: {color_str}, {e}")
 
     return 0, 0, 0  # fallback
+
+
+def extract_public_id_from_cloudinary(url: str) -> str:
+    """
+    Remove the domain and the extension of an Cloudinary URL.
+    Exemple: https://.../diets/temp/file.pdf -> diets/temp/file
+    """
+    path = urlparse(url).path  # /raw/upload/vXXX/diets/temp/file.pdf
+    parts = path.split("/")
+    if "upload" in parts:
+        idx = parts.index("upload")
+        relevant = parts[idx + 1 :]  # ["v12345678", "diets", "temp", "arquivo.pdf"]
+        filename = "/".join(relevant[1:])  # skip "v12345678"
+        return os.path.splitext(filename)[0]  # remove .pdf
+    return ""

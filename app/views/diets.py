@@ -2,9 +2,13 @@ import os
 import re
 from datetime import datetime
 from smtplib import SMTPAuthenticationError, SMTPSenderRefused
+from tempfile import NamedTemporaryFile
 from zoneinfo import ZoneInfo
 
+import cloudinary
+import cloudinary.uploader
 import fitz
+import requests
 from flask import (
     Blueprint,
     current_app,
@@ -25,7 +29,7 @@ from werkzeug.utils import secure_filename
 from app.extensions import mail
 from app.forms import DietForm
 from app.models import Diet, Patients, Schedules, Specialists, db
-from scripts.utils import hex_to_rgb_normalized, twilio_send_diet
+from scripts.utils import extract_public_id_from_cloudinary, hex_to_rgb_normalized, twilio_send_diet
 
 diets_bp = Blueprint("diets", __name__)
 
@@ -56,14 +60,16 @@ def list_diets():
 def add_diet():
     form = DietForm()
     if form.validate_on_submit():
-        diet_filename = None
+        diet_url = None
         if form.diet_file.data:
-            diet_filename = secure_filename(form.diet_file.data.filename)
-            diet_file_path = os.path.join(current_app.config["UPLOAD_FOLDER"], diet_filename)
-            form.diet_file.data.save(diet_file_path)
+            original_filename = os.path.splitext(secure_filename(form.diet_file.data.filename))[0]
+            upload_result = cloudinary.uploader.upload(
+                form.diet_file.data, resource_type="raw", folder="diets", public_id=original_filename, overwrite=True
+            )
+            diet_url = upload_result["secure_url"]
 
         diet_name = form.other_name.data if form.name.data == "Outro" else form.name.data
-        diet = Diet(name=diet_name, description=form.description.data, diet_file=diet_filename)
+        diet = Diet(name=diet_name, description=form.description.data, diet_file=diet_url)
         db.session.add(diet)
         db.session.commit()
 
@@ -77,8 +83,7 @@ def add_diet():
 @roles_accepted("admin", "secretary", "nutritionist")
 def view_diet(id):
     diet = Diet.query.get_or_404(id)
-    pdf_url = url_for("diets.serve_file", filename=diet.diet_file, _external=True)
-    return render_template("admin/diets/view_diet.html", diet=diet, pdf_url=pdf_url)
+    return render_template("admin/diets/view_diet.html", diet=diet, pdf_url=diet.diet_file)
 
 
 @diets_bp.route("/diets/delete/<int:id>", methods=["GET", "POST"])
@@ -86,18 +91,17 @@ def view_diet(id):
 def delete_diet(id):
     diet = Diet.query.get_or_404(id)
     if request.method == "POST":
-        # Remove the file
+        # Delete files from Cloudinary
         if diet.diet_file:
-            diet_file_path = os.path.join(current_app.config["UPLOAD_FOLDER"], diet.diet_file)
-            if os.path.exists(diet_file_path):
-                os.remove(diet_file_path)
+            public_id = extract_public_id_from_cloudinary(diet.diet_file)
+            cloudinary.uploader.destroy(public_id, resource_type="raw")
 
         if diet.temp_diet_file:
             temp_diet_file_path = os.path.join(current_app.config["TEMP_UPLOAD_FOLDER"], diet.temp_diet_file)
             if os.path.exists(temp_diet_file_path):
                 os.remove(temp_diet_file_path)
 
-        # Remove from database
+        # Remove from the database
         db.session.delete(diet)
         db.session.commit()
         flash(f"Dieta '{diet.name}' removida com sucesso!", "success")
@@ -105,17 +109,15 @@ def delete_diet(id):
     return render_template("admin/diets/delete_diet.html", diet=diet)
 
 
-@diets_bp.route("/diets/download/<filename>")
-@roles_accepted("admin", "secretary", "nutritionist")
-def download_diet(filename):
-    folder = current_app.config["UPLOAD_FOLDER"]
-    return send_from_directory(folder, filename, as_attachment=True)
+@diets_bp.route("/uploads/temp_files/<filename>")
+def serve_temp_file(filename):
+    return send_from_directory(current_app.config["TEMP_UPLOAD_FOLDER"], filename)
 
 
 @diets_bp.route("/diets/download-temp/<filename>")
 @roles_accepted("admin", "secretary", "nutritionist")
 def download_temp_diet(filename):
-    folder = current_app.config["UPLOAD_FOLDER"]
+    folder = current_app.config["TEMP_UPLOAD_FOLDER"]
     return send_from_directory(folder, filename, as_attachment=True)
 
 
@@ -213,16 +215,6 @@ def send_diet_wpp(diet_id):
         return redirect(url_for("diets.list_diets"))
 
 
-@diets_bp.route("/uploads/<filename>")
-def serve_file(filename):
-    return send_from_directory(current_app.config["UPLOAD_FOLDER"], filename)
-
-
-@diets_bp.route("/uploads/temp_files/<filename>")
-def serve_temp_file(filename):
-    return send_from_directory(current_app.config["TEMP_UPLOAD_FOLDER"], filename)
-
-
 @diets_bp.route("/diets/edit_diet/<int:id>", methods=["GET", "POST"])
 @roles_accepted("admin", "secretary", "nutritionist")
 def edit_diet(id):
@@ -237,8 +229,15 @@ def edit_diet(id):
             if not annotations:
                 return jsonify({"status": "error", "message": "Não foi possível detectar alterações"}), 400
 
-            pdf_path = os.path.join(current_app.config["UPLOAD_FOLDER"], diet.diet_file)
-            doc = fitz.open(pdf_path)
+            response = requests.get(diet.diet_file)
+            if response.status_code != 200:
+                current_app.logger.error(f"Erro ao baixar o PDF do Cloudinary: {response.text}")
+                raise Exception("Erro ao baixar o PDF do Cloudinary")
+
+            with NamedTemporaryFile(delete=False, suffix=".pdf") as tmp_in:
+                tmp_in.write(response.content)
+                tmp_in.flush()
+                doc = fitz.open(tmp_in.name)
 
             for ann in annotations:
                 page_number = ann.get("page", 0) - 1
@@ -320,8 +319,7 @@ def edit_diet(id):
             current_app.logger.error(f"Erro ao salvar PDF editado: {e}")
             return jsonify({"status": "error", "message": "Erro ao atualizar o PDF"}), 500
 
-    pdf_url = url_for("diets.serve_file", filename=diet.diet_file, _external=True)
-    return render_template("admin/diets/edit_diet.html", diet=diet, pdf_url=pdf_url)
+    return render_template("admin/diets/edit_diet.html", diet=diet, pdf_url=diet.diet_file)
 
 
 @diets_bp.route("/diets/view_edited<int:id>", methods=["GET"])

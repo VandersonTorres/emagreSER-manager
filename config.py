@@ -25,11 +25,14 @@ class Config:
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
     # Uploads Settings
-    UPLOAD_FOLDER = os.path.join(BASE_DIR, "uploads")
-    TEMP_UPLOAD_FOLDER = os.path.join(BASE_DIR, "uploads/temp_files")
     ALLOWED_EXTENSIONS = {"pdf"}
-    os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+    TEMP_UPLOAD_FOLDER = os.path.join(BASE_DIR, "uploads/temp_files")
     os.makedirs(TEMP_UPLOAD_FOLDER, exist_ok=True)
+
+    # Cloudinary Settings
+    CLOUDINARY_CLOUD_NAME = os.getenv("CLOUDINARY_CLOUD_NAME", "missing-cloud-name")
+    CLOUDINARY_API_KEY = os.getenv("CLOUDINARY_API_KEY", "missing-api-key")
+    CLOUDINARY_API_SECRET = os.getenv("CLOUDINARY_API_SECRET", "missing-api-secret")
 
     # WhatsApp API Settings
     # https://console.twilio.com/
