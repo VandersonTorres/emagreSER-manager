@@ -141,7 +141,7 @@ def send_diet_email(diet_id):
         return redirect(url_for("diets.list_diets"))
 
     # Generating public URL for the File
-    diet_file_url = url_for("diets.serve_temp_file", filename=temp_diet_file, _external=True)
+    # diet_file_url = url_for("diets.serve_temp_file", filename=temp_diet_file, _external=True)
 
     msg = Message(
         subject=f"Dieta {diet.name}", recipients=[patient.email], sender=current_app.config.get("MAIL_DEFAULT_SENDER")
@@ -149,10 +149,11 @@ def send_diet_email(diet_id):
     msg.charset = "utf-8"
     msg.body = (
         f"Olá, {patient_name},\n\n"
-        f"Segue a sua dieta '{diet.name}' dessa semana.\n\n"
-        f"Você pode acessar o arquivo através do link abaixo, ou encontrá-lo em anexo:\n"
-        f"{diet_file_url}\n\n"
-        "At.te, Equipe EmagreSER"
+        f"Segue a sua dieta '{diet.name}' dessa semana.\n"
+        f"Você pode acessar e baixar o arquivo em anexo.\n"
+        "Se tiver dúvidas não se preocupe, entre em contato conosco!\n\n"
+        "At.te, Equipe EmagreSER\n"
+        "+55 (31) 9 9668-4161"
     )
 
     diet_file_path = os.path.join(current_app.config.get("TEMP_UPLOAD_FOLDER"), temp_diet_file)
