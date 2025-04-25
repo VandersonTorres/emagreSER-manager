@@ -35,10 +35,10 @@ def list_schedules():
     def filter_schedules(specialist_name):
         query = Schedules.query.filter_by(specialist=specialist_name)
         if not date_filter:
-            # Show all, except 'finalizados' after 1 day
+            # Show all, except 'finalizados' after 12 hours
             return (
                 query.filter(
-                    ~((Schedules.status == "finalizado") & (func.date(Schedules.date_time) < now - timedelta(days=1)))
+                    ~((Schedules.status == "finalizado") & (func.date(Schedules.date_time) < now - timedelta(hours=12)))
                 )
                 .order_by(Schedules.date_time)
                 .all()
