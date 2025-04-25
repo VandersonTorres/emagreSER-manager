@@ -122,7 +122,18 @@ def add_anthro(patient_id):
         diet_form = DietForm()
         diet_form.name.data = form.ultima_guia.data or ""
 
-        # Search for the last evaluation of the patient (except the current, if there was one)
+        # Search for the last anthro of the patient (except the current, if there was one)
+        last_anthro = (
+            AnthropometricEvaluation.query.filter_by(patient_id=patient.id)
+            .order_by(AnthropometricEvaluation.data_avaliacao.desc())
+            .first()
+        )
+        if last_anthro:
+            grau_atv_fisica = last_anthro.grau_atv_fisica
+        else:
+            grau_atv_fisica = ""
+
+        # Search for the last skinfolds of the patient (except the current, if there was one)
         last_skinfold = SkinFolds.query.filter_by(patient_id=patient.id).order_by(SkinFolds.data_medicao.desc()).first()
         if last_skinfold:
             ultimo_peso = last_skinfold.peso
@@ -142,6 +153,7 @@ def add_anthro(patient_id):
             peso_anterior = 0
             ultima_altura = 0
             evaluation_date = ""
+
         if form.validate_on_submit():
             if diet_form.name.data.lower() == "outro":
                 ultima_guia_value = request.form.get("other_name")
@@ -178,6 +190,7 @@ def add_anthro(patient_id):
             ultimo_peso=ultimo_peso,
             ultima_altura=ultima_altura,
             evaluation_date=evaluation_date,
+            grau_atv_fisica=grau_atv_fisica,
         )
 
 

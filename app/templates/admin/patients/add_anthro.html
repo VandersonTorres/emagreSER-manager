@@ -97,6 +97,11 @@
     <br>
     <label for="grau_atv_fisica">Grau de Atividade Física:</label>
     {{ form.grau_atv_fisica() }}
+    {% if grau_atv_fisica %}
+    <span style="font-size: 9px; margin-left: 10px; color: #555;">
+        Na última antropometria, o Grau de Atividade Física foi avaliado como "{{ grau_atv_fisica }}"
+    </span>
+    {% endif %}
     <br><br>
     <button type="submit">Salvar Avaliação</button>
 </form>
