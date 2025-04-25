@@ -45,8 +45,8 @@
                 <th>Peso Max</th>
                 <th>Peso Ideal</th>
                 <th>Peso Mínimo</th>
+                <th>Classificação Nutricional <i>(peso atual)</i></th>
                 <th>IMC</th>
-                <th>Classificação Nutricional</th>
                 <th>Necessidade Calórica</th>
                 <th>Ingestão de Líquido</th>
                 <th>Grau Atv. Física</th>
@@ -64,8 +64,13 @@
                 <td>{{ evaluation.p_max }}</td>
                 <td>{{ evaluation.p_ide }}</td>
                 <td>{{ evaluation.p_min }}</td>
+                <td>
+                    {{ evaluation.nutri_class }}
+                    {% if loop.index <= patient.skinfolds|length %}
+                        <i>({{ patient.skinfolds[-loop.index].peso }})</i>
+                    {% endif %}
+                </td>
                 <td>{{ evaluation.imc }}</td>
-                <td>{{ evaluation.nutri_class }}</td>
                 <td>{{ evaluation.necessidade_calorica }}</td>
                 <td>{{ evaluation.ingestao_liquido }}</td>
                 <td>{{ evaluation.grau_atv_fisica }}</td>
