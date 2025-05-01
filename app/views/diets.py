@@ -248,6 +248,7 @@ def edit_diet(id):
 
                 page = doc.load_page(page_number)
                 text = ann.get("text", "")
+                desired_fontsize = 9
                 font_size = max(ann.get("fontSize", 9), 9)
                 color = ann.get("color", "#000000")
                 rgb = hex_to_rgb_normalized(color, current_app)
@@ -277,8 +278,17 @@ def edit_diet(id):
                 ascender = font.ascender
                 descender = font.descender
 
-                text_width = fitz.get_text_length(text, fontname="helv", fontsize=font_size)
-                text_height = (ascender - descender) * font_size
+                percentual_position_ratio = desired_fontsize + round((desired_fontsize * 0.4))  # 40% of the font size
+                text_width = fitz.get_text_length(text, fontname="helv", fontsize=desired_fontsize)
+                text_height = (
+                    ((ascender - descender) * font_size)
+                    if font_size <= desired_fontsize
+                    else ((ascender - descender) * (font_size / 2))
+                    if font_size <= percentual_position_ratio
+                    else (ascender - descender)
+                    if font_size <= (desired_fontsize * 2)
+                    else (ascender - descender) - (font_size / 4)
+                )
 
                 # Fix position
                 y_pdf_adjusted = y_pdf - text_height / 2  # vertical centralizer
@@ -288,18 +298,12 @@ def edit_diet(id):
                 y_pdf_adjusted = max(0, min(y_pdf_adjusted, page_height - text_height))
 
                 page.insert_text(
-                    (x_pdf_adjusted, y_pdf_adjusted + ascender * font_size),
+                    (x_pdf_adjusted, (y_pdf_adjusted + ascender * desired_fontsize)),
                     text,
-                    fontsize=font_size,
+                    fontsize=desired_fontsize,
                     color=rgb,
                     fontname="helv",
                 )
-                # # RECTANGLE FOR DEBUG
-                # debug_rect = fitz.Rect(
-                #     x_pdf_adjusted, y_pdf_adjusted,
-                #     x_pdf_adjusted + text_width, y_pdf_adjusted + text_height
-                # )
-                # page.draw_rect(debug_rect, color=(1, 0, 0), width=0.3)
 
             temp_filename = f"dieta_personalizada_id_{diet.id}.pdf"
             temp_filepath = os.path.join(current_app.config["TEMP_UPLOAD_FOLDER"], temp_filename)
