@@ -45,7 +45,7 @@
     <tbody>
         {% for schedule in schedules %}
         <tr>
-            <td>{{ schedule.patient.name }}</td>
+            <td><a href="{{ url_for('patients.view_patient', id=schedule.patient.id) }}">{{ schedule.patient.name }}</a></td>
             <td>{{ schedule.date_time.strftime("%d/%m/%Y %H:%M") }}</td>
             <td>{{ schedule.status }}</td>
             <td>
