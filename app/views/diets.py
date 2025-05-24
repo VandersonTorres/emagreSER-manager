@@ -51,8 +51,13 @@ def list_diets():
             .all()
         )
 
-    diets = Diet.query.all()
-    return render_template("admin/diets/list_diets.html", patients=patients, diets=diets)
+    search_query = request.args.get("query", "").strip()
+    if search_query:
+        diets = Diet.query.filter(Diet.name.ilike(f"%{search_query}%")).order_by(Diet.name.asc()).all()
+    else:
+        diets = Diet.query.order_by(Diet.name.asc()).all()
+
+    return render_template("admin/diets/list_diets.html", patients=patients, diets=diets, search_query=search_query)
 
 
 @diets_bp.route("/diets/add", methods=["GET", "POST"])
@@ -318,6 +323,7 @@ def edit_diet(id):
                     "status": "success",
                     "message": "PDF atualizado com sucesso!",
                     "redirect_url": url_for("diets.list_diets"),
+                    "download_url": url_for("diets.download_temp_diet", filename=temp_filename),
                 }
             )
         except Exception as e:

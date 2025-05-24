@@ -183,12 +183,23 @@ async function savePDF() {
         const result = await response.json();
         if (result.status === "success") {
             alert(result.message);
+            const shouldDownload = confirm("Deseja baixar o PDF editado agora?");
+            if (shouldDownload) {
+                const link = document.createElement("a");
+                link.href = result.download_url;
+                link.setAttribute("download", "");
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            }
+
             window.location.href = result.redirect_url;
         } else {
             alert(result.message || "Erro ao salvar.");
         }
     } catch (e) {
         console.error("Erro ao interpretar resposta:", e);
+        alert("Erro inesperado ao processar a resposta.");
     }
 }
 
