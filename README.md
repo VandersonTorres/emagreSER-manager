@@ -43,9 +43,9 @@
 > ⚠️ Sensitive information has been blurred or redacted to protect privacy.
 
 <!-- Insert censored screenshots here -->
-![Dashboard View](screenshots/dashboard_blurred.png)
-![Patient Profile](screenshots/patient_profile_blurred.png)
-![Scheduling](screenshots/scheduling_blurred.png)
+![Dashboard View](app/static/img/screenshots/dashboard-screenshot.jpeg)
+![Patients Panel](app/static/img/screenshots/patients-panel-screenshot.jpeg)
+![Evolution History](app/static/img/screenshots/evolution-chart-screenshot.jpeg)
 
 ---
 
