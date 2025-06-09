@@ -377,8 +377,11 @@ def view_custom_history(id, pat_name):
             fat_percentual = "Ainda não houve registro do índice de gordura"
             muscle_percentual = "Ainda não houve registro do índice de massa magra"
             if len(patient.skinfolds):
-                fat_percentual = f"{patient.skinfolds[-1].gordura}%"
-                muscle_percentual = f"{patient.skinfolds[-1].massa_muscular}%"
+                for eval_ in patient.skinfolds:
+                    if eval_.gordura and eval_.gordura > 0:
+                        fat_percentual = f"{eval_.gordura}%"
+                    if eval_.massa_muscular and eval_.massa_muscular > 0:
+                        muscle_percentual = f"{eval_.massa_muscular}%"
 
             if len(patient.anthropometric_evaluations) > 1:
                 final_weight_result = round(last_weight_evaluated - initial_weight_evaluated, 2)
