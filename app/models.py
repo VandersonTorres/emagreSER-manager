@@ -76,7 +76,7 @@ class AnthropometricEvaluation(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     patient_id = db.Column(db.Integer, db.ForeignKey("patients.id", ondelete="CASCADE"), nullable=False)
     data_avaliacao = db.Column(db.Date, nullable=False, default=datetime.now(timezone.utc))
-    ultima_guia = db.Column(db.String(20), nullable=False, default="Nenhuma")
+    ultima_guia = db.Column(db.String(255), nullable=False, default="Nenhuma")
     idade = db.Column(db.Integer, nullable=False)
     evolucao = db.Column(db.Text, nullable=True)
     p_max = db.Column(db.Float, nullable=False)
