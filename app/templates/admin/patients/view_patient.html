@@ -66,9 +66,17 @@
                 <td>{{ evaluation.p_min }}</td>
                 <td>
                     {{ evaluation.nutri_class }}
-                    {% if loop.index <= patient.skinfolds|length %}
-                        <i>({{ patient.skinfolds[-loop.index].peso }})</i>
-                    {% endif %}
+                    <br>
+                    <small>
+                        <b>
+                        Peso atual:
+                        {% if weight_per_evaluation[evaluation.id] %}
+                            {{ weight_per_evaluation[evaluation.id] }} kg
+                        {% else %}
+                            <i>não disponível</i>
+                        {% endif %}
+                        </b>
+                    </small>
                 </td>
                 <td>{{ evaluation.imc }}</td>
                 <td>{{ evaluation.necessidade_calorica }}</td>

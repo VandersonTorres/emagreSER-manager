@@ -259,7 +259,17 @@ def edit_patient(id):
                     error_message = "Erro: Já existe um paciente com esse CPF cadastrado!"
 
                 flash(error_message, "danger")
-        return render_template("admin/patients/edit_patient.html", form=form, patient=patient)
+
+        anthropometric_evals = sorted(patient.anthropometric_evaluations, key=lambda x: x.data_avaliacao, reverse=True)
+        skinfolds = sorted(patient.skinfolds, key=lambda x: x.data_medicao, reverse=True)
+
+        return render_template(
+            "admin/patients/edit_patient.html",
+            form=form,
+            patient=patient,
+            anthropometric_evals=anthropometric_evals,
+            skinfolds=skinfolds,
+        )
 
 
 @patients_bp.route("/patients/<int:patient_id>/anthro/edit/<int:evaluation_id>", methods=["GET", "POST"])
@@ -301,7 +311,23 @@ def view_patient(id):
         msg="Acesso negado: Você só pode ver seus próprios pacientes.",
         to_redirect="patients.list_patients",
     ):
-        return render_template("admin/patients/view_patient.html", patient=patient)
+        # Pre-processing: Map each anthro eval to the last skingfold weight available
+        sorted_skinfolds = sorted(patient.skinfolds, key=lambda x: x.data_medicao)
+        sorted_evals = sorted(patient.anthropometric_evaluations, key=lambda x: x.data_avaliacao)
+
+        weight_per_evaluation = {}
+        for eval in sorted_evals:
+            weight = None
+            for fold in sorted_skinfolds:
+                if fold.data_medicao <= eval.data_avaliacao:
+                    weight = fold.peso  # Update with the most recent eval
+                else:
+                    break
+            weight_per_evaluation[eval.id] = weight
+
+        return render_template(
+            "admin/patients/view_patient.html", patient=patient, weight_per_evaluation=weight_per_evaluation
+        )
 
 
 @patients_bp.route("/patients/delete/<int:id>", methods=["GET", "POST"])
@@ -365,19 +391,23 @@ def view_custom_history(id, pat_name):
         to_redirect="patients.list_patients",
     ):
         if len(patient.anthropometric_evaluations):
+            skinfolds = sorted(
+                patient.skinfolds,
+                key=lambda x: x.data_medicao,
+            )
             patient_age = patient.anthropometric_evaluations[-1].idade
             initial_evaluation_date = patient.anthropometric_evaluations[0].data_avaliacao.strftime("%d/%m/%Y")
             last_imc = patient.anthropometric_evaluations[-1].imc
-            height = patient.skinfolds[-1].altura
-            initial_weight_evaluated = patient.skinfolds[0].peso
-            last_weight_evaluated = patient.skinfolds[-1].peso
+            height = skinfolds[-1].altura
+            initial_weight_evaluated = skinfolds[0].peso
+            last_weight_evaluated = skinfolds[-1].peso
             ideal_weight = patient.anthropometric_evaluations[-1].p_ide
             max_weight = patient.anthropometric_evaluations[-1].p_max
 
             fat_percentual = "Ainda não houve registro do índice de gordura"
             muscle_percentual = "Ainda não houve registro do índice de massa magra"
-            if len(patient.skinfolds):
-                for eval_ in patient.skinfolds:
+            if len(skinfolds):
+                for eval_ in skinfolds:
                     if eval_.gordura and eval_.gordura > 0:
                         fat_percentual = f"{eval_.gordura}%"
                     if eval_.massa_muscular and eval_.massa_muscular > 0:
@@ -404,8 +434,8 @@ def view_custom_history(id, pat_name):
             )
 
             # Preparing data for evolution grafic
-            evaluation_dates = [skinfold.data_medicao.strftime("%d/%m/%Y") for skinfold in patient.skinfolds]
-            evaluation_weights = [skinfold.peso for skinfold in patient.skinfolds]
+            evaluation_dates = [skinfold.data_medicao.strftime("%d/%m/%Y") for skinfold in skinfolds]
+            evaluation_weights = [skinfold.peso for skinfold in skinfolds]
 
             return render_template(
                 "admin/patients/view_custom_history.html",
