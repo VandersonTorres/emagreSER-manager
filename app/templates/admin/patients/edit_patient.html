@@ -44,7 +44,7 @@
     <ul>
         {% for evaluation in anthropometric_evals %}
         <li>
-            Data: {{ evaluation.data_avaliacao.strftime("%d/%m/%Y") }} | Peso: {{ evaluation.peso }} kg | IMC: {{ evaluation.imc }}
+            Data: {{ evaluation.data_avaliacao.strftime("%d/%m/%Y") }} | IMC: {{ evaluation.imc }}
             &nbsp;
             <a href="{{ url_for('patients.edit_anthro', patient_id=patient.id, evaluation_id=evaluation.id) }}">Editar
                 Avaliação</a>
@@ -62,8 +62,7 @@
     <ul>
         {% for skinfold in skinfolds %}
         <li>
-            Data: {{ skinfold.data_medicao.strftime("%d/%m/%Y") }} | Triciptal: {{ skinfold.triciptal }} | Bicipital: {{ skinfold.bicipital
-            }}
+            Data: {{ skinfold.data_medicao.strftime("%d/%m/%Y") }} | Peso: {{ skinfold.peso }}
             &nbsp;
             <a href="{{ url_for('patients.edit_skinfold', patient_id=patient.id, skinfold_id=skinfold.id) }}">Editar Pregas
                 Cutâneas</a>
