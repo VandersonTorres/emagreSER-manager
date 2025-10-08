@@ -28,10 +28,10 @@
 <br>
 <hr>
 {% if diets %}
-<ul>
+<ul id="diet-list">
     {% for diet in diets %}
-    <br>
-    <li><strong>{{ diet.name }}</strong> -
+    <li data-id="{{ diet.id }}">
+        <strong>{{ diet.name }}</strong> -
         <a class="view-button" href="{{ url_for('diets.view_diet', id=diet.id) }}" target="_blank">Ver</a>
         &nbsp;
         <a class="remove-button" href="{{ url_for('diets.delete_diet', id=diet.id) }}">Remover</a>
@@ -63,12 +63,40 @@
             </button>
           </form>
     </li>
-    <br>
-    <hr>
     {% endfor %}
 </ul>
 {% else %}
 <h3>Ainda não existem dietas armazenadas</h3>
 {% endif %}
+
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    const list = document.getElementById("diet-list");
+    if (list) {
+        new Sortable(list, {
+            animation: 150,
+            onEnd: function (evt) {
+                const order = Array.from(list.children).map((li, index) => ({
+                    id: li.dataset.id,
+                    position: index + 1
+                }));
+                fetch("{{ url_for('diets.reorder_diets') }}", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "X-CSRFToken": "{{ csrf_token() if csrf_token else '' }}"
+                    },
+                    body: JSON.stringify({ order })
+                }).then(res => res.json())
+                  .then(data => {
+                      console.log("Nova ordem salva:", data);
+                  })
+                  .catch(err => console.error(err));
+            }
+        });
+    }
+});
+</script>
 
 {% endblock %}

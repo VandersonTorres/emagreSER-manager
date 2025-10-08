@@ -500,3 +500,15 @@ button#toggleSkinfold {
 a {
     text-decoration: dotted;
 }
+
+#diet-list li {
+  cursor: grab;
+  padding: 5px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  margin-bottom: 8px;
+  background: #fafafa;
+}
+#diet-list li.sortable-chosen {
+  background: #e3f2fd;
+}

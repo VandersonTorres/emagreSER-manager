@@ -53,11 +53,28 @@ def list_diets():
 
     search_query = request.args.get("query", "").strip()
     if search_query:
-        diets = Diet.query.filter(Diet.name.ilike(f"%{search_query}%")).order_by(Diet.name.asc()).all()
+        diets = (
+            Diet.query.filter(Diet.name.ilike(f"%{search_query}%")).order_by(Diet.order.asc(), Diet.name.asc()).all()
+        )
     else:
-        diets = Diet.query.order_by(Diet.name.asc()).all()
+        diets = Diet.query.order_by(Diet.order.asc(), Diet.name.asc()).all()
 
     return render_template("admin/diets/list_diets.html", patients=patients, diets=diets, search_query=search_query)
+
+
+@diets_bp.route("/diets/reorder", methods=["POST"])
+@roles_accepted("admin", "secretary", "nutritionist")
+def reorder_diets():
+    data = request.get_json()
+    order_data = data.get("order", [])
+
+    for item in order_data:
+        diet = Diet.query.get(item["id"])
+        if diet:
+            diet.order = item["position"]
+
+    db.session.commit()
+    return jsonify({"status": "success", "message": "Ordem atualizada"})
 
 
 @diets_bp.route("/diets/add", methods=["GET", "POST"])
