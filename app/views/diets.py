@@ -23,6 +23,7 @@ from flask import (
 from flask_mail import Message
 from flask_security import current_user, roles_accepted
 from sqlalchemy import func
+from sqlalchemy.exc import IntegrityError
 from twilio.base.exceptions import TwilioRestException
 from werkzeug.utils import secure_filename
 
@@ -348,6 +349,42 @@ def edit_diet(id):
             return jsonify({"status": "error", "message": "Erro ao atualizar o PDF"}), 500
 
     return render_template("admin/diets/edit_diet.html", diet=diet, pdf_url=diet.diet_file)
+
+
+@diets_bp.route("/diets/edit/<int:id>", methods=["GET", "POST"])
+@roles_accepted("admin", "secretary", "nutritionist")
+def edit_diet_raw(id):
+    diet = Diet.query.get_or_404(id)
+    form = DietForm(obj=diet)
+
+    if form.validate_on_submit():
+        try:
+            diet_name = form.other_name.data if form.name.data == "Outro" else form.name.data
+            diet.name = diet_name
+            diet.description = form.description.data
+
+            if form.diet_file.data:
+                original_filename = os.path.splitext(secure_filename(form.diet_file.data.filename))[0]
+                upload_result = cloudinary.uploader.upload(
+                    form.diet_file.data,
+                    resource_type="raw",
+                    folder="diets",
+                    public_id=original_filename,
+                    overwrite=True,
+                )
+                diet.diet_file = upload_result["secure_url"]
+
+            db.session.commit()
+            flash(f"Dieta '{diet.name}' atualizada com sucesso!", "success")
+            return redirect(url_for("diets.list_diets"))
+        except IntegrityError as e:
+            db.session.rollback()
+            error_message = str(e)
+            if "diets.name" in error_message:
+                error_message = "Erro: Já existe uma dieta com esse nome cadastrada!"
+            flash(error_message, "danger")
+
+    return render_template("admin/diets/edit_diet_raw.html", form=form, diet=diet)
 
 
 @diets_bp.route("/diets/view_edited<int:id>", methods=["GET"])

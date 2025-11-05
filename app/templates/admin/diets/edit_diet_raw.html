@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% block title %}Editar Dieta{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="mb-4">Editar Dieta</h2>
+
+    <form method="POST" enctype="multipart/form-data" action="">
+        {{ form.hidden_tag() }}
+
+        <!-- Campo Nome -->
+        <div class="mb-3">
+            <label class="form-label">{{ form.name.label }}</label>
+            {{ form.name(class="form-select", id="diet-select") }}
+            {% for error in form.name.errors %}
+                <div class="text-danger">{{ error }}</div>
+            {% endfor %}
+        </div>
+
+        <!-- Campo "Outro" -->
+        <div id="other-name-field" class="mb-3" style="display: none;">
+            <label class="form-label">{{ form.other_name.label }}</label>
+            {{ form.other_name(class="form-control", placeholder="Especifique o nome da dieta") }}
+            {% for error in form.other_name.errors %}
+                <div class="text-danger">{{ error }}</div>
+            {% endfor %}
+        </div>
+
+        <!-- Descrição -->
+        <div class="mb-3">
+            <label class="form-label">{{ form.description.label }}</label>
+            {{ form.description(class="form-control", rows="4", placeholder="Descrição da dieta") }}
+            {% for error in form.description.errors %}
+                <div class="text-danger">{{ error }}</div>
+            {% endfor %}
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">{{ form.diet_file.label }}</label>
+
+            {% if diet.diet_file %}
+                <p>
+                    <a href="{{ diet.diet_file }}" target="_blank">📄 Ver arquivo atual</a>
+                </p>
+                <p>
+                    <span>Escolher outro arquivo irá sobrescrever o atual</span>
+                </p>
+            {% endif %}
+
+            {{ form.diet_file(class="form-control") }}
+        </div>
+
+        <div class="d-flex justify-content-between">
+            <a href="{{ url_for('diets.list_diets') }}" class="btn btn-secondary">Voltar</a>
+            <button type="submit" class="btn btn-primary">Salvar Alterações</button>
+        </div>
+    </form>
+</div>
+
+<!-- Inclui o mesmo JS do add_diet -->
+<script src="{{ url_for('static', filename='js/add_diet.js') }}"></script>
+{% endblock %}
