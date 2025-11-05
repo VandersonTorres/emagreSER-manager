@@ -1,158 +1,146 @@
-// Function to toggle the patients view and initiate pagination
-function togglePatients(event) {
-    event.preventDefault();
-    var listings = document.getElementById("patients-list");
-    var toggleLink = document.getElementById("toggle-patients");
-
-    if (listings.style.display === "none" || listings.style.display === "") {
-        listings.style.display = "block";
-        paginateList(); // Setup pagination when showing the list
-        toggleLink.textContent = "Esconder pacientes";
-    } else {
-        listings.style.display = "none";
-        var totalPatients = document.querySelectorAll("#patients-list ul li").length;
-        toggleLink.textContent = "Mostrar " + totalPatients + " pacientes";
+document.addEventListener("DOMContentLoaded", function () {
+    const tableBody = document.querySelector("table tbody");
+    if (tableBody) {
+        paginateTable();
     }
-}
+});
 
-// Setup pagination: divides patients into pages and creates the controls
-function paginateList() {
-    var listItems = document.querySelectorAll("#patients-list ul li");
-    var itemsPerPage = 10; // Show 10 patients per page
-    window.totalPatients = listItems.length;
+// === PAGINATION ===
+function paginateTable() {
+    const rows = document.querySelectorAll("table tbody tr");
+    const itemsPerPage = 5;
+    window.totalPatients = rows.length;
     window.itemsPerPage = itemsPerPage;
-    window.totalPages = Math.ceil(listItems.length / itemsPerPage);
+    window.totalPages = Math.ceil(rows.length / itemsPerPage);
 
-    var paginationDiv = document.getElementById("pagination-controls");
-    // Clear previous content
+    const paginationDiv = document.getElementById("pagination-controls");
     paginationDiv.innerHTML = "";
 
-    // Create container for pagination info (top)
-    var paginationInfo = document.createElement("div");
+    const paginationInfo = document.createElement("div");
     paginationInfo.id = "pagination-info";
+    paginationInfo.classList.add("text-center", "mb-2", "text-muted");
     paginationDiv.appendChild(paginationInfo);
 
-    // Create container for pagination buttons (bottom)
-    var paginationButtons = document.createElement("div");
+    const paginationButtons = document.createElement("nav");
     paginationButtons.id = "pagination-buttons";
+    paginationButtons.setAttribute("aria-label", "Paginação de pacientes");
     paginationDiv.appendChild(paginationButtons);
 
-    // If there is only one page, show all items and update info
     if (window.totalPages <= 1) {
-        listItems.forEach(function(item) {
-            item.style.display = "";
-        });
+        rows.forEach(row => row.style.display = "");
         updatePaginationInfo(1, window.totalPatients);
         return;
     }
 
-    // Show the first page by default
     showPage(1);
 }
 
 // Show items of the selected page and update controls
 function showPage(page) {
     window.currentPage = page;
-    var listItems = document.querySelectorAll("#patients-list ul li");
-    var start = (page - 1) * window.itemsPerPage;
-    var end = page * window.itemsPerPage;
+    const rows = document.querySelectorAll("table tbody tr");
+    const start = (page - 1) * window.itemsPerPage;
+    const end = page * window.itemsPerPage;
 
-    listItems.forEach(function(item, index) {
-        if (index >= start && index < end) {
-            item.style.display = "";
-        } else {
-            item.style.display = "none";
-        }
+    rows.forEach((row, index) => {
+        row.style.display = (index >= start && index < end) ? "" : "none";
     });
-    updatePaginationInfo(page, window.totalPatients);
+
     updatePaginationButtons(page, window.totalPages);
 }
 
-// Update pagination info (top) showing current page and total patients
-function updatePaginationInfo(page, totalPatients) {
-    var paginationInfo = document.getElementById("pagination-info");
-    if (paginationInfo) {
-        paginationInfo.textContent = "Página " + page + " de " + window.totalPages + " - Total de pacientes: " + totalPatients;
-    }
-}
-patients
-// Update pagination buttons (bottom), grouping them in groups of 3
 function updatePaginationButtons(currentPage, totalPages) {
-    var paginationButtons = document.getElementById("pagination-buttons");
-    paginationButtons.innerHTML = "";
+    const paginationNav = document.getElementById("pagination-buttons");
+    paginationNav.innerHTML = "";
 
-    var groupSize = 3;
-    // Calculate current group start and end
-    var groupStart = Math.floor((currentPage - 1) / groupSize) * groupSize + 1;
-    var groupEnd = Math.min(groupStart + groupSize - 1, totalPages);
+    const wrapper = document.createElement("div");
+    wrapper.classList.add("d-flex", "flex-column", "align-items-center", "gap-2", "mt-3");
 
-    // If there is a previous group, add a "Previous" button to go to the previous group
-    if (groupStart > 1) {
-        var prevBtn = document.createElement("button");
-        prevBtn.textContent = "⬅️ Anterior";
-        prevBtn.addEventListener("click", function() {
-            // Jump to the last page of the previous group
-            showPage(groupStart - 1);
-        });
-        paginationButtons.appendChild(prevBtn);
-    }
+    // Pagination info
+    const info = document.createElement("div");
+    info.classList.add("text-muted", "small");
+    info.textContent = `Página ${currentPage} de ${totalPages} — Total de pacientes: ${window.totalPatients}`;
+    wrapper.appendChild(info);
 
-    // Create buttons for each page in the current group
-    for (var i = groupStart; i <= groupEnd; i++) {
-        var btn = document.createElement("button");
-        btn.textContent = i;
-        btn.setAttribute("data-page", i);
-        if (i === currentPage) {
-            btn.style.fontWeight = "bold";
-            btn.style.backgroundColor = "#007bff"; // azul Bootstrap
-            btn.style.color = "#fff";
-            btn.style.border = "none";
+    // Pagination buttons list
+    const ul = document.createElement("ul");
+    ul.classList.add("pagination", "justify-content-center", "mb-0", "flex-wrap");
+
+    const createPageItem = (label, page, disabled = false, active = false) => {
+        const li = document.createElement("li");
+        li.classList.add("page-item");
+        if (disabled) li.classList.add("disabled");
+        if (active) li.classList.add("active");
+
+        const a = document.createElement("a");
+        a.classList.add("page-link");
+        a.href = "#";
+        a.textContent = label;
+
+        if (!disabled && !active) {
+            a.addEventListener("click", (e) => {
+                e.preventDefault();
+                showPage(page);
+            });
         }
-        btn.addEventListener("click", function() {
-            var pageNum = parseInt(this.getAttribute("data-page"));
-            showPage(pageNum);
-        });
-        paginationButtons.appendChild(btn);
+
+        li.appendChild(a);
+        return li;
+    };
+
+    // === Button "Primeira Página" ===
+    if (currentPage > 1) {
+        ul.appendChild(createPageItem("««", 1));
+    } else {
+        ul.appendChild(createPageItem("««", 1, true));
     }
 
-    // If there is a subsequent group, add "Next" and "Last" buttons
-    if (groupEnd < totalPages) {
-        var nextBtn = document.createElement("button");
-        nextBtn.textContent = "Próxima ➡️";
-        nextBtn.addEventListener("click", function() {
-            showPage(groupEnd + 1);
-        });
-        paginationButtons.appendChild(nextBtn);
+    // Button "Anterior"
+    ul.appendChild(createPageItem("«", currentPage - 1, currentPage === 1));
 
-        var lastBtn = document.createElement("button");
-        lastBtn.textContent = "⏩ Última";
-        lastBtn.addEventListener("click", function() {
-            showPage(totalPages);
-        });
-        paginationButtons.appendChild(lastBtn);
+    // Show up to 10 pages at a time
+    const maxVisible = 10;
+    let start = Math.max(1, currentPage - Math.floor(maxVisible / 2));
+    let end = Math.min(totalPages, start + maxVisible - 1);
+    if (end - start < maxVisible - 1) start = Math.max(1, end - maxVisible + 1);
+
+    for (let i = start; i <= end; i++) {
+        ul.appendChild(createPageItem(i, i, false, i === currentPage));
     }
+
+    // Button "Próxima"
+    ul.appendChild(createPageItem("»", currentPage + 1, currentPage === totalPages));
+
+    // === Button "Última Página" ===
+    if (currentPage < totalPages) {
+        ul.appendChild(createPageItem("»»", totalPages));
+    } else {
+        ul.appendChild(createPageItem("»»", totalPages, true));
+    }
+
+    wrapper.appendChild(ul);
+    paginationNav.appendChild(wrapper);
 }
 
-// Redirect to anthropometric evaluation
+// === REDIRECTS ===
 function redirectAnthro(event) {
     event.preventDefault();
-    var select = document.getElementById("patient_select");
-    var id = select.value;
+    const select = document.getElementById("patient_select");
+    const id = select.value;
     if (id) {
         window.location.href = addAnthroUrlTemplate.replace("0", id);
     } else {
-        alert("Please select a patient.");
+        alert("Por favor, selecione um paciente.");
     }
 }
 
-// Redirect to skinfold evaluation
 function redirectSkinfold(event) {
     event.preventDefault();
-    var select = document.getElementById("patient_select_skinfold");
-    var id = select.value;
+    const select = document.getElementById("patient_select_skinfold");
+    const id = select.value;
     if (id) {
         window.location.href = addSkinfoldUrlTemplate.replace("0", id);
     } else {
-        alert("Please select a patient.");
+        alert("Por favor, selecione um paciente.");
     }
 }

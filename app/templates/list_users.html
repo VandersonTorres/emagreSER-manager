@@ -5,35 +5,54 @@
 {% with messages = get_flashed_messages(with_categories=true) %}
 {% if messages %}
 {% for category, message in messages %}
-<div class="alert alert-{{ category }}">
+<div class="alert alert-{{ 'success' if category == 'success' else 'danger' }} alert-dismissible fade show"
+    role="alert">
     <strong>{{ message }}</strong>
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fechar"></button>
 </div>
 {% endfor %}
 {% set _ = session.pop("_flashes", None) %}
 {% endif %}
 {% endwith %}
 
-<h2>Usuários Cadastrados</h2>
-{% if users %}
-<div class="listings">
-    <ul>
-        {% for user in users %}
-        <li>
-            E-mail: {{ user.email }}
-            {% if user.last_login_at %}
-                | Último acesso: {{ user.last_login_at.strftime("%d/%m/%Y") }}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/list-users.css') }}">
+
+<div class="container mt-4">
+    <div class="card shadow-sm border-0">
+        <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
+            <h4 class="mb-0 fw-bold">👥 Usuários Cadastrados</h4>
+            <a href="{{ url_for('admin.create_user') }}" class="btn btn-light btn-sm fw-semibold">
+                ➕ Novo Usuário
+            </a>
+        </div>
+
+        <div class="card-body">
+            {% if users %}
+            <ul class="list-group list-group-flush">
+                {% for user in users %}
+                <li class="list-group-item d-flex justify-content-between align-items-center flex-wrap">
+                    <div class="user-info">
+                        <strong>{{ user.email }}</strong><br>
+                        {% if user.last_login_at %}
+                        <small class="text-muted">Último acesso: {{ user.last_login_at.strftime("%d/%m/%Y") }}</small>
+                        {% else %}
+                        <small class="text-danger">Usuário ainda não acessou o sistema</small>
+                        {% endif %}
+                    </div>
+                    <a href="{{ url_for('admin.delete_user', id=user.id) }}"
+                        class="btn btn-outline-danger btn-sm mt-2 mt-md-0">
+                        🗑️ Remover
+                    </a>
+                </li>
+                {% endfor %}
+            </ul>
             {% else %}
-                | Usuário ainda não acessou o sistema
+            <div class="text-center py-4">
+                <h5 class="text-muted">Ainda não existem usuários cadastrados no sistema.</h5>
+            </div>
             {% endif %}
-            &nbsp;
-            <a class="remove-button" href="{{ url_for('admin.delete_user', id=user.id) }}">Remover</a>
-        </li>
-        {% endfor %}
-    </ul>
-    <hr>
+        </div>
+    </div>
 </div>
-{% else %}
-<h3>Ainda não existem Usuários cadastrados no sistema</h3>
-{% endif %}
 
 {% endblock %}

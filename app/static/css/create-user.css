@@ -1,0 +1,22 @@
+.card {
+    border-radius: 10px;
+}
+
+.form-control {
+    border-radius: 6px;
+    transition: box-shadow 0.2s ease;
+}
+
+.form-control:focus {
+    box-shadow: 0 0 0 0.15rem rgba(25, 135, 84, 0.25);
+    border-color: #198754;
+}
+
+button[type="submit"] {
+    transition: background-color 0.3s ease, transform 0.1s ease;
+}
+
+button[type="submit"]:hover {
+    background-color: #157347;
+    transform: scale(1.02);
+}

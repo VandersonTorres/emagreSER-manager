@@ -2,30 +2,55 @@
 
 {% block content %}
 
-<h2>EDITAR PROFISSIONAL</h2>
-<section class="editing">
-    <form class="edit-specialist-form" method="POST" action="{{ url_for('specialists.edit_specialist', id=specialist.id) }}">
-        {{ form.hidden_tag() }}
-        <label for="name">Nome:</label>
-        {{ form.name() }}
-        <br>
-        <label for="cpf">CPF:</label>
-        {{ form.cpf(id="cpf", pattern="\d{3}\.\d{3}\.\d{3}-\d{2}", maxlength="11") }}
-        <br>
-        <label for="tel_number">Telefone:</label>
-        {{ form.tel_number(id="phone", pattern="\(\d{2}\) \d{4,5}-\d{4}", maxlength="11") }}
-        <br>
-        <label for="email">E-mail:</label>
-        {{ form.email(id="email") }}
-        <br><br>
-        <button type="submit">Salvar alterações</button>
-    </form>
-</section>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/specialists.css') }}">
 
-<hr>
-<br>
-<div class="nav-actions">
-    <a class="back-button" href="{{ url_for('specialists.list_specialists') }}">🔙 Voltar</a>
+<div class="container mt-4 mb-5">
+    <div class="card shadow-sm border-0">
+        <div class="card-header bg-success text-white text-center fw-bold fs-5">
+            ✏️ Editar Profissional
+        </div>
+
+        <div class="card-body">
+            <form class="edit-specialist-form" method="POST"
+                action="{{ url_for('specialists.edit_specialist', id=specialist.id) }}">
+                {{ form.hidden_tag() }}
+
+                <div class="mb-3">
+                    <label for="name" class="form-label fw-semibold">Nome:</label>
+                    {{ form.name(class="form-control", id="name") }}
+                </div>
+
+                <div class="mb-3">
+                    <label for="cpf" class="form-label fw-semibold">CPF:</label>
+                    {{ form.cpf(class="form-control", id="cpf", pattern="\\d{3}\\.\\d{3}\\.\\d{3}-\\d{2}",
+                    maxlength="11") }}
+                </div>
+
+                <div class="mb-3">
+                    <label for="tel_number" class="form-label fw-semibold">Telefone:</label>
+                    {{ form.tel_number(class="form-control", id="phone", pattern="\\(\\d{2}\\) \\d{4,5}-\\d{4}",
+                    maxlength="11") }}
+                </div>
+
+                <div class="mb-4">
+                    <label for="email" class="form-label fw-semibold">E-mail:</label>
+                    {{ form.email(class="form-control", id="email") }}
+                </div>
+
+                <div class="text-center">
+                    <button type="submit" class="btn btn-success px-5 py-2 fw-semibold shadow-sm">
+                        💾 Salvar Alterações
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="text-center mt-4">
+        <a class="btn btn-outline-secondary px-4 py-2 fw-semibold" href="{{ url_for('specialists.list_specialists') }}">
+            🔙 Voltar à Lista
+        </a>
+    </div>
 </div>
 
 <script src="{{ url_for('static', filename='js/normalize_fields.js') }}"></script>

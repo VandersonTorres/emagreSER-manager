@@ -8,7 +8,7 @@
 /* Page Body Style */
 body {
     font-family: Arial, sans-serif;
-    background-color: #f2f2f2;
+    background-color: #000000;
     color: #333;
     line-height: 1.6;
     padding: 20px;
@@ -19,23 +19,6 @@ header {
     background: linear-gradient(135deg, #0880165a, #345e41);
     padding: 10px;
     margin-bottom: 20px;
-}
-
-/* Container for Logo and Title */
-.logo-title {
-    /* Use Flexbox to center items horizontally */
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 10px;
-}
-
-/* Optional: Additional styling for the h1 element */
-.logo-title h1 {
-    display: flex;
-    align-items: center;
-    font-size: 2em;
-    color: #fff;
 }
 
 /* Navigation Links */

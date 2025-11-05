@@ -5,94 +5,134 @@
 {% with messages = get_flashed_messages(with_categories=true) %}
 {% if messages %}
 {% for category, message in messages %}
-<div class="alert alert-{{ category }}">
+<div class="alert alert-{{ 'success' if category == 'success' else 'danger' }} alert-dismissible fade show"
+    role="alert">
     <strong>{{ message }}</strong>
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fechar"></button>
 </div>
 {% endfor %}
 {% set _ = session.pop("_flashes", None) %}
 {% endif %}
 {% endwith %}
 
-<h2>Pacientes</h2>
-<a href="{{ url_for('patients.add_patient') }}">+ Cadastrar Paciente</a>
-<br><br>
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="mb-0">Pacientes</h2>
+        <a href="{{ url_for('patients.add_patient') }}" class="btn btn-primary">
+            <i class="bi bi-person-plus"></i> Cadastrar Paciente
+        </a>
+    </div>
 
-<form method="GET" action="{{ url_for('patients.list_patients') }}">
-    <input type="text" name="search" placeholder="Pesquisar paciente" value="{{ search_query }}">
-    <button type="submit">Pesquisar</button>
-</form>
-{% if search_query and search_empty %}
-    <p>Nenhum paciente foi encontrado com essa pesquisa.</p>
-{% endif %}
+    <!-- Search form -->
+    <form method="GET" action="{{ url_for('patients.list_patients') }}" class="input-group mb-4">
+        <input type="text" name="search" class="form-control" placeholder="Pesquisar paciente" value="{{ search_query }}">
+        <button type="submit" class="btn btn-outline-secondary">Pesquisar</button>
+    </form>
 
-{% if patients %}
-<!-- Alternate patients view -->
-<a href="#" id="toggle-patients" onclick="togglePatients(event)">
-    Mostrar {{ patients|length }} pacientes
-</a>
-<!-- Patients list -->
-<div class="listings" id="patients-list" style="display: none;">
-    <ul>
-        {% for patient in patients|sort(attribute="name") %}
-        <li>
-            {{ patient.name }} | CPF: {{ patient.cpf }} |
-            Tel: {{ patient.tel_number }} | E-mail: {{ patient.email }}
-            &nbsp;
-            <a class="view-button" href="{{ url_for('patients.view_patient', id=patient.id) }}" target="_blank">Ver
-                Paciente</a>
-            &nbsp;
-            <a class="edit-button" href="{{ url_for('patients.edit_patient', id=patient.id) }}">Editar</a>
-            &nbsp;
-            <a class="remove-button" href="{{ url_for('patients.delete_patient', id=patient.id) }}">Remover</a>
-        </li>
-        {% endfor %}
-    </ul>
+    {% if search_query and search_empty %}
+    <p class="text-muted text-center">Nenhum paciente foi encontrado com essa pesquisa.</p>
+    {% endif %}
+
+    {% if patients %}
+    <!-- Patients table -->
+    <div class="table-responsive">
+        <table class="table table-striped align-middle">
+            <thead class="table-light">
+                <tr>
+                    <th>Nome</th>
+                    <th>CPF</th>
+                    <th>Telefone</th>
+                    <th>E-mail</th>
+                    <th class="text-end">Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for patient in patients|sort(attribute="name") %}
+                <tr>
+                    <td>{{ patient.name }}</td>
+                    <td>{{ patient.cpf }}</td>
+                    <td>{{ patient.tel_number }}</td>
+                    <td>{{ patient.email }}</td>
+                    <td class="text-end">
+                        <a href="{{ url_for('patients.view_patient', id=patient.id) }}" class="btn btn-sm btn-info" target="_blank">
+                            <i class="bi bi-eye"></i> Ver
+                        </a>
+                        <a href="{{ url_for('patients.edit_patient', id=patient.id) }}" class="btn btn-sm btn-warning">
+                            <i class="bi bi-pencil-square"></i> Editar
+                        </a>
+                        <a href="{{ url_for('patients.delete_patient', id=patient.id) }}" class="btn btn-sm btn-danger">
+                            <i class="bi bi-trash"></i> Remover
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
     <!-- Pagination controls -->
-    <div id="pagination-controls"></div>
+    <div id="pagination-controls" class="d-flex justify-content-center mt-3"></div>
+
+    <hr class="my-5">
+
+    <!-- Anthro redirect -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <h4 class="card-title mb-3">Adicionar Informações Antropométricas</h4>
+            <form id="anthro-form" method="GET" class="row g-3 align-items-end">
+                <div class="col-md-8">
+                    <label for="patient_select" class="form-label">Selecione o Paciente:</label>
+                    <select id="patient_select" name="patient_id" class="form-select">
+                        <option value="">Selecione um paciente</option>
+                        {% for patient in patients %}
+                        <option value="{{ patient.id }}">{{ patient.name }} | CPF: {{ patient.cpf }}</option>
+                        {% endfor %}
+                    </select>
+                    <div class="form-text">
+                        Ao clicar, experimente começar a digitar o nome do paciente para uma busca mais rápida.
+                    </div>
+                </div>
+                <div class="col-md-4 text-md-end">
+                    <button type="submit" onclick="redirectAnthro(event)" class="btn btn-success">
+                        <i class="bi bi-clipboard-plus"></i> Realizar Avaliação
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Skinfold redirect -->
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <h4 class="card-title mb-3">Adicionar Dados de Bioimpedância</h4>
+            <form id="skinfold-form" method="GET" class="row g-3 align-items-end">
+                <div class="col-md-8">
+                    <label for="patient_select_skinfold" class="form-label">Selecione o Paciente:</label>
+                    <select id="patient_select_skinfold" name="patient_id" class="form-select">
+                        <option value="">Selecione um paciente</option>
+                        {% for patient in patients %}
+                        <option value="{{ patient.id }}">{{ patient.name }} | CPF: {{ patient.cpf }}</option>
+                        {% endfor %}
+                    </select>
+                    <div class="form-text">
+                        Ao clicar, experimente começar a digitar o nome do paciente para uma busca mais rápida.
+                    </div>
+                </div>
+                <div class="col-md-4 text-md-end">
+                    <button type="submit" onclick="redirectSkinfold(event)" class="btn btn-primary">
+                        <i class="bi bi-body-text"></i> Aferir Bioimpedância
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    {% else %}
+    <div class="alert alert-secondary text-center mt-5">
+        <h4 class="mb-0">Ainda não existem pacientes cadastrados no sistema</h4>
+    </div>
+    {% endif %}
 </div>
-
-<hr>
-
-<div class="add-anthro-info">
-    <h3>Adicionar Informações Antropométricas</h3>
-    <form class="add-anthro-form" id="anthro-form" method="GET">
-        <label for="patient_select">Selecione o Paciente:</label>
-        <span style="font-size: 10px; margin-left: 11px; color: #555;">
-            Ao clicar, experimente começar a digitar o nome do paciente para uma busca mais rápida
-        </span>
-        <br>
-        <select id="patient_select" name="patient_id">
-            <option value="">Selecione um paciente</option>
-            {% for patient in patients %}
-            <option value="{{ patient.id }}">{{ patient.name }} | CPF: {{ patient.cpf }}</option>
-            {% endfor %}
-        </select>
-        <button type="submit" onclick="redirectAnthro(event)">Realizar Avaliação</button>
-    </form>
-</div>
-
-<hr>
-
-<div class="add-skinfold-info">
-    <h3>Adicionar Dados de Bioimpedância</h3>
-    <form class="add-skinfold-form" id="skinfold-form" method="GET">
-        <label for="patient_select_skinfold">Selecione o Paciente:</label>
-        <span style="font-size: 10px; margin-left: 11px; color: #555;">
-            Ao clicar, experimente começar a digitar o nome do paciente para uma busca mais rápida
-        </span>
-        <br>
-        <select id="patient_select_skinfold" name="patient_id">
-            <option value="">Selecione um paciente</option>
-            {% for patient in patients %}
-            <option value="{{ patient.id }}">{{ patient.name }} | CPF: {{ patient.cpf }}</option>
-            {% endfor %}
-        </select>
-        <button type="submit" onclick="redirectSkinfold(event)">Aferir Bioimpedância</button>
-    </form>
-</div>
-{% else %}
-<h3>Ainda não existem pacientes cadastrados no sistema</h3>
-{% endif %}
 
 <!-- Assign global variables with dynamic URLs -->
 <script>

@@ -1,0 +1,50 @@
+.logo-title {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+}
+
+img {
+    max-width: 100%;
+    height: auto;
+}
+
+.logo {
+    max-width: 100%;
+    height: auto;
+    transition: transform 0.3s ease, opacity 0.3s ease;
+}
+
+.logo:hover {
+    transform: scale(1.05);
+    opacity: 0.9;
+}
+
+.main-logo {
+    max-width: 70%;
+}
+
+.secondary-logo {
+    max-width: 40%;
+}
+
+@media (max-width: 768px) {
+    .main-logo {
+        max-width: 85%;
+    }
+
+    .secondary-logo {
+        max-width: 55%;
+    }
+
+    .logo-title {
+        flex-direction: column;
+    }
+}
+
+.main-content {
+    background-color: #fff !important;
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+}
