@@ -31,17 +31,21 @@
 <ul id="diet-list">
     {% for diet in diets %}
     <li data-id="{{ diet.id }}">
-        <strong>{{ diet.name }}</strong> -
+        <strong>{{ diet.name }}</strong>
+        &nbsp;
         <a class="view-button" href="{{ url_for('diets.view_diet', id=diet.id) }}" target="_blank">Ver</a>
         &nbsp;
         <a class="remove-button" href="{{ url_for('diets.delete_diet', id=diet.id) }}">Remover</a>
         &nbsp;
-        <a class="edit-button" href="{{ url_for('diets.edit_diet', id=diet.id) }}">Editar para Enviar</a>
+        <a class="edit-button" href="{{ url_for('diets.edit_diet', id=diet.id) }}">Editar PDF para Enviar</a>
         {% if diet.temp_diet_file %}
         &nbsp;
-        <a class="edit-button" href="{{ url_for('diets.view_last_edition', id=diet.id) }}">Ver Última Edição</a>
+        <a class="edit-button" href="{{ url_for('diets.view_last_edition', id=diet.id) }}">Ver Última Edição do PDF</a>
         {% endif %}
 
+        {% if diet.description %}
+        <p><span>Descrição: {{ diet.description }}</span></p>
+        {% endif %}
         <form id="send-diet-form-{{ diet.id }}" method="POST">
             {% if diet.temp_diet_file %}
             <span id="auto_calc_info" style="font-size: 9px; margin-left: 10px; color: #e90000;">
@@ -61,7 +65,7 @@
             <button type="submit" formaction="{{ url_for('diets.send_diet_email', diet_id=diet.id) }}">
                 Enviar por Email
             </button>
-          </form>
+        </form>
     </li>
     {% endfor %}
 </ul>
