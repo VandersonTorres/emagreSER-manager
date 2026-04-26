@@ -106,4 +106,13 @@ document.addEventListener("DOMContentLoaded", function() {
 });
 </script>
 
+<script>
+    $(document).ready(function() {
+        $('select[name="patient_id"]').select2({
+            placeholder: "Selecione ou digite o nome do paciente",
+            allowClear: true
+        });
+    });
+</script>
+
 {% endblock %}

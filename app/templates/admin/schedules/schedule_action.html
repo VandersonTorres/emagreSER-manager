@@ -22,15 +22,12 @@
         <option value="{{ patient.id }}">{{ patient.name }}</option>
         {% endfor %}
     </select>
-    <span style="font-size: 10px; margin-left: 11px; color: #555;">
-        Ao clicar, experimente começar a digitar o nome do paciente para uma busca mais rápida
-    </span>
     <br>
     <label>Data e Hora:</label>
     <input type="datetime-local" name="date_time" required>
     <br>
     {% if specialists %}
-    <label for="specialist">Selecionar Profissional:</label>
+    <label for="specialist">Profissional:</label>
     <select name="specialist" required>
         <option value="">Selecione um profissional</option>
         {% for specialist in specialists %}
@@ -50,5 +47,14 @@
 <div class="nav-actions">
     <a class="back-button" href="{{ url_for('schedules.list_schedules') }}">🔙 Voltar</a>
 </div>
+
+<script>
+$(document).ready(function() {
+    $('select[name="patient_id"]').select2({
+        placeholder: "Selecione ou digite o nome do paciente",
+        allowClear: true
+    });
+});
+</script>
 
 {% endblock %}

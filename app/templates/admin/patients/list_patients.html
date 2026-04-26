@@ -57,9 +57,6 @@
     <h3>Adicionar Informações Antropométricas</h3>
     <form class="add-anthro-form" id="anthro-form" method="GET">
         <label for="patient_select">Selecione o Paciente:</label>
-        <span style="font-size: 10px; margin-left: 11px; color: #555;">
-            Ao clicar, experimente começar a digitar o nome do paciente para uma busca mais rápida
-        </span>
         <br>
         <select id="patient_select" name="patient_id">
             <option value="">Selecione um paciente</option>
@@ -77,9 +74,6 @@
     <h3>Adicionar Dados de Bioimpedância</h3>
     <form class="add-skinfold-form" id="skinfold-form" method="GET">
         <label for="patient_select_skinfold">Selecione o Paciente:</label>
-        <span style="font-size: 10px; margin-left: 11px; color: #555;">
-            Ao clicar, experimente começar a digitar o nome do paciente para uma busca mais rápida
-        </span>
         <br>
         <select id="patient_select_skinfold" name="patient_id">
             <option value="">Selecione um paciente</option>
@@ -98,6 +92,19 @@
 <script>
     var addAnthroUrlTemplate = "{{ url_for('patients.add_anthro', patient_id=0) }}";
     var addSkinfoldUrlTemplate = "{{ url_for('patients.add_skinfold', patient_id=0) }}";
+</script>
+<script>
+    $(document).ready(function() {
+        // Initialize Select2 for patient selection in both forms
+        $('#patient_select').select2({
+            placeholder: "Selecione ou digite o nome do paciente",
+            allowClear: true,
+        });
+        $('#patient_select_skinfold').select2({
+            placeholder: "Selecione ou digite o nome do paciente",
+            allowClear: true,
+        });
+    });
 </script>
 <script src="{{ url_for('static', filename='js/list_patients.js') }}"></script>
 
