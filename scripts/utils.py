@@ -4,7 +4,7 @@ from datetime import datetime, timedelta
 from urllib.parse import urlparse
 from zoneinfo import ZoneInfo
 
-from flask import flash, redirect, url_for
+from flask import abort, flash, redirect, url_for
 from sqlalchemy import func
 from twilio.rest import Client
 
@@ -12,10 +12,14 @@ from app.models import Schedules
 
 
 def block_access_to_patients(patient, user, msg, to_redirect):
-    """Function to restrict a improper access in Patients Routes"""
+    """Function to restrict a improper access in Patients Routes.
+
+    Returns a falsy value when the access is allowed. When denied, it flashes `msg` and aborts the request
+    with a redirect to `to_redirect`, so the caller doesn't need to return anything.
+    """
     if "nutritionist" in [role.name for role in user.roles]:
-        # If the nutri is original responsible for the patient
-        if patient.specialist.email == user.email:
+        # If the nutri is original responsible for the patient (some patients have no specialist assigned)
+        if patient.specialist and patient.specialist.email == user.email:
             return False  # Allow Access
 
         # Verify if the patient has an appointment with the specialist
@@ -29,9 +33,10 @@ def block_access_to_patients(patient, user, msg, to_redirect):
         if has_future_schedule:
             return False  # Allow Access
 
-        # Block the access
+        # Block the access. abort() is required: the views never return this redirect, so a plain
+        # `return redirect(...)` made them return None and Flask answered with a 500
         flash(msg, "danger")
-        return redirect(url_for(to_redirect))
+        abort(redirect(url_for(to_redirect)))
 
 
 def is_valid_time(candidate, specialist):
