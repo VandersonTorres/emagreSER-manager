@@ -1,0 +1,21 @@
+{% set display_name = current_user.username or current_user.email %}
+<header class="app-topbar">
+    <button class="btn app-topbar-toggle d-lg-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#app-sidebar" aria-controls="app-sidebar" aria-label="Abrir menu de navegação">
+        <i class="bi bi-list" aria-hidden="true"></i>
+    </button>
+    <a class="brand-logo" href="{{ url_for('main.index') }}" aria-label="EmagreSER, ir para o início">
+        <img src="{{ url_for('static', filename='img/logo2.png') }}" alt="EmagreSER">
+    </a>
+    <div class="dropdown ms-auto">
+        <button class="btn app-user-toggle dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Menu do usuário: {{ display_name }}">
+            <i class="bi bi-person-circle" aria-hidden="true"></i>
+            <span class="app-user-name d-none d-md-inline">{{ display_name }}</span>
+        </button>
+        <ul class="dropdown-menu dropdown-menu-end">
+            <li><span class="dropdown-item-text small text-body-secondary">{{ current_user.email }}</span></li>
+            <li><hr class="dropdown-divider"></li>
+            <li><a class="dropdown-item" href="{{ url_for('security.change_password') }}"><i class="bi bi-key" aria-hidden="true"></i> Trocar senha</a></li>
+            <li><a class="dropdown-item" href="{{ url_for('security.logout') }}"><i class="bi bi-box-arrow-right" aria-hidden="true"></i> Sair</a></li>
+        </ul>
+    </div>
+</header>

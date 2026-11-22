@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#29461a">
+    <title>Erro inesperado · EmagreSER</title>
+    {% include "_head_assets.html" %}
+</head>
+<body class="app-guest">
+    <div class="app-body">
+        <main class="app-main">
+            <a class="brand-logo brand-logo-lg" href="{{ url_for('main.index') }}" aria-label="EmagreSER">
+                <img src="{{ url_for('static', filename='img/logo2.png') }}" alt="EmagreSER">
+            </a>
+            <div class="app-content">
+                <div class="card auth-card">
+                    <div class="card-body p-4 error-page">
+                        <div class="error-page-code" aria-hidden="true">500</div>
+                        <h1 class="error-page-title">Algo deu errado</h1>
+                        <p class="error-page-text">Ocorreu um erro inesperado. Tente novamente em instantes.</p>
+                        <a class="btn btn-primary" href="{{ url_for('main.index') }}">Voltar ao início</a>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</body>
+</html>

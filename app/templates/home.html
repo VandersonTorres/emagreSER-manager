@@ -1,117 +1,81 @@
 {% extends "base.html" %}
+{% from "_macros.html" import page_header, empty_state %}
+
+{% block title %}Início · EmagreSER{% endblock %}
+
+{% block content_class %}{% endblock %}
 
 {% block content %}
+{% set display_name = current_user.username or current_user.email %}
+{% set is_manager = current_user.has_role("admin") or current_user.has_role("secretary") %}
+{% set shortcuts = [
+    ("person-plus", "Novo paciente", "patients.add_patient", "green"),
+    ("calendar-plus", "Agendar consulta", "schedules.schedule_action", "lime"),
+    ("calendar3", "Agenda", "schedules.list_schedules", "blue"),
+    ("journal-text", "Dietas", "diets.list_diets", "pink"),
+] %}
 
-{% with messages = get_flashed_messages(with_categories=true) %}
-{% set _ = session.pop('_flashes', None) %}
-{% if messages %}
-{% for category, message in messages %}
-<div class="alert alert-{{ category }}">
-    <strong>{{ message }}</strong>
-</div>
-{% endfor %}
-{% set _ = session.pop('_flashes', None) %}
-{% endif %}
-{% endwith %}
+{{ page_header("Olá, " ~ display_name, "O que você quer fazer hoje?") }}
 
-<!-- Custom styles for slider -->
-<style>
-    .swiper-container {
-        height: 400px;
-        margin: 0 auto;
-        border: 2px solid rgba(255, 255, 255, 0.5);
-        border-radius: 10px;
-        overflow: hidden;
-    }
-
-    .swiper-slide img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-    }
-</style>
-
-<!-- Include the CSS of Swiper -->
-<link rel="stylesheet" href="https://unpkg.com/swiper/swiper-bundle.min.css">
-
-<!-- Images Slider with Swiper -->
-<div class="swiper-container">
-    <div class="swiper-wrapper">
-        <div class="swiper-slide">
-            <img src="{{ url_for('static', filename='img/image0.jpg') }}" alt="Imagem 0">
+<section class="mb-4" aria-labelledby="shortcuts-title">
+    <h2 class="section-title" id="shortcuts-title">Atalhos</h2>
+    <div class="row g-3">
+        {% for icon, label, endpoint, tone in shortcuts %}
+        <div class="col-6 col-md-3">
+            <a class="shortcut-tile shortcut-tile-{{ tone }}" href="{{ url_for(endpoint) }}">
+                <span class="shortcut-tile-icon"><i class="bi bi-{{ icon }}" aria-hidden="true"></i></span>
+                <span>{{ label }}</span>
+            </a>
         </div>
-        <div class="swiper-slide">
-            <img src="{{ url_for('static', filename='img/image1.webp') }}" alt="Imagem 1">
-        </div>
-        <div class="swiper-slide">
-            <img src="{{ url_for('static', filename='img/image2.jpg') }}" alt="Imagem 2">
-        </div>
-        <div class="swiper-slide">
-            <img src="{{ url_for('static', filename='img/image3.avif') }}" alt="Imagem 3">
-        </div>
-        <div class="swiper-slide">
-            <img src="{{ url_for('static', filename='img/image4.jpg') }}" alt="Imagem 4">
-        </div>
-        <div class="swiper-slide">
-            <img src="{{ url_for('static', filename='img/image5.jpg') }}" alt="Imagem 5">
-        </div>
+        {% endfor %}
     </div>
-    <div class="swiper-button-next"></div>
-    <div class="swiper-button-prev"></div>
-    <br>
-</div>
+</section>
 
-<!-- Include the JS of Swiper -->
-<script src="https://unpkg.com/swiper/swiper-bundle.min.js"></script>
-<script>
-    var swiper = new Swiper('.swiper-container', {
-        loop: true,
-        effect: 'fade',
-        fadeEffect: {
-            crossFade: true
-        },
-        autoplay: {
-            delay: 3000,
-            disableOnInteraction: false,
-        },
-        pagination: {
-            el: '.swiper-pagination',
-            clickable: true,
-        },
-        navigation: {
-            nextEl: '.swiper-button-next',
-            prevEl: '.swiper-button-prev',
-        },
-    });
-</script>
+<div class="row g-4">
+    {% if upcoming_schedules is defined %}
+    <div class="col-12{{ ' col-lg-8' if is_manager }}">
+        <section class="card" aria-labelledby="upcoming-title">
+            <div class="card-header app-card-header">
+                <h2 class="app-card-title" id="upcoming-title">Próximas consultas</h2>
+                <a class="btn btn-link" href="{{ url_for('schedules.list_schedules') }}">Ver agenda completa</a>
+            </div>
+            {% if upcoming_schedules %}
+            <ul class="list-group list-group-flush">
+                {% for item in upcoming_schedules %}
+                <li class="list-group-item upcoming-item">
+                    <span class="upcoming-when">{{ item.when_label }}</span>
+                    <span class="upcoming-body">
+                        <a href="{{ url_for('patients.view_patient', id=item.patient_id) }}">{{ item.patient_name }}</a>
+                        {% if show_specialist %}
+                        <small class="d-block text-body-secondary">{{ item.specialist }}</small>
+                        {% endif %}
+                    </span>
+                </li>
+                {% endfor %}
+            </ul>
+            {% else %}
+            {{ empty_state("calendar-x", "Nenhuma consulta pendente", "As próximas consultas agendadas aparecem aqui.", url_for("schedules.schedule_action"), "Agendar consulta") }}
+            {% endif %}
+        </section>
+    </div>
+    {% endif %}
 
-<div class="display-info">
-    <br>
-    <h2>Bem vindo, {{ current_user.username }}</h2>
-    <p>Você está logado.</p>
+    {% if is_manager %}
+    <div class="col-12{{ ' col-lg-4' if upcoming_schedules is defined }}">
+        <section class="card" aria-labelledby="admin-title">
+            <div class="card-header app-card-header">
+                <h2 class="app-card-title" id="admin-title">Administração</h2>
+            </div>
+            <div class="list-group list-group-flush">
+                <a class="list-group-item list-group-item-action d-flex align-items-center gap-2" href="{{ url_for('admin.list_users') }}">
+                    <i class="bi bi-people" aria-hidden="true"></i> Usuários
+                </a>
+                <a class="list-group-item list-group-item-action d-flex align-items-center gap-2" href="{{ url_for('admin.create_user') }}">
+                    <i class="bi bi-person-plus" aria-hidden="true"></i> Novo usuário
+                </a>
+            </div>
+        </section>
+    </div>
+    {% endif %}
 </div>
-
-<div class="options">
-    <a href="{{ url_for('security.logout') }}">Sair</a>
-    <br>
-    <a href="{{ url_for('security.change_password') }}">Trocar senha</a>
-    <br>
-</div>
-<hr>
-<footer>
-    <h3>Ferramentas do administrador</h3>
-    <fieldset>
-        <a href="{{ url_for('admin.list_users') }}">Ver Usuários do Sistema</a>
-        <br>
-        <a href="{{ url_for('admin.create_user') }}">Cadastrar Novo Usuário</a>
-    </fieldset>
-</footer>
-<script>
-    // Remove flash messages after 3 econds
-    setTimeout(function() {
-      document.querySelectorAll(".alert").forEach(function(alert) {
-        alert.style.display = "none";
-      });
-    }, 3000);
-  </script>
 {% endblock %}

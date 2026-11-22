@@ -2,17 +2,6 @@
 
 {% block content %}
 
-{% with messages = get_flashed_messages(with_categories=true) %}
-{% if messages %}
-{% for category, message in messages %}
-<div class="alert alert-{{ category }}">
-    <strong>{{ message }}</strong>
-</div>
-{% endfor %}
-{% set _ = session.pop('_flashes', None) %}
-{% endif %}
-{% endwith %}
-
 <h2>LISTA DE PROFISSIONAIS</h2>
 <a href="{{ url_for('specialists.add_specialist') }}">+ Adicionar novo(a) profissional</a>
 <hr>
@@ -21,6 +10,7 @@
 <p>Não há profissionais cadastrados.</p>
 {% else %}
 <div class="show-specialists">
+    <div class="table-scroll">
     <table class="specialists-table">
         <thead>
             <tr>
@@ -51,6 +41,7 @@
             {% endfor %}
         </tbody>
     </table>
+    </div>
 </div>
 {% endif %}
 
