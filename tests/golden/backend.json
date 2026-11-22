@@ -1,0 +1,345 @@
+{
+  "a4_596x842/corners_and_center": {
+    "input": [
+      {"text": "Topo esq", "x": 0, "y": 0, "fontSize": 9, "color": "#000000", "page": 1, "canvasWidth": 977, "canvasHeight": 1380},
+      {"text": "Topo dir", "x": 977, "y": 0, "fontSize": 9, "color": "#000000", "page": 1, "canvasWidth": 977, "canvasHeight": 1380},
+      {"text": "Base esq", "x": 0, "y": 1380, "fontSize": 9, "color": "#000000", "page": 1, "canvasWidth": 977, "canvasHeight": 1380},
+      {"text": "Base dir", "x": 977, "y": 1380, "fontSize": 9, "color": "#000000", "page": 1, "canvasWidth": 977, "canvasHeight": 1380},
+      {"text": "Centro", "x": 488.5, "y": 690.0, "fontSize": 9, "color": "#000000", "page": 1, "canvasWidth": 977, "canvasHeight": 1380}
+    ],
+    "output": [
+      {"page": 1, "text": "Topo esq", "origin": [0.0, 9.675], "bbox": [0.0, 0.0, 37.521, 12.366], "size": 9.0, "font": "Helvetica", "color": "#000000"},
+      {"page": 1, "text": "Topo dir", "origin": [562.988, 9.675], "bbox": [562.988, 0.0, 596.0001, 12.366], "size": 9.0, "font": "Helvetica", "color": "#000000"},
+      {"page": 1, "text": "Centro", "origin": [298.0, 424.492], "bbox": [298.0, 414.817, 325.009, 427.183], "size": 9.0, "font": "Helvetica", "color": "#000000"},
+      {"page": 1, "text": "Base esq", "origin": [0.0, 839.309], "bbox": [0.0, 829.634, 37.521, 842.0], "size": 9.0, "font": "Helvetica", "color": "#000000"},
+      {"page": 1, "text": "Base dir", "origin": [562.988, 839.309], "bbox": [562.988, 829.634, 596.0001, 842.0], "size": 9.0, "font": "Helvetica", "color": "#000000"}
+    ]
+  },
+  "a4_596x842/right_edge_long_text": {
+    "input": [
+      {"text": "Texto muito longo para estourar a margem direita", "x": 973, "y": 414.0, "fontSize": 9, "color": "#000000", "page": 1, "canvasWidth": 977, "canvasHeight": 1380},
+      {"text": "Almoço: 2 ovos mexidos com tomate", "x": 928.1, "y": 552.0, "fontSize": 9, "color": "#000000", "page": 1, "canvasWidth": 977, "canvasHeight": 1380},
+      {"text": "Curto", "x": 957, "y": 690.0, "fontSize": 9, "color": "#000000", "page": 1, "canvasWidth": 977, "canvasHeight": 1380}
+    ],
+    "output": [
+      {"page": 1, "text": "Texto muito longo para estourar a margem direita", "origin": [398.423, 256.092], "bbox": [398.423, 246.417, 596.0004, 258.783], "size": 9.0, "font": "Helvetica", "color": "#000000"},
+      {"page": 1, "text": "Almoço: 2 ovos mexidos com tomate", "origin": [453.953, 340.292], "bbox": [453.953, 330.617, 601.0043, 342.983], "size": 9.0, "font": "Helvetica", "color": "#000000"},
+      {"page": 1, "text": "Curto", "origin": [573.995, 424.492], "bbox": [573.995, 414.817, 596.0001, 427.183], "size": 9.0, "font": "Helvetica", "color": "#000000"}
+    ]
+  },
+  "a4_596x842/bottom_edge": {
+    "input": [
+      {"text": "Rodape 9", "x": 97.7, "y": 1378, "fontSize": 9, "color": "#000000", "page": 1, "canvasWidth": 977, "canvasHeight": 1380},
+      {"text": "Rodape 20", "x": 390.8, "y": 1378, "fontSize": 20, "color": "#000000", "page": 1, "canvasWidth": 977, "canvasHeight": 1380},
+      {"text": "Rodape exato", "x": 97.7, "y": 1365, "fontSize": 9, "color": "#000000", "page": 1, "canvasWidth": 977, "canvasHeight": 1380},
+      {"text": "Muito embaixo 14", "x": 537.4, "y": 1380, "fontSize": 14, "color": "#000000", "page": 1, "canvasWidth": 977, "canvasHeight": 1380}
+    ],
+    "output": [
+      {"page": 1, "text": "Rodape exato", "origin": [59.6, 836.3398], "bbox": [59.6, 826.6649, 115.634, 839.0308], "size": 9.0, "font": "Helvetica", "color": "#000000"},
+      {"page": 1, "text": "Rodape 9", "origin": [59.6, 839.309], "bbox": [59.6, 829.634, 98.624, 842.0], "size": 9.0, "font": "Helvetica", "color": "#000000"},
+      {"page": 1, "text": "Muito embaixo 14", "origin": [327.8305, 850.301], "bbox": [327.8305, 840.626, 398.8585, 852.992], "size": 9.0, "font": "Helvetica", "color": "#000000"},
+      {"page": 1, "text": "Rodape 20", "origin": [238.4, 852.2677], "bbox": [238.4, 842.5927, 282.428, 854.9587], "size": 9.0, "font": "Helvetica", "color": "#000000"}
+    ]
+  },
+  "a4_596x842/font_sizes": {
+    "input": [
+      {"text": "Tamanho 8", "x": 48.9, "y": 110.4, "fontSize": 8, "color": "#000000", "page": 1, "canvasWidth": 977, "canvasHeight": 1380},
+      {"text": "Tamanho 9", "x": 87.9, "y": 220.8, "fontSize": 9, "color": "#000000", "page": 1, "canvasWidth": 977, "canvasHeight": 1380},
+      {"text": "Tamanho 10", "x": 127.0, "y": 331.2, "fontSize": 10, "color": "#000000", "page": 1, "canvasWidth": 977, "canvasHeight": 1380},
+      {"text": "Tamanho 12", "x": 166.1, "y": 441.6, "fontSize": 12, "color": "#000000", "page": 1, "canvasWidth": 977, "canvasHeight": 1380},
+      {"text": "Tamanho 13", "x": 205.2, "y": 552.0, "fontSize": 13, "color": "#000000", "page": 1, "canvasWidth": 977, "canvasHeight": 1380},
+      {"text": "Tamanho 14", "x": 244.2, "y": 662.4, "fontSize": 14, "color": "#000000", "page": 1, "canvasWidth": 977, "canvasHeight": 1380},
+      {"text": "Tamanho 16", "x": 283.3, "y": 772.8, "fontSize": 16, "color": "#000000", "page": 1, "canvasWidth": 977, "canvasHeight": 1380},
+      {"text": "Tamanho 18", "x": 322.4, "y": 883.2, "fontSize": 18, "color": "#000000", "page": 1, "canvasWidth": 977, "canvasHeight": 1380},
+      {"text": "Tamanho 19", "x": 361.5, "y": 993.6, "fontSize": 19, "color": "#000000", "page": 1, "canvasWidth": 977, "canvasHeight": 1380},
+      {"text": "Tamanho 20", "x": 400.6, "y": 1104.0, "fontSize": 20, "color": "#000000", "page": 1, "canvasWidth": 977, "canvasHeight": 1380}
+    ],
+    "output": [
+      {"page": 1, "text": "Tamanho 8", "origin": [29.8305, 70.852], "bbox": [29.8305, 61.177, 75.3525, 73.543], "size": 9.0, "font": "Helvetica", "color": "#000000"},
+      {"page": 1, "text": "Tamanho 9", "origin": [53.6217, 138.212], "bbox": [53.6217, 128.537, 99.1437, 140.903], "size": 9.0, "font": "Helvetica", "color": "#000000"},
+      {"page": 1, "text": "Tamanho 10", "origin": [77.4739, 208.32], "bbox": [77.4739, 198.645, 127.9999, 211.011], "size": 9.0, "font": "Helvetica", "color": "#000000"},
+      {"page": 1, "text": "Tamanho 12", "origin": [101.3261, 274.993], "bbox": [101.3261, 265.318, 151.8521, 277.684], "size": 9.0, "font": "Helvetica", "color": "#000000"},
+      {"page": 1, "text": "Tamanho 13", "origin": [125.1783, 342.0095], "bbox": [125.1783, 332.3345, 175.7043, 344.7005], "size": 9.0, "font": "Helvetica", "color": "#000000"},
+      {"page": 1, "text": "Tamanho 14", "origin": [148.9695, 413.148], "bbox": [148.9695, 403.473, 199.4955, 415.839], "size": 9.0, "font": "Helvetica", "color": "#000000"},
+      {"page": 1, "text": "Tamanho 16", "origin": [172.8217, 480.508], "bbox": [172.8217, 470.833, 223.3477, 483.199], "size": 9.0, "font": "Helvetica", "color": "#000000"},
+      {"page": 1, "text": "Tamanho 18", "origin": [196.6739, 547.868], "bbox": [196.6739, 538.1931, 247.1999, 550.559], "size": 9.0, "font": "Helvetica", "color": "#000000"},
+      {"page": 1, "text": "Tamanho 19", "origin": [220.5261, 617.603], "bbox": [220.5261, 607.928, 271.0521, 620.294], "size": 9.0, "font": "Helvetica", "color": "#000000"},
+      {"page": 1, "text": "Tamanho 20", "origin": [244.3783, 685.088], "bbox": [244.3783, 675.413, 294.9043, 687.779], "size": 9.0, "font": "Helvetica", "color": "#000000"}
+    ]
+  },
+  "a4_596x842/colors": {
+    "input": [
+      {"text": "Preto hex", "x": 97.7, "y": 138.0, "fontSize": 9, "color": "#000000", "page": 1, "canvasWidth": 977, "canvasHeight": 1380},
+      {"text": "Vermelho hex", "x": 97.7, "y": 276.0, "fontSize": 9, "color": "#ff0000", "page": 1, "canvasWidth": 977, "canvasHeight": 1380},
+      {"text": "Azul rgb", "x": 97.7, "y": 414.0, "fontSize": 9, "color": "rgb(0, 128, 255)", "page": 1, "canvasWidth": 977, "canvasHeight": 1380},
+      {"text": "Preto rgb", "x": 97.7, "y": 552.0, "fontSize": 9, "color": "rgb(0, 0, 0)", "page": 1, "canvasWidth": 977, "canvasHeight": 1380},
+      {"text": "Verde HEX maiusculo", "x": 97.7, "y": 690.0, "fontSize": 9, "color": "#00A310", "page": 1, "canvasWidth": 977, "canvasHeight": 1380}
+    ],
+    "output": [
+      {"page": 1, "text": "Preto hex", "origin": [59.6, 87.692], "bbox": [59.6, 78.017, 98.12, 90.383], "size": 9.0, "font": "Helvetica", "color": "#000000"},
+      {"page": 1, "text": "Vermelho hex", "origin": [59.6, 171.892], "bbox": [59.6, 162.217, 115.121, 174.583], "size": 9.0, "font": "Helvetica", "color": "#ff0000"},
+      {"page": 1, "text": "Azul rgb", "origin": [59.6, 256.092], "bbox": [59.6, 246.417, 92.612, 258.783], "size": 9.0, "font": "Helvetica", "color": "#0080ff"},
+      {"page": 1, "text": "Preto rgb", "origin": [59.6, 340.292], "bbox": [59.6, 330.617, 96.617, 342.983], "size": 9.0, "font": "Helvetica", "color": "#000000"},
+      {"page": 1, "text": "Verde HEX maiusculo", "origin": [59.6, 424.492], "bbox": [59.6, 414.817, 147.629, 427.183], "size": 9.0, "font": "Helvetica", "color": "#00a310"}
+    ]
+  },
+  "a4_596x842/accents_and_multiline": {
+    "input": [
+      {"text": "João", "x": 97.7, "y": 276.0, "fontSize": 9, "color": "#000000", "page": 1, "canvasWidth": 977, "canvasHeight": 1380},
+      {"text": "Maçã", "x": 97.7, "y": 483.0, "fontSize": 9, "color": "#000000", "page": 1, "canvasWidth": 977, "canvasHeight": 1380},
+      {"text": "Linha 1\nLinha 2", "x": 97.7, "y": 690.0, "fontSize": 9, "color": "#000000", "page": 1, "canvasWidth": 977, "canvasHeight": 1380}
+    ],
+    "output": [
+      {"page": 1, "text": "João", "origin": [59.6, 171.892], "bbox": [59.6, 162.217, 79.112, 174.583], "size": 9.0, "font": "Helvetica", "color": "#000000"},
+      {"page": 1, "text": "Maçã", "origin": [59.6, 298.192], "bbox": [59.6, 288.517, 81.605, 300.883], "size": 9.0, "font": "Helvetica", "color": "#000000"},
+      {"page": 1, "text": "Linha 1", "origin": [59.6, 424.492], "bbox": [59.6, 414.817, 89.12, 427.183], "size": 9.0, "font": "Helvetica", "color": "#000000"},
+      {"page": 1, "text": "Linha 2", "origin": [59.6, 436.858], "bbox": [59.6, 427.183, 89.12, 439.549], "size": 9.0, "font": "Helvetica", "color": "#000000"}
+    ]
+  },
+  "a4_596x842/all_pages_and_invalid_page": {
+    "input": [
+      {"text": "Pagina 1 a", "x": 195.4, "y": 276.0, "fontSize": 9, "color": "#000000", "page": 1, "canvasWidth": 977, "canvasHeight": 1380},
+      {"text": "Pagina 1 b", "x": 537.4, "y": 966.0, "fontSize": 12, "color": "#000000", "page": 1, "canvasWidth": 977, "canvasHeight": 1380},
+      {"text": "Pagina 2 a", "x": 195.4, "y": 276.0, "fontSize": 9, "color": "#000000", "page": 2, "canvasWidth": 977, "canvasHeight": 1380},
+      {"text": "Pagina 2 b", "x": 537.4, "y": 966.0, "fontSize": 12, "color": "#000000", "page": 2, "canvasWidth": 977, "canvasHeight": 1380},
+      {"text": "FORA depois da ultima", "x": 293.1, "y": 414.0, "fontSize": 9, "color": "#000000", "page": 3, "canvasWidth": 977, "canvasHeight": 1380},
+      {"text": "FORA pagina zero", "x": 293.1, "y": 552.0, "fontSize": 9, "color": "#000000", "page": 0, "canvasWidth": 977, "canvasHeight": 1380}
+    ],
+    "output": [
+      {"page": 1, "text": "Pagina 1 a", "origin": [119.2, 171.892], "bbox": [119.2, 162.217, 162.229, 174.583], "size": 9.0, "font": "Helvetica", "color": "#000000"},
+      {"page": 1, "text": "Pagina 1 b", "origin": [327.8305, 594.953], "bbox": [327.8305, 585.278, 370.8595, 597.644], "size": 9.0, "font": "Helvetica", "color": "#000000"},
+      {"page": 2, "text": "Pagina 2 a", "origin": [119.2, 171.892], "bbox": [119.2, 162.217, 162.229, 174.583], "size": 9.0, "font": "Helvetica", "color": "#000000"},
+      {"page": 2, "text": "Pagina 2 b", "origin": [327.8305, 594.953], "bbox": [327.8305, 585.278, 370.8595, 597.644], "size": 9.0, "font": "Helvetica", "color": "#000000"}
+    ]
+  },
+  "a4_59532x84192/corners_and_center": {
+    "input": [
+      {"text": "Topo esq", "x": 0, "y": 0, "fontSize": 9, "color": "#000000", "page": 1, "canvasWidth": 976, "canvasHeight": 1380},
+      {"text": "Topo dir", "x": 976, "y": 0, "fontSize": 9, "color": "#000000", "page": 1, "canvasWidth": 976, "canvasHeight": 1380},
+      {"text": "Base esq", "x": 0, "y": 1380, "fontSize": 9, "color": "#000000", "page": 1, "canvasWidth": 976, "canvasHeight": 1380},
+      {"text": "Base dir", "x": 976, "y": 1380, "fontSize": 9, "color": "#000000", "page": 1, "canvasWidth": 976, "canvasHeight": 1380},
+      {"text": "Centro", "x": 488.0, "y": 690.0, "fontSize": 9, "color": "#000000", "page": 1, "canvasWidth": 976, "canvasHeight": 1380}
+    ],
+    "output": [
+      {"page": 1, "text": "Topo esq", "origin": [0.0, 9.675], "bbox": [0.0, 0.0, 37.521, 12.366], "size": 9.0, "font": "Helvetica", "color": "#000000"},
+      {"page": 1, "text": "Topo dir", "origin": [562.308, 9.675], "bbox": [562.308, 0.0, 595.3201, 12.366], "size": 9.0, "font": "Helvetica", "color": "#000000"},
+      {"page": 1, "text": "Centro", "origin": [297.66, 424.452], "bbox": [297.66, 414.777, 324.669, 427.143], "size": 9.0, "font": "Helvetica", "color": "#000000"},
+      {"page": 1, "text": "Base esq", "origin": [0.0, 839.229], "bbox": [0.0, 829.554, 37.521, 841.92], "size": 9.0, "font": "Helvetica", "color": "#000000"},
+      {"page": 1, "text": "Base dir", "origin": [562.308, 839.229], "bbox": [562.308, 829.554, 595.3201, 841.92], "size": 9.0, "font": "Helvetica", "color": "#000000"}
+    ]
+  },
+  "a4_59532x84192/right_edge_long_text": {
+    "input": [
+      {"text": "Texto muito longo para estourar a margem direita", "x": 972, "y": 414.0, "fontSize": 9, "color": "#000000", "page": 1, "canvasWidth": 976, "canvasHeight": 1380},
+      {"text": "Almoço: 2 ovos mexidos com tomate", "x": 927.2, "y": 552.0, "fontSize": 9, "color": "#000000", "page": 1, "canvasWidth": 976, "canvasHeight": 1380},
+      {"text": "Curto", "x": 956, "y": 690.0, "fontSize": 9, "color": "#000000", "page": 1, "canvasWidth": 976, "canvasHeight": 1380}
+    ],
+    "output": [
+      {"page": 1, "text": "Texto muito longo para estourar a margem direita", "origin": [397.743, 256.068], "bbox": [397.743, 246.393, 595.3204, 258.759], "size": 9.0, "font": "Helvetica", "color": "#000000"},
+      {"page": 1, "text": "Almoço: 2 ovos mexidos com tomate", "origin": [453.273, 340.26], "bbox": [453.273, 330.585, 600.3243, 342.951], "size": 9.0, "font": "Helvetica", "color": "#000000"},
+      {"page": 1, "text": "Curto", "origin": [573.315, 424.452], "bbox": [573.315, 414.777, 595.3201, 427.143], "size": 9.0, "font": "Helvetica", "color": "#000000"}
+    ]
+  },
+  "a4_59532x84192/bottom_edge": {
+    "input": [
+      {"text": "Rodape 9", "x": 97.6, "y": 1378, "fontSize": 9, "color": "#000000", "page": 1, "canvasWidth": 976, "canvasHeight": 1380},
+      {"text": "Rodape 20", "x": 390.4, "y": 1378, "fontSize": 20, "color": "#000000", "page": 1, "canvasWidth": 976, "canvasHeight": 1380},
+      {"text": "Rodape exato", "x": 97.6, "y": 1365, "fontSize": 9, "color": "#000000", "page": 1, "canvasWidth": 976, "canvasHeight": 1380},
+      {"text": "Muito embaixo 14", "x": 536.8, "y": 1380, "fontSize": 14, "color": "#000000", "page": 1, "canvasWidth": 976, "canvasHeight": 1380}
+    ],
+    "output": [
+      {"page": 1, "text": "Rodape exato", "origin": [59.532, 836.2607], "bbox": [59.532, 826.5857, 115.566, 838.9517], "size": 9.0, "font": "Helvetica", "color": "#000000"},
+      {"page": 1, "text": "Rodape 9", "origin": [59.532, 839.229], "bbox": [59.532, 829.554, 98.556, 841.92], "size": 9.0, "font": "Helvetica", "color": "#000000"},
+      {"page": 1, "text": "Muito embaixo 14", "origin": [327.426, 850.221], "bbox": [327.426, 840.546, 398.454, 852.912], "size": 9.0, "font": "Helvetica", "color": "#000000"},
+      {"page": 1, "text": "Rodape 20", "origin": [238.128, 852.1878], "bbox": [238.128, 842.5128, 282.156, 854.8788], "size": 9.0, "font": "Helvetica", "color": "#000000"}
+    ]
+  },
+  "a4_59532x84192/font_sizes": {
+    "input": [
+      {"text": "Tamanho 8", "x": 48.8, "y": 110.4, "fontSize": 8, "color": "#000000", "page": 1, "canvasWidth": 976, "canvasHeight": 1380},
+      {"text": "Tamanho 9", "x": 87.8, "y": 220.8, "fontSize": 9, "color": "#000000", "page": 1, "canvasWidth": 976, "canvasHeight": 1380},
+      {"text": "Tamanho 10", "x": 126.9, "y": 331.2, "fontSize": 10, "color": "#000000", "page": 1, "canvasWidth": 976, "canvasHeight": 1380},
+      {"text": "Tamanho 12", "x": 165.9, "y": 441.6, "fontSize": 12, "color": "#000000", "page": 1, "canvasWidth": 976, "canvasHeight": 1380},
+      {"text": "Tamanho 13", "x": 205.0, "y": 552.0, "fontSize": 13, "color": "#000000", "page": 1, "canvasWidth": 976, "canvasHeight": 1380},
+      {"text": "Tamanho 14", "x": 244.0, "y": 662.4, "fontSize": 14, "color": "#000000", "page": 1, "canvasWidth": 976, "canvasHeight": 1380},
+      {"text": "Tamanho 16", "x": 283.0, "y": 772.8, "fontSize": 16, "color": "#000000", "page": 1, "canvasWidth": 976, "canvasHeight": 1380},
+      {"text": "Tamanho 18", "x": 322.1, "y": 883.2, "fontSize": 18, "color": "#000000", "page": 1, "canvasWidth": 976, "canvasHeight": 1380},
+      {"text": "Tamanho 19", "x": 361.1, "y": 993.6, "fontSize": 19, "color": "#000000", "page": 1, "canvasWidth": 976, "canvasHeight": 1380},
+      {"text": "Tamanho 20", "x": 400.2, "y": 1104.0, "fontSize": 20, "color": "#000000", "page": 1, "canvasWidth": 976, "canvasHeight": 1380}
+    ],
+    "output": [
+      {"page": 1, "text": "Tamanho 8", "origin": [29.766, 70.8456], "bbox": [29.766, 61.1706, 75.288, 73.5366], "size": 9.0, "font": "Helvetica", "color": "#000000"},
+      {"page": 1, "text": "Tamanho 9", "origin": [53.5544, 138.1992], "bbox": [53.5544, 128.5242, 99.0764, 140.8902], "size": 9.0, "font": "Helvetica", "color": "#000000"},
+      {"page": 1, "text": "Tamanho 10", "origin": [77.4038, 208.3008], "bbox": [77.4038, 198.6258, 127.9298, 210.9918], "size": 9.0, "font": "Helvetica", "color": "#000000"},
+      {"page": 1, "text": "Tamanho 12", "origin": [101.1922, 274.9674], "bbox": [101.1922, 265.2924, 151.7182, 277.6584], "size": 9.0, "font": "Helvetica", "color": "#000000"},
+      {"page": 1, "text": "Tamanho 13", "origin": [125.0416, 341.9775], "bbox": [125.0416, 332.3025, 175.5676, 344.6685], "size": 9.0, "font": "Helvetica", "color": "#000000"},
+      {"page": 1, "text": "Tamanho 14", "origin": [148.83, 413.1096], "bbox": [148.83, 403.4346, 199.356, 415.8006], "size": 9.0, "font": "Helvetica", "color": "#000000"},
+      {"page": 1, "text": "Tamanho 16", "origin": [172.6184, 480.4632], "bbox": [172.6184, 470.7882, 223.1444, 483.1542], "size": 9.0, "font": "Helvetica", "color": "#000000"},
+      {"page": 1, "text": "Tamanho 18", "origin": [196.4678, 547.8168], "bbox": [196.4678, 538.1418, 246.9938, 550.5078], "size": 9.0, "font": "Helvetica", "color": "#000000"},
+      {"page": 1, "text": "Tamanho 19", "origin": [220.2562, 617.5454], "bbox": [220.2562, 607.8704, 270.7822, 620.2364], "size": 9.0, "font": "Helvetica", "color": "#000000"},
+      {"page": 1, "text": "Tamanho 20", "origin": [244.1056, 685.024], "bbox": [244.1056, 675.349, 294.6316, 687.715], "size": 9.0, "font": "Helvetica", "color": "#000000"}
+    ]
+  },
+  "a4_59532x84192/colors": {
+    "input": [
+      {"text": "Preto hex", "x": 97.6, "y": 138.0, "fontSize": 9, "color": "#000000", "page": 1, "canvasWidth": 976, "canvasHeight": 1380},
+      {"text": "Vermelho hex", "x": 97.6, "y": 276.0, "fontSize": 9, "color": "#ff0000", "page": 1, "canvasWidth": 976, "canvasHeight": 1380},
+      {"text": "Azul rgb", "x": 97.6, "y": 414.0, "fontSize": 9, "color": "rgb(0, 128, 255)", "page": 1, "canvasWidth": 976, "canvasHeight": 1380},
+      {"text": "Preto rgb", "x": 97.6, "y": 552.0, "fontSize": 9, "color": "rgb(0, 0, 0)", "page": 1, "canvasWidth": 976, "canvasHeight": 1380},
+      {"text": "Verde HEX maiusculo", "x": 97.6, "y": 690.0, "fontSize": 9, "color": "#00A310", "page": 1, "canvasWidth": 976, "canvasHeight": 1380}
+    ],
+    "output": [
+      {"page": 1, "text": "Preto hex", "origin": [59.532, 87.684], "bbox": [59.532, 78.009, 98.052, 90.375], "size": 9.0, "font": "Helvetica", "color": "#000000"},
+      {"page": 1, "text": "Vermelho hex", "origin": [59.532, 171.876], "bbox": [59.532, 162.201, 115.053, 174.567], "size": 9.0, "font": "Helvetica", "color": "#ff0000"},
+      {"page": 1, "text": "Azul rgb", "origin": [59.532, 256.068], "bbox": [59.532, 246.393, 92.544, 258.759], "size": 9.0, "font": "Helvetica", "color": "#0080ff"},
+      {"page": 1, "text": "Preto rgb", "origin": [59.532, 340.26], "bbox": [59.532, 330.585, 96.549, 342.951], "size": 9.0, "font": "Helvetica", "color": "#000000"},
+      {"page": 1, "text": "Verde HEX maiusculo", "origin": [59.532, 424.452], "bbox": [59.532, 414.777, 147.561, 427.143], "size": 9.0, "font": "Helvetica", "color": "#00a310"}
+    ]
+  },
+  "a4_59532x84192/accents_and_multiline": {
+    "input": [
+      {"text": "João", "x": 97.6, "y": 276.0, "fontSize": 9, "color": "#000000", "page": 1, "canvasWidth": 976, "canvasHeight": 1380},
+      {"text": "Maçã", "x": 97.6, "y": 483.0, "fontSize": 9, "color": "#000000", "page": 1, "canvasWidth": 976, "canvasHeight": 1380},
+      {"text": "Linha 1\nLinha 2", "x": 97.6, "y": 690.0, "fontSize": 9, "color": "#000000", "page": 1, "canvasWidth": 976, "canvasHeight": 1380}
+    ],
+    "output": [
+      {"page": 1, "text": "João", "origin": [59.532, 171.876], "bbox": [59.532, 162.201, 79.044, 174.567], "size": 9.0, "font": "Helvetica", "color": "#000000"},
+      {"page": 1, "text": "Maçã", "origin": [59.532, 298.164], "bbox": [59.532, 288.489, 81.537, 300.855], "size": 9.0, "font": "Helvetica", "color": "#000000"},
+      {"page": 1, "text": "Linha 1", "origin": [59.532, 424.452], "bbox": [59.532, 414.777, 89.052, 427.143], "size": 9.0, "font": "Helvetica", "color": "#000000"},
+      {"page": 1, "text": "Linha 2", "origin": [59.532, 436.818], "bbox": [59.532, 427.143, 89.052, 439.509], "size": 9.0, "font": "Helvetica", "color": "#000000"}
+    ]
+  },
+  "a4_59532x84192/all_pages_and_invalid_page": {
+    "input": [
+      {"text": "Pagina 1 a", "x": 195.2, "y": 276.0, "fontSize": 9, "color": "#000000", "page": 1, "canvasWidth": 976, "canvasHeight": 1380},
+      {"text": "Pagina 1 b", "x": 536.8, "y": 966.0, "fontSize": 12, "color": "#000000", "page": 1, "canvasWidth": 976, "canvasHeight": 1380},
+      {"text": "Pagina 2 a", "x": 195.2, "y": 276.0, "fontSize": 9, "color": "#000000", "page": 2, "canvasWidth": 976, "canvasHeight": 1380},
+      {"text": "Pagina 2 b", "x": 536.8, "y": 966.0, "fontSize": 12, "color": "#000000", "page": 2, "canvasWidth": 976, "canvasHeight": 1380},
+      {"text": "FORA depois da ultima", "x": 292.8, "y": 414.0, "fontSize": 9, "color": "#000000", "page": 3, "canvasWidth": 976, "canvasHeight": 1380},
+      {"text": "FORA pagina zero", "x": 292.8, "y": 552.0, "fontSize": 9, "color": "#000000", "page": 0, "canvasWidth": 976, "canvasHeight": 1380}
+    ],
+    "output": [
+      {"page": 1, "text": "Pagina 1 a", "origin": [119.064, 171.876], "bbox": [119.064, 162.201, 162.093, 174.567], "size": 9.0, "font": "Helvetica", "color": "#000000"},
+      {"page": 1, "text": "Pagina 1 b", "origin": [327.426, 594.897], "bbox": [327.426, 585.222, 370.455, 597.588], "size": 9.0, "font": "Helvetica", "color": "#000000"},
+      {"page": 2, "text": "Pagina 2 a", "origin": [119.064, 171.876], "bbox": [119.064, 162.201, 162.093, 174.567], "size": 9.0, "font": "Helvetica", "color": "#000000"},
+      {"page": 2, "text": "Pagina 2 b", "origin": [327.426, 594.897], "bbox": [327.426, 585.222, 370.455, 597.588], "size": 9.0, "font": "Helvetica", "color": "#000000"}
+    ]
+  },
+  "narrow_298x836/corners_and_center": {
+    "input": [
+      {"text": "Topo esq", "x": 0, "y": 0, "fontSize": 9, "color": "#000000", "page": 1, "canvasWidth": 488, "canvasHeight": 1371},
+      {"text": "Topo dir", "x": 488, "y": 0, "fontSize": 9, "color": "#000000", "page": 1, "canvasWidth": 488, "canvasHeight": 1371},
+      {"text": "Base esq", "x": 0, "y": 1371, "fontSize": 9, "color": "#000000", "page": 1, "canvasWidth": 488, "canvasHeight": 1371},
+      {"text": "Base dir", "x": 488, "y": 1371, "fontSize": 9, "color": "#000000", "page": 1, "canvasWidth": 488, "canvasHeight": 1371},
+      {"text": "Centro", "x": 244.0, "y": 685.5, "fontSize": 9, "color": "#000000", "page": 1, "canvasWidth": 488, "canvasHeight": 1371}
+    ],
+    "output": [
+      {"page": 1, "text": "Topo esq", "origin": [0.0, 9.675], "bbox": [0.0, 0.0, 37.521, 12.366], "size": 9.0, "font": "Helvetica", "color": "#000000"},
+      {"page": 1, "text": "Topo dir", "origin": [264.988, 9.675], "bbox": [264.988, 0.0, 298.0, 12.366], "size": 9.0, "font": "Helvetica", "color": "#000000"},
+      {"page": 1, "text": "Centro", "origin": [149.0, 421.492], "bbox": [149.0, 411.817, 176.009, 424.183], "size": 9.0, "font": "Helvetica", "color": "#000000"},
+      {"page": 1, "text": "Base esq", "origin": [0.0, 833.309], "bbox": [0.0, 823.634, 37.521, 836.0], "size": 9.0, "font": "Helvetica", "color": "#000000"},
+      {"page": 1, "text": "Base dir", "origin": [264.988, 833.309], "bbox": [264.988, 823.634, 298.0, 836.0], "size": 9.0, "font": "Helvetica", "color": "#000000"}
+    ]
+  },
+  "narrow_298x836/right_edge_long_text": {
+    "input": [
+      {"text": "Texto muito longo para estourar a margem direita", "x": 484, "y": 411.3, "fontSize": 9, "color": "#000000", "page": 1, "canvasWidth": 488, "canvasHeight": 1371},
+      {"text": "Almoço: 2 ovos mexidos com tomate", "x": 463.6, "y": 548.4, "fontSize": 9, "color": "#000000", "page": 1, "canvasWidth": 488, "canvasHeight": 1371},
+      {"text": "Curto", "x": 468, "y": 685.5, "fontSize": 9, "color": "#000000", "page": 1, "canvasWidth": 488, "canvasHeight": 1371}
+    ],
+    "output": [
+      {"page": 1, "text": "Texto muito longo para estourar a margem direita", "origin": [100.423, 254.292], "bbox": [100.423, 244.617, 297.9999, 256.983], "size": 9.0, "font": "Helvetica", "color": "#000000"},
+      {"page": 1, "text": "Almoço: 2 ovos mexidos com tomate", "origin": [155.953, 337.892], "bbox": [155.953, 328.217, 303.004, 340.583], "size": 9.0, "font": "Helvetica", "color": "#000000"},
+      {"page": 1, "text": "Curto", "origin": [275.995, 421.492], "bbox": [275.995, 411.817, 298.0, 424.183], "size": 9.0, "font": "Helvetica", "color": "#000000"}
+    ]
+  },
+  "narrow_298x836/bottom_edge": {
+    "input": [
+      {"text": "Rodape 9", "x": 48.8, "y": 1369, "fontSize": 9, "color": "#000000", "page": 1, "canvasWidth": 488, "canvasHeight": 1371},
+      {"text": "Rodape 20", "x": 195.2, "y": 1369, "fontSize": 20, "color": "#000000", "page": 1, "canvasWidth": 488, "canvasHeight": 1371},
+      {"text": "Rodape exato", "x": 48.8, "y": 1356, "fontSize": 9, "color": "#000000", "page": 1, "canvasWidth": 488, "canvasHeight": 1371},
+      {"text": "Muito embaixo 14", "x": 268.4, "y": 1371, "fontSize": 14, "color": "#000000", "page": 1, "canvasWidth": 488, "canvasHeight": 1371}
+    ],
+    "output": [
+      {"page": 1, "text": "Rodape exato", "origin": [29.8, 830.3454], "bbox": [29.8, 820.6704, 85.834, 833.0364], "size": 9.0, "font": "Helvetica", "color": "#000000"},
+      {"page": 1, "text": "Rodape 9", "origin": [29.8, 833.309], "bbox": [29.8, 823.634, 68.824, 836.0], "size": 9.0, "font": "Helvetica", "color": "#000000"},
+      {"page": 1, "text": "Muito embaixo 14", "origin": [163.9, 844.301], "bbox": [163.9, 834.626, 234.928, 846.992], "size": 9.0, "font": "Helvetica", "color": "#000000"},
+      {"page": 1, "text": "Rodape 20", "origin": [119.2, 846.2684], "bbox": [119.2, 836.5934, 163.228, 848.9594], "size": 9.0, "font": "Helvetica", "color": "#000000"}
+    ]
+  },
+  "narrow_298x836/font_sizes": {
+    "input": [
+      {"text": "Tamanho 8", "x": 24.4, "y": 109.7, "fontSize": 8, "color": "#000000", "page": 1, "canvasWidth": 488, "canvasHeight": 1371},
+      {"text": "Tamanho 9", "x": 43.9, "y": 219.4, "fontSize": 9, "color": "#000000", "page": 1, "canvasWidth": 488, "canvasHeight": 1371},
+      {"text": "Tamanho 10", "x": 63.4, "y": 329.0, "fontSize": 10, "color": "#000000", "page": 1, "canvasWidth": 488, "canvasHeight": 1371},
+      {"text": "Tamanho 12", "x": 83.0, "y": 438.7, "fontSize": 12, "color": "#000000", "page": 1, "canvasWidth": 488, "canvasHeight": 1371},
+      {"text": "Tamanho 13", "x": 102.5, "y": 548.4, "fontSize": 13, "color": "#000000", "page": 1, "canvasWidth": 488, "canvasHeight": 1371},
+      {"text": "Tamanho 14", "x": 122.0, "y": 658.1, "fontSize": 14, "color": "#000000", "page": 1, "canvasWidth": 488, "canvasHeight": 1371},
+      {"text": "Tamanho 16", "x": 141.5, "y": 767.8, "fontSize": 16, "color": "#000000", "page": 1, "canvasWidth": 488, "canvasHeight": 1371},
+      {"text": "Tamanho 18", "x": 161.0, "y": 877.4, "fontSize": 18, "color": "#000000", "page": 1, "canvasWidth": 488, "canvasHeight": 1371},
+      {"text": "Tamanho 19", "x": 180.6, "y": 987.1, "fontSize": 19, "color": "#000000", "page": 1, "canvasWidth": 488, "canvasHeight": 1371},
+      {"text": "Tamanho 20", "x": 200.1, "y": 1096.8, "fontSize": 20, "color": "#000000", "page": 1, "canvasWidth": 488, "canvasHeight": 1371}
+    ],
+    "output": [
+      {"page": 1, "text": "Tamanho 8", "origin": [14.9, 70.3842], "bbox": [14.9, 60.7092, 60.422, 73.0752], "size": 9.0, "font": "Helvetica", "color": "#000000"},
+      {"page": 1, "text": "Tamanho 9", "origin": [26.8078, 137.2764], "bbox": [26.8078, 127.6014, 72.3298, 139.9674], "size": 9.0, "font": "Helvetica", "color": "#000000"},
+      {"page": 1, "text": "Tamanho 10", "origin": [38.7156, 206.8556], "bbox": [38.7156, 197.1806, 89.2416, 209.5466], "size": 9.0, "font": "Helvetica", "color": "#000000"},
+      {"page": 1, "text": "Tamanho 12", "origin": [50.6844, 273.0608], "bbox": [50.6844, 263.3858, 101.2104, 275.7518], "size": 9.0, "font": "Helvetica", "color": "#000000"},
+      {"page": 1, "text": "Tamanho 13", "origin": [62.5922, 339.6095], "bbox": [62.5922, 329.9345, 113.1182, 342.3005], "size": 9.0, "font": "Helvetica", "color": "#000000"},
+      {"page": 1, "text": "Tamanho 14", "origin": [74.5, 410.2802], "bbox": [74.5, 400.6052, 125.026, 412.9712], "size": 9.0, "font": "Helvetica", "color": "#000000"},
+      {"page": 1, "text": "Tamanho 16", "origin": [86.4078, 477.1724], "bbox": [86.4078, 467.4974, 136.9338, 479.8634], "size": 9.0, "font": "Helvetica", "color": "#000000"},
+      {"page": 1, "text": "Tamanho 18", "origin": [98.3156, 544.0036], "bbox": [98.3156, 534.3286, 148.8416, 546.6946], "size": 9.0, "font": "Helvetica", "color": "#000000"},
+      {"page": 1, "text": "Tamanho 19", "origin": [110.2844, 613.2708], "bbox": [110.2844, 603.5958, 160.8104, 615.9618], "size": 9.0, "font": "Helvetica", "color": "#000000"},
+      {"page": 1, "text": "Tamanho 20", "origin": [122.1922, 680.288], "bbox": [122.1922, 670.613, 172.7182, 682.9789], "size": 9.0, "font": "Helvetica", "color": "#000000"}
+    ]
+  },
+  "narrow_298x836/colors": {
+    "input": [
+      {"text": "Preto hex", "x": 48.8, "y": 137.1, "fontSize": 9, "color": "#000000", "page": 1, "canvasWidth": 488, "canvasHeight": 1371},
+      {"text": "Vermelho hex", "x": 48.8, "y": 274.2, "fontSize": 9, "color": "#ff0000", "page": 1, "canvasWidth": 488, "canvasHeight": 1371},
+      {"text": "Azul rgb", "x": 48.8, "y": 411.3, "fontSize": 9, "color": "rgb(0, 128, 255)", "page": 1, "canvasWidth": 488, "canvasHeight": 1371},
+      {"text": "Preto rgb", "x": 48.8, "y": 548.4, "fontSize": 9, "color": "rgb(0, 0, 0)", "page": 1, "canvasWidth": 488, "canvasHeight": 1371},
+      {"text": "Verde HEX maiusculo", "x": 48.8, "y": 685.5, "fontSize": 9, "color": "#00A310", "page": 1, "canvasWidth": 488, "canvasHeight": 1371}
+    ],
+    "output": [
+      {"page": 1, "text": "Preto hex", "origin": [29.8, 87.092], "bbox": [29.8, 77.417, 68.32, 89.783], "size": 9.0, "font": "Helvetica", "color": "#000000"},
+      {"page": 1, "text": "Vermelho hex", "origin": [29.8, 170.692], "bbox": [29.8, 161.017, 85.321, 173.383], "size": 9.0, "font": "Helvetica", "color": "#ff0000"},
+      {"page": 1, "text": "Azul rgb", "origin": [29.8, 254.292], "bbox": [29.8, 244.617, 62.812, 256.983], "size": 9.0, "font": "Helvetica", "color": "#0080ff"},
+      {"page": 1, "text": "Preto rgb", "origin": [29.8, 337.892], "bbox": [29.8, 328.217, 66.817, 340.583], "size": 9.0, "font": "Helvetica", "color": "#000000"},
+      {"page": 1, "text": "Verde HEX maiusculo", "origin": [29.8, 421.492], "bbox": [29.8, 411.817, 117.829, 424.183], "size": 9.0, "font": "Helvetica", "color": "#00a310"}
+    ]
+  },
+  "narrow_298x836/accents_and_multiline": {
+    "input": [
+      {"text": "João", "x": 48.8, "y": 274.2, "fontSize": 9, "color": "#000000", "page": 1, "canvasWidth": 488, "canvasHeight": 1371},
+      {"text": "Maçã", "x": 48.8, "y": 479.8, "fontSize": 9, "color": "#000000", "page": 1, "canvasWidth": 488, "canvasHeight": 1371},
+      {"text": "Linha 1\nLinha 2", "x": 48.8, "y": 685.5, "fontSize": 9, "color": "#000000", "page": 1, "canvasWidth": 488, "canvasHeight": 1371}
+    ],
+    "output": [
+      {"page": 1, "text": "João", "origin": [29.8, 170.692], "bbox": [29.8, 161.017, 49.312, 173.383], "size": 9.0, "font": "Helvetica", "color": "#000000"},
+      {"page": 1, "text": "Maçã", "origin": [29.8, 296.0615], "bbox": [29.8, 286.3865, 51.805, 298.7525], "size": 9.0, "font": "Helvetica", "color": "#000000"},
+      {"page": 1, "text": "Linha 1", "origin": [29.8, 421.492], "bbox": [29.8, 411.817, 59.32, 424.183], "size": 9.0, "font": "Helvetica", "color": "#000000"},
+      {"page": 1, "text": "Linha 2", "origin": [29.8, 433.858], "bbox": [29.8, 424.183, 59.32, 436.549], "size": 9.0, "font": "Helvetica", "color": "#000000"}
+    ]
+  },
+  "narrow_298x836/all_pages_and_invalid_page": {
+    "input": [
+      {"text": "Pagina 1 a", "x": 97.6, "y": 274.2, "fontSize": 9, "color": "#000000", "page": 1, "canvasWidth": 488, "canvasHeight": 1371},
+      {"text": "Pagina 1 b", "x": 268.4, "y": 959.7, "fontSize": 12, "color": "#000000", "page": 1, "canvasWidth": 488, "canvasHeight": 1371},
+      {"text": "Pagina 2 a", "x": 97.6, "y": 274.2, "fontSize": 9, "color": "#000000", "page": 2, "canvasWidth": 488, "canvasHeight": 1371},
+      {"text": "Pagina 2 b", "x": 268.4, "y": 959.7, "fontSize": 12, "color": "#000000", "page": 2, "canvasWidth": 488, "canvasHeight": 1371},
+      {"text": "Pagina 3 a", "x": 97.6, "y": 274.2, "fontSize": 9, "color": "#000000", "page": 3, "canvasWidth": 488, "canvasHeight": 1371},
+      {"text": "Pagina 3 b", "x": 268.4, "y": 959.7, "fontSize": 12, "color": "#000000", "page": 3, "canvasWidth": 488, "canvasHeight": 1371},
+      {"text": "FORA depois da ultima", "x": 146.4, "y": 411.3, "fontSize": 9, "color": "#000000", "page": 4, "canvasWidth": 488, "canvasHeight": 1371},
+      {"text": "FORA pagina zero", "x": 146.4, "y": 548.4, "fontSize": 9, "color": "#000000", "page": 0, "canvasWidth": 488, "canvasHeight": 1371}
+    ],
+    "output": [
+      {"page": 1, "text": "Pagina 1 a", "origin": [59.6, 170.692], "bbox": [59.6, 161.017, 102.629, 173.383], "size": 9.0, "font": "Helvetica", "color": "#000000"},
+      {"page": 1, "text": "Pagina 1 b", "origin": [163.9, 590.753], "bbox": [163.9, 581.078, 206.929, 593.444], "size": 9.0, "font": "Helvetica", "color": "#000000"},
+      {"page": 2, "text": "Pagina 2 a", "origin": [59.6, 170.692], "bbox": [59.6, 161.017, 102.629, 173.383], "size": 9.0, "font": "Helvetica", "color": "#000000"},
+      {"page": 2, "text": "Pagina 2 b", "origin": [163.9, 590.753], "bbox": [163.9, 581.078, 206.929, 593.444], "size": 9.0, "font": "Helvetica", "color": "#000000"},
+      {"page": 3, "text": "Pagina 3 a", "origin": [59.6, 170.692], "bbox": [59.6, 161.017, 102.629, 173.383], "size": 9.0, "font": "Helvetica", "color": "#000000"},
+      {"page": 3, "text": "Pagina 3 b", "origin": [163.9, 590.753], "bbox": [163.9, 581.078, 206.929, 593.444], "size": 9.0, "font": "Helvetica", "color": "#000000"}
+    ]
+  }
+}
