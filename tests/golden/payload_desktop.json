@@ -1,0 +1,39 @@
+{
+  "viewport": {"width": 1366, "height": 900},
+  "canvas": {
+    "page1": {"width": 977, "height": 1380, "clientWidth": 976, "clientHeight": 1379, "clientLeft": 1, "clientTop": 1},
+    "page2": {"width": 977, "height": 1380, "clientWidth": 976, "clientHeight": 1379, "clientLeft": 1, "clientTop": 1}
+  },
+  "clicks": [
+    {"page": 1, "fx": 0.06, "fy": 0.05, "text": "Topo esq", "size": 9, "color": "#000000"},
+    {"page": 1, "fx": 0.55, "fy": 0.2, "text": "Almoço 12h", "size": 12, "color": "#ff0000"},
+    {"page": 1, "fx": 0.18, "fy": 0.38, "text": "Café da manhã", "size": 16, "color": "#1a7f37"},
+    {"page": 1, "fx": 0.93, "fy": 0.52, "text": "Dir", "size": 12, "color": "#0000ff"},
+    {"page": 1, "fx": 0.4, "fy": 0.72, "text": "Jantar", "size": 9, "color": "#8a2be2"},
+    {"page": 1, "fx": 0.1, "fy": 0.96, "text": "Rodapé", "size": 20, "color": "#000000"},
+    {"page": 2, "fx": 0.5, "fy": 0.15, "text": "João pág 2", "size": 12, "color": "#ff8800"},
+    {"page": 2, "fx": 0.88, "fy": 0.92, "text": "Fim", "size": 9, "color": "#008080"}
+  ],
+  "payload": {
+    "annotations": [
+      {"text": "Topo esq", "x": 59, "y": 69.6875, "fontSize": 9, "color": "rgb(0, 0, 0)", "page": 1, "canvasWidth": 977, "canvasHeight": 1380},
+      {"text": "Almoço 12h", "x": 537, "y": 276.688, "fontSize": 12, "color": "rgb(255, 0, 0)", "page": 1, "canvasWidth": 977, "canvasHeight": 1380},
+      {"text": "Café da manhã", "x": 176, "y": 524.688, "fontSize": 16, "color": "rgb(26, 127, 55)", "page": 1, "canvasWidth": 977, "canvasHeight": 1380},
+      {"text": "Dir", "x": 908, "y": 717.688, "fontSize": 12, "color": "rgb(0, 0, 255)", "page": 1, "canvasWidth": 977, "canvasHeight": 1380},
+      {"text": "Jantar", "x": 391, "y": 993.688, "fontSize": 9, "color": "rgb(138, 43, 226)", "page": 1, "canvasWidth": 977, "canvasHeight": 1380},
+      {"text": "Rodapé", "x": 98, "y": 1324.69, "fontSize": 20, "color": "rgb(0, 0, 0)", "page": 1, "canvasWidth": 977, "canvasHeight": 1380},
+      {"text": "João pág 2", "x": 489, "y": 207.688, "fontSize": 12, "color": "rgb(255, 136, 0)", "page": 2, "canvasWidth": 977, "canvasHeight": 1380},
+      {"text": "Fim", "x": 859, "y": 1268.69, "fontSize": 9, "color": "rgb(0, 128, 128)", "page": 2, "canvasWidth": 977, "canvasHeight": 1380}
+    ]
+  },
+  "chips": [
+    {"page": 1, "text": "Topo esq", "left": 48, "top": 58.69, "width": 46.53, "height": 20.39},
+    {"page": 1, "text": "Almoço 12h", "left": 526, "top": 265.69, "width": 73.38, "height": 25.19},
+    {"page": 1, "text": "Café da manhã", "left": 165, "top": 513.69, "width": 119.41, "height": 31.59},
+    {"page": 1, "text": "Dir", "left": 897, "top": 706.69, "width": 25.33, "height": 25.19},
+    {"page": 1, "text": "Jantar", "left": 380, "top": 982.69, "width": 35.02, "height": 20.39},
+    {"page": 1, "text": "Rodapé", "left": 87, "top": 1313.69, "width": 80.06, "height": 38},
+    {"page": 2, "text": "João pág 2", "left": 478, "top": 196.69, "width": 69.39, "height": 25.19},
+    {"page": 2, "text": "Fim", "left": 848, "top": 1257.69, "width": 25, "height": 20.39}
+  ]
+}

@@ -1,0 +1,14 @@
+{
+  "pdf": "a4_596x842",
+  "source": "payload_desktop.json (payload)",
+  "output": [
+    {"page": 1, "text": "Topo esq", "origin": [35.9918, 46.0115], "bbox": [35.9918, 36.3365, 73.5128, 48.7025], "size": 9.0, "font": "Helvetica", "color": "#000000"},
+    {"page": 1, "text": "Almoço 12h", "origin": [327.5865, 174.3728], "bbox": [327.5865, 164.6978, 375.1065, 177.0638], "size": 9.0, "font": "Helvetica", "color": "#ff0000"},
+    {"page": 1, "text": "Café da manhã", "origin": [107.3654, 329.1237], "bbox": [107.3654, 319.4487, 168.8984, 331.8147], "size": 9.0, "font": "Helvetica", "color": "#1a7f37"},
+    {"page": 1, "text": "Dir", "origin": [553.9079, 443.4467], "bbox": [553.9079, 433.7717, 565.4009, 446.1377], "size": 9.0, "font": "Helvetica", "color": "#0000ff"},
+    {"page": 1, "text": "Jantar", "origin": [238.522, 609.7857], "bbox": [238.522, 600.1107, 263.533, 612.4767], "size": 9.0, "font": "Helvetica", "color": "#8a2be2"},
+    {"page": 1, "text": "Rodapé", "origin": [59.783, 819.7409], "bbox": [59.783, 810.0659, 91.301, 822.4319], "size": 9.0, "font": "Helvetica", "color": "#000000"},
+    {"page": 2, "text": "João pág 2", "origin": [298.305, 132.2728], "bbox": [298.305, 122.5978, 342.837, 134.9638], "size": 9.0, "font": "Helvetica", "color": "#ff8800"},
+    {"page": 2, "text": "Fim", "origin": [524.0164, 777.5768], "bbox": [524.0164, 767.9018, 539.0104, 780.2678], "size": 9.0, "font": "Helvetica", "color": "#008080"}
+  ]
+}
