@@ -46,7 +46,7 @@
 {# form_errors(form): alert listing the form-level errors of a WTForms form; any CSRF error becomes one pt-BR message. #}
 {% macro form_errors(form) %}
 {% set csrf_errors = form.csrf_token.errors if form.csrf_token is defined else [] %}
-{% set csrf_message = ["Sua sessão expirou ou a página ficou aberta por muito tempo. Atualize a página e tente novamente."] if csrf_errors else [] %}
+{% set csrf_message = ["Esta página ficou aberta por muito tempo. Atualize a página e tente novamente."] if csrf_errors else [] %}
 {% set messages = (form.form_errors or [])|list + csrf_message %}
 {% if messages %}
 <div class="alert alert-danger" role="alert">

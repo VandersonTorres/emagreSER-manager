@@ -14,7 +14,7 @@ from tests.constants import EMAILS, TEST_PASSWORD
 from tests.test_smoke_pages import EXPECTED, ROLES, Bug, _resolve_params
 
 CSRF_INPUT = 'name="csrf_token"'
-CSRF_MESSAGE = "Sua sessão expirou ou a página ficou aberta por muito tempo."
+CSRF_MESSAGE = "Esta página ficou aberta por muito tempo."
 
 
 @pytest.fixture
