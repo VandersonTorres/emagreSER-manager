@@ -86,9 +86,10 @@ def _content_point(page: Page, fx: float, fy: float) -> dict[str, float]:
 
 
 def open_add_dialog(page: Page, fx: float, fy: float) -> None:
-    """Scroll to a canvas point, click it and wait for the text dialog to open.
+    """Scroll to a canvas point, click it and wait until the text dialog is open and focused.
 
-    The canvas is tall (about 1380px), so the page is scrolled first and the point is measured again afterwards.
+    The canvas is tall (about 1380px), so the page is scrolled first and the point is measured again afterwards. The
+    editor focuses the text field one animation frame later; typing before that lets it steal the caret from a field.
 
     :param page: Playwright page.
     :param fx: Horizontal fraction (0 to 1) of the canvas content box.
@@ -99,6 +100,7 @@ def open_add_dialog(page: Page, fx: float, fy: float) -> None:
     point = _content_point(page, fx, fy)
     page.mouse.click(point["x"], point["y"])
     page.wait_for_selector("#text-modal", state="visible")
+    page.wait_for_function("() => document.activeElement && document.activeElement.id === 'text-input'")
 
 
 def add_text(page: Page, text: str, size: int, color: str) -> None:

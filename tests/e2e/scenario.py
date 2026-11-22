@@ -103,7 +103,9 @@ def compare_with_golden(viewport: ViewportSize, result: dict[str, Any]) -> None:
 
     expected = golden["payload"]["annotations"]
     actual = result["payload"]["annotations"]
-    assert [a["text"] for a in actual] == [a["text"] for a in expected], "payload texts or order changed"
+    actual_texts = [a["text"] for a in actual]
+    expected_texts = [a["text"] for a in expected]
+    assert actual_texts == expected_texts, f"payload texts or order changed: {actual_texts} != {expected_texts}"
     errors = []
     for index, (exp, act) in enumerate(zip(expected, actual)):
         for field in ("text", "fontSize", "color", "page", "canvasWidth", "canvasHeight"):
