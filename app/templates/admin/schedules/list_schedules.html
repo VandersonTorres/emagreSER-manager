@@ -22,6 +22,7 @@
 <h3>{{ specialist }}</h3>
 
 {% if schedules %}
+<div class="table-scroll">
 <table class="schedules-table" border="1" cellspacing="0" cellpadding="5">
     <thead>
         <tr>
@@ -48,6 +49,7 @@
         {% endfor %}
     </tbody>
 </table>
+</div>
 {% else %}
 <p>Nenhum agendamento pendente para este profissional.</p>
 {% endif %}

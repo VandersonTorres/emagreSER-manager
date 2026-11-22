@@ -268,13 +268,22 @@ TABLES_FIT_SCRIPT = """
 () => {
     const card = document.querySelector('.app-content');
     const cardRight = card.getBoundingClientRect().right;
-    return [...card.querySelectorAll('table')].map((table) => ({
-        name: table.className,
-        right: table.getBoundingClientRect().right,
-        cardRight,
-        scrolls: table.scrollWidth > table.clientWidth,
-        overflowX: getComputedStyle(table).overflowX,
-    }));
+    const scroller = (table) => {
+        for (let el = table; el && el !== card; el = el.parentElement) {
+            if (['auto', 'scroll'].includes(getComputedStyle(el).overflowX)) return el;
+        }
+        return null;
+    };
+    return [...card.querySelectorAll('table')].map((table) => {
+        const box = scroller(table);
+        return {
+            name: table.className,
+            right: table.getBoundingClientRect().right,
+            cardRight,
+            scrollerRight: box ? box.getBoundingClientRect().right : null,
+            scrolls: box ? box.scrollWidth > box.clientWidth : false,
+        };
+    });
 }
 """
 
@@ -283,12 +292,13 @@ TABLES_FIT_SCRIPT = """
 @pytest.mark.parametrize(
     "endpoint", ["patients.view_patient", "schedules.list_schedules", "specialists.list_specialists"]
 )
-def test_wide_tables_end_inside_the_card_or_scroll_by_themselves(
+def test_wide_tables_end_inside_the_card_or_scroll_inside_it(
     app: Flask, seed: SeedData, live_server: str, page: Page, endpoint: str, width: int
 ) -> None:
     """Check that no table of a page shown in the compatibility layer is cut by the card edge.
 
-    Every table must either end inside the card or scroll by itself, so no action column is hidden out of reach.
+    Every table must either end inside the card or sit in a scroll container that ends inside the card, so no action
+    column is hidden out of reach whatever the fonts of the machine.
 
     :param app: Flask application.
     :param seed: Ids of the fake records.
@@ -308,8 +318,8 @@ def test_wide_tables_end_inside_the_card_or_scroll_by_themselves(
     assert tables, endpoint
     for table in tables:
         fits = table["right"] <= table["cardRight"] + 1
-        scrolls_by_itself = table["scrolls"] and table["overflowX"] == "auto"
-        assert fits or scrolls_by_itself, (endpoint, width, table)
+        scroller_fits = table["scrollerRight"] is not None and table["scrollerRight"] <= table["cardRight"] + 1
+        assert fits or (table["scrolls"] and scroller_fits), (endpoint, width, table)
 
 
 def _screens(app: Flask, seed: SeedData) -> tuple[list[Screen], list[Screen]]:

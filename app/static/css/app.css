@@ -1021,17 +1021,27 @@ body {
     background-color: var(--app-primary-subtle);
 }
 
-.compat :is(.anthro-table, .skinfolds-table) {
-    display: block;
+.compat .table-scroll {
     max-width: 100%;
+    margin-top: 1rem;
     overflow-x: auto;
+    border-radius: var(--app-radius);
+    box-shadow: var(--app-shadow-sm);
+}
+
+.compat .table-scroll > table {
+    margin-top: 0;
+    box-shadow: none;
 }
 
 @media screen and (max-width: 768px) {
     .compat table {
+        white-space: nowrap;
+    }
+
+    .compat :not(.table-scroll) > table {
         display: block;
         overflow-x: auto;
-        white-space: nowrap;
     }
 }
 
