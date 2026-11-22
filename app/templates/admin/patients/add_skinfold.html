@@ -2,17 +2,6 @@
 
 {% block content %}
 
-{% with messages = get_flashed_messages(with_categories=true) %}
-{% if messages %}
-{% for category, message in messages %}
-<div class="alert alert-{{ category }}">
-    <strong>{{ message }}</strong>
-</div>
-{% endfor %}
-{% set _ = session.pop('_flashes', None) %}
-{% endif %}
-{% endwith %}
-
 <h2>Bioimpedância</h2>
 <p><strong>Paciente:</strong> {{ patient.name }}</p>
 <form class="add-skinfold-form" method="POST" action="{{ url_for('patients.add_skinfold', patient_id=patient.id) }}">

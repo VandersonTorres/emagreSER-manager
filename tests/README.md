@@ -62,6 +62,23 @@ Known bugs (currently 500 responses) are recorded as `xfail(strict=True, raises=
 counts as an expected failure. Any other status (for example, a redirect) fails the test, and the fix (200) becomes a
 strict XPASS. In both cases the table must be updated.
 
+## Application shell tests
+
+`test_layout.py` covers the shell shared by every page: flash messages as toasts (rendered once, by category), the
+role-aware sidebar and its active item, the home dashboard (upcoming schedules by role, no writes on GET, no form or
+input), the auth pages, the custom 403, 404 and 500 pages, the pt-BR `SECURITY_MSG_*` messages and the diet editor
+keeping `legacy.css` without Bootstrap. Tests that need extra schedules create them in the temporary database and
+delete them afterwards.
+
+`e2e/test_responsive_layout.py` drives the shell in a browser: no horizontal overflow on the login, home and change
+password pages, the mobile drawer (390x844, touch), the always visible desktop sidebar (1366x900), toast behavior and a
+walk through every page of the app on both viewports. Set `SCREENSHOT_DIR` to also save one PNG per page and viewport
+for visual review; without it nothing is written:
+
+```bash
+SCREENSHOT_DIR=/tmp/ui-screens .venv/bin/python -m pytest -m e2e tests/e2e/test_responsive_layout.py
+```
+
 ## Re-recording goldens
 
 Goldens are **only re-recorded** (`GOLDEN_RECORD=1`) when a behavior change was intended and approved:

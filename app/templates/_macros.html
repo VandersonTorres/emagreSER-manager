@@ -1,0 +1,85 @@
+{# page_header(title, subtitle=none, back_url=none): page title block; the caller body holds the action buttons. #}
+{% macro page_header(title, subtitle=none, back_url=none) %}
+<div class="page-header">
+    <div class="page-header-text">
+        {% if back_url %}
+        <a class="page-header-back" href="{{ back_url }}"><i class="bi bi-arrow-left" aria-hidden="true"></i> Voltar</a>
+        {% endif %}
+        <h1 class="page-header-title">{{ title }}</h1>
+        {% if subtitle %}
+        <p class="page-header-subtitle">{{ subtitle }}</p>
+        {% endif %}
+    </div>
+    {% if caller %}
+    <div class="page-header-actions">{{ caller() }}</div>
+    {% endif %}
+</div>
+{% endmacro %}
+
+{# field(form_field, label=none, help=none, **attrs): label, control, help text and errors of a WTForms field; extra keyword arguments become HTML attributes. #}
+{% macro field(form_field, label=none, help=none) %}
+{% set has_errors = form_field.errors|length > 0 %}
+{% set is_check = form_field.type == "BooleanField" %}
+{% set control_class = "form-check-input" if is_check else ("form-select" if form_field.type == "SelectField" else "form-control") %}
+{% set classes = [control_class, kwargs.get("class", ""), "is-invalid" if has_errors else ""]|select|join(" ") %}
+{% set described_by = [form_field.id ~ "-help" if help else "", form_field.id ~ "-feedback" if has_errors else ""]|select|join(" ") %}
+{% set attrs = dict(kwargs, **{"class": classes, "aria-describedby": described_by or false, "aria-invalid": "true" if has_errors else false}) %}
+<div class="{{ 'form-check mb-3' if is_check else 'mb-3' }}">
+    {% if is_check %}
+    {{ form_field(**attrs) }}
+    <label class="form-check-label" for="{{ form_field.id }}">{{ label or form_field.label.text }}</label>
+    {% else %}
+    <label class="form-label" for="{{ form_field.id }}">{{ label or form_field.label.text }}</label>
+    {{ form_field(**attrs) }}
+    {% endif %}
+    {% if help %}
+    <div class="form-text" id="{{ form_field.id }}-help">{{ help }}</div>
+    {% endif %}
+    {% if has_errors %}
+    <div class="invalid-feedback d-block" id="{{ form_field.id }}-feedback">
+        {% for error in form_field.errors %}<div>{{ error }}</div>{% endfor %}
+    </div>
+    {% endif %}
+</div>
+{% endmacro %}
+
+{# form_errors(form): alert listing the form-level and CSRF errors of a WTForms form. #}
+{% macro form_errors(form) %}
+{% set messages = (form.form_errors or []) + (form.csrf_token.errors if form.csrf_token is defined else []) %}
+{% if messages %}
+<div class="alert alert-danger" role="alert">
+    {% for message in messages %}<div>{{ message }}</div>{% endfor %}
+</div>
+{% endif %}
+{% endmacro %}
+
+{# empty_state(icon, title, text=none, action_url=none, action_label=none): centered notice for lists without items. #}
+{% macro empty_state(icon, title, text=none, action_url=none, action_label=none) %}
+<div class="empty-state">
+    <i class="bi bi-{{ icon }} empty-state-icon" aria-hidden="true"></i>
+    <h3 class="empty-state-title">{{ title }}</h3>
+    {% if text %}
+    <p class="empty-state-text">{{ text }}</p>
+    {% endif %}
+    {% if action_url and action_label %}
+    <a class="btn btn-primary" href="{{ action_url }}">{{ action_label }}</a>
+    {% endif %}
+</div>
+{% endmacro %}
+
+{# confirm_card(title, message, confirm_label, cancel_url): confirmation card that posts to the current URL; the caller body holds the hidden fields of the form. #}
+{% macro confirm_card(title, message, confirm_label, cancel_url) %}
+<div class="card confirm-card">
+    <div class="card-body">
+        <h1 class="confirm-card-title">{{ title }}</h1>
+        <p>{{ message }}</p>
+        <form method="post">
+            {% if caller %}{{ caller() }}{% endif %}
+            <div class="d-flex flex-wrap gap-2">
+                <button type="submit" class="btn btn-danger">{{ confirm_label }}</button>
+                <a class="btn btn-outline-secondary" href="{{ cancel_url }}">Cancelar</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endmacro %}

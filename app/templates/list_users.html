@@ -2,17 +2,6 @@
 
 {% block content %}
 
-{% with messages = get_flashed_messages(with_categories=true) %}
-{% if messages %}
-{% for category, message in messages %}
-<div class="alert alert-{{ category }}">
-    <strong>{{ message }}</strong>
-</div>
-{% endfor %}
-{% set _ = session.pop("_flashes", None) %}
-{% endif %}
-{% endwith %}
-
 <h2>Usuários Cadastrados</h2>
 {% if users %}
 <div class="listings">
