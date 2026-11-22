@@ -3,6 +3,7 @@ from flask import Flask
 from flask_migrate import Migrate
 from flask_security import Security, SQLAlchemyUserDatastore
 
+from app.auth import register_auth_hooks
 from app.errors import register_error_handlers
 from app.extensions import mail
 from app.models import Role, User, db
@@ -37,7 +38,8 @@ def create_app() -> Flask:
     mail.init_app(app)
 
     user_datastore = SQLAlchemyUserDatastore(db, User, Role)
-    security = Security(app, user_datastore)  # noqa: F841
+    security = Security(app, user_datastore)
+    register_auth_hooks(app, security)
     migrate = Migrate(app, db)  # noqa: F841
 
     with app.app_context():
