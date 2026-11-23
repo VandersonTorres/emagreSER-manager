@@ -8,7 +8,7 @@ from typing import TYPE_CHECKING, Any
 if TYPE_CHECKING:
     from playwright.sync_api import Page, Route
 
-EDITOR_URL = "/diets-manager/diets/edit_diet/{diet_id}"
+EDITOR_URL = "/diets-manager/diets/edit_diet/{diet_id}?legacy=1"
 SAVE_URL_GLOB = "**/diets-manager/diets/edit_diet/*"
 RENDER_TIMEOUT_MS = 60_000
 

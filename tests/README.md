@@ -41,10 +41,26 @@ content box, and the points are spaced so that a click never lands on a text alr
 
 ## Editor drivers
 
-All knowledge of the editor DOM lives in a driver module in `tests/e2e/`. `classic_editor_driver.py` drives the editor in
-`app/templates/admin/diets/edit_diet.html`. To cover a different editor DOM, add a driver exposing the same functions
-(`login`, `open_editor`, `canvas_metrics`, `open_add_dialog`, `add_text`, `next_page`, `record_chips`, `save`) and reuse
-`CLICKS` and the golden from `e2e/scenario.py`.
+All knowledge of the editor DOM lives in a driver module in `tests/e2e/`. `classic_editor_driver.py` drives the previous
+editor, served at `?legacy=1` (`app/templates/admin/diets/edit_diet_legacy.html`). `editor_driver.py` drives the
+responsive editor (`app/templates/admin/diets/edit_diet.html`) and adds helpers for zoom, drag and the edit panel. To
+cover a different editor DOM, add a driver exposing the same functions (`login`, `open_editor`, `canvas_metrics`,
+`open_add_dialog`, `add_text`, `next_page`, `record_chips`, `save`) and reuse `CLICKS` and the golden from
+`e2e/scenario.py`. A driver reports positions in reference pixels of the page content box (screen pixels times
+`canvasWidth / contentWidth`), so the same golden applies at any display size.
+
+## Responsive editor tests
+
+`e2e/test_new_editor.py` runs the `CLICKS` script on the responsive editor: on the desktop viewport it must match
+`payload_desktop.json` with the same 1px tolerance; on a 390x844 phone (device scale factor 3, touch), in a 900x900 window
+and zoomed in it is compared with `scenario.compare_within_tolerance` (3, 3 and 1 reference pixels). It also covers
+drag with the mouse and with real touch events, a PDF whose pages have different sizes (each annotation carries the
+`canvasWidth` and `canvasHeight` of its own page), the payload shape, empty text, Escape, the panels, the unsaved changes
+warning, a real save with the result panel and the PDF generated from the new payload against the one from the golden
+payload (within 1pt). The `phone_page`, `window_900_page` and `mixed_sizes_page` fixtures live in that module.
+
+`test_diet_pages.py` covers, without a browser, the editor and viewer markup, the previous editor at `?legacy=1` (its
+files are frozen by hash), the empty states, the pinned pdf.js build and the unchanged JSON answer of the save.
 
 ## Page smoke test
 
@@ -58,16 +74,16 @@ All knowledge of the editor DOM lives in a driver module in `tests/e2e/`. `class
   relation to the nutritionist.
 - `serve_temp_file` has no `@roles_accepted`: it is public on purpose, so Twilio can fetch the PDF.
 
-Known bugs (currently 500 responses) are recorded as `xfail(strict=True, raises=ExistingBug)`: only the current 500
-counts as an expected failure. Any other status (for example, a redirect) fails the test, and the fix (200) becomes a
-strict XPASS. In both cases the table must be updated.
+Known bugs (500 responses) are recorded as `xfail(strict=True, raises=ExistingBug)`: only the current 500 counts as an
+expected failure. Any other status (for example, a redirect) fails the test, and the fix (200) becomes a strict XPASS. In
+both cases the table must be updated. No known bug is recorded at the moment.
 
 ## Application shell tests
 
 `test_layout.py` covers the shell shared by every page: flash messages as toasts (rendered once, by category), the
 role-aware sidebar and its active item, the home dashboard (upcoming schedules by role, no writes on GET, no form or
-input), the auth pages, the custom 403, 404 and 500 pages, the pt-BR `SECURITY_MSG_*` messages and the diet editor
-keeping `legacy.css` without Bootstrap. Tests that need extra schedules create them in the temporary database and
+input), the auth pages, the custom 403, 404 and 500 pages, the pt-BR `SECURITY_MSG_*` messages and the previous diet
+editor (`?legacy=1`) keeping `legacy.css` without Bootstrap. Tests that need extra schedules create them in the temporary database and
 delete them afterwards.
 
 `e2e/test_responsive_layout.py` drives the shell in a browser: no horizontal overflow on the login, home and change

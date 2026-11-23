@@ -403,7 +403,7 @@ def test_review_screens(app: Flask, seed: SeedData, live_server: str, device: tu
         _snap(page, device_name, "drawer-open")
 
     classic_editor_driver.open_editor(page, live_server, seed["diet_a4"])
-    assert page.locator("link[href*='legacy.css']").count() == 1
+    assert page.locator("link[href$='/css/legacy.css']").count() == 1
     assert page.locator("link[href*='bootstrap']").count() == 0
     _snap(page, device_name, "diet-editor")
 

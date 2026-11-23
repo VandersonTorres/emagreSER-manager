@@ -361,7 +361,7 @@ def test_head_order(app: Flask, seed: SeedData, client_admin: FlaskClient) -> No
         "select2@4.1.0-rc.0/dist/js/select2.min.js",
         'defaults.set("theme", "bootstrap-5")',
         'defaults.set("width", "100%")',
-        "css/pdf_editor.css",
+        "css/pdf_viewer.css",
         "</head>",
     ]
     positions = [html.index(marker) for marker in markers]
@@ -884,14 +884,14 @@ def test_home_has_no_slider(client_admin: FlaskClient) -> None:
     assert "unpkg.com" not in html
 
 
-def test_editor_page_keeps_the_legacy_stylesheet(app: Flask, seed: SeedData, client_admin: FlaskClient) -> None:
-    """Check that the diet editor loads the legacy stylesheet and none of the new framework.
+def test_previous_editor_keeps_the_legacy_stylesheet(app: Flask, seed: SeedData, client_admin: FlaskClient) -> None:
+    """Check that the previous diet editor ("?legacy=1") loads the legacy stylesheet and none of the new framework.
 
     :param app: Flask application.
     :param seed: Ids of the fake records.
     :param client_admin: Test client logged in as admin.
     """
-    html = client_admin.get(_url(app, "diets.edit_diet", id=int(seed["diet_a4"]))).get_data(as_text=True)
+    html = client_admin.get(_url(app, "diets.edit_diet", id=int(seed["diet_a4"]), legacy=1)).get_data(as_text=True)
 
     assert "css/legacy.css" in html
     assert "css/app.css" not in html

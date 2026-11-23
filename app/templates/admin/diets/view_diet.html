@@ -1,44 +1,35 @@
 {% extends "base.html" %}
+{% from "_macros.html" import page_header, empty_state %}
+
+{% block title %}{{ diet.name }} · EmagreSER{% endblock %}
 
 {% block head %}
-<link rel="stylesheet" href="{{ url_for('static', filename='css/pdf_editor.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/pdf_viewer.css') }}">
 {% endblock %}
 
+{% block content_class %}{% endblock %}
+
 {% block content %}
+{% call page_header(diet.name, diet.description or none, url_for("diets.list_diets")) %}
+    {% if diet.diet_file %}
+    <a class="btn btn-outline-secondary" href="{{ diet.diet_file }}" target="_blank" rel="noopener" download>
+        <i class="bi bi-download" aria-hidden="true"></i> Baixar Arquivo Original
+    </a>
+    {% endif %}
+{% endcall %}
 
-<h2>{{ diet.name }}</h2>
-<br>
-<p><strong>Descrição:</strong> {{ diet.description }}</p>
+<section class="card pdfv-surface" aria-label="Visualização da dieta">
+    {% if pdf_url %}
+    <div data-pdf-viewer="{{ pdf_url }}"></div>
+    {% else %}
+    {{ empty_state("file-earmark-x", "Esta dieta não possui arquivo", "Anexe um PDF ao editar o esqueleto da dieta.", url_for("diets.edit_diet_raw", id=diet.id), "Editar esqueleto da dieta") }}
+    {% endif %}
+</section>
+{% endblock %}
 
-<div id="pdf-container">
-    <canvas id="pdf-canvas"></canvas>
-</div>
-<div style="text-align: center; margin: 10px 0;">
-    <button id="prev-page">⬅ Página anterior</button>
-    <span id="page-info">Página 1</span>
-    <button id="next-page">Próxima página ➡</button>
-</div>
-
-{% if diet.diet_file %}
-<p>
-    📄 <a href="{{ diet.diet_file }}" target="_blank" download>Baixar Arquivo Original</a>
-</p>
+{% block scripts %}
+{% if pdf_url %}
+{% include "_pdfjs_assets.html" %}
+<script type="module" src="{{ url_for('static', filename='js/pdf_viewer.js') }}"></script>
 {% endif %}
-
-<hr>
-<br>
-<div class="nav-actions">
-    <a class="back-button" href="{{ url_for('diets.list_diets') }}">🔙 Voltar</a>
-</div>
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js"></script>
-<script>
-  pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js";
-</script>
-
-<script>
-  const pdfUrl = "{{ pdf_url }}";
-</script>
-
-<script src="{{ url_for('static', filename='js/render_diet.js') }}" defer></script>
 {% endblock %}

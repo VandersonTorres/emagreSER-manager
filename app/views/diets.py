@@ -20,24 +20,33 @@ from flask import (
     send_from_directory,
     url_for,
 )
+from flask.typing import ResponseReturnValue
 from flask_mail import Message
 from flask_security import current_user, roles_accepted
 from sqlalchemy import func
 from sqlalchemy.exc import IntegrityError
 from twilio.base.exceptions import TwilioRestException
 from werkzeug.utils import secure_filename
+from werkzeug.wrappers import Response
 
 from app.extensions import mail
 from app.forms import DietForm
 from app.models import Diet, Patients, Schedules, Specialists, db
-from scripts.utils import extract_public_id_from_cloudinary, hex_to_rgb_normalized, twilio_send_diet
+from app.services.pdf_annotations import apply_annotations
+from scripts.utils import extract_public_id_from_cloudinary, twilio_send_diet
 
 diets_bp = Blueprint("diets", __name__)
 
 
 @diets_bp.route("/diets")
 @roles_accepted("admin", "secretary", "nutritionist")
-def list_diets():
+def list_diets() -> ResponseReturnValue:
+    """Render the list of diets, filtered by the optional "query" argument.
+
+    Nutritionists only see, in the patient selector, the patients of their own or with a pending schedule with them.
+
+    :return: The rendered diets page.
+    """
     patients = Patients.query.all()
     if "nutritionist" in [role.name for role in current_user.roles]:
         now = datetime.now(ZoneInfo("America/Sao_Paulo")).date()
@@ -65,7 +74,11 @@ def list_diets():
 
 @diets_bp.route("/diets/reorder", methods=["POST"])
 @roles_accepted("admin", "secretary", "nutritionist")
-def reorder_diets():
+def reorder_diets() -> ResponseReturnValue:
+    """Store the new position of each diet sent as JSON in "order".
+
+    :return: A JSON confirmation.
+    """
     data = request.get_json()
     order_data = data.get("order", [])
 
@@ -80,7 +93,11 @@ def reorder_diets():
 
 @diets_bp.route("/diets/add", methods=["GET", "POST"])
 @roles_accepted("admin", "secretary", "nutritionist")
-def add_diet():
+def add_diet() -> ResponseReturnValue:
+    """Show the form to register a diet and, on a valid submission, upload its PDF and save it.
+
+    :return: The form page, or a redirect to the diet list after saving.
+    """
     form = DietForm()
     if form.validate_on_submit():
         diet_url = None
@@ -104,17 +121,28 @@ def add_diet():
 
 @diets_bp.route("/diets/<int:id>", methods=["GET"])
 @roles_accepted("admin", "secretary", "nutritionist")
-def view_diet(id):
+def view_diet(id: int) -> ResponseReturnValue:
+    """Render the original PDF of a diet.
+
+    :param id: Id of the diet.
+    :raises NotFound: If the diet does not exist.
+    :return: The rendered diet page.
+    """
     diet = Diet.query.get_or_404(id)
     return render_template("admin/diets/view_diet.html", diet=diet, pdf_url=diet.diet_file)
 
 
 @diets_bp.route("/diets/delete/<int:id>", methods=["GET", "POST"])
 @roles_accepted("admin", "secretary", "nutritionist")
-def delete_diet(id):
+def delete_diet(id: int) -> ResponseReturnValue:
+    """Ask for confirmation and, on POST, delete the diet with its stored and edited PDF files.
+
+    :param id: Id of the diet.
+    :raises NotFound: If the diet does not exist.
+    :return: The confirmation page, or a redirect to the diet list after deleting.
+    """
     diet = Diet.query.get_or_404(id)
     if request.method == "POST":
-        # Delete files from Cloudinary
         if diet.diet_file:
             public_id = extract_public_id_from_cloudinary(diet.diet_file)
             cloudinary.uploader.destroy(public_id, resource_type="raw")
@@ -124,7 +152,6 @@ def delete_diet(id):
             if os.path.exists(temp_diet_file_path):
                 os.remove(temp_diet_file_path)
 
-        # Remove from the database
         db.session.delete(diet)
         db.session.commit()
         flash(f"Dieta '{diet.name}' removida com sucesso!", "success")
@@ -133,20 +160,36 @@ def delete_diet(id):
 
 
 @diets_bp.route("/uploads/temp_files/<filename>")
-def serve_temp_file(filename):
+def serve_temp_file(filename: str) -> Response:
+    """Serve an edited diet PDF from the temporary folder; public on purpose, so Twilio can fetch it.
+
+    :param filename: Name of the file inside the temporary folder.
+    :return: The file response.
+    """
     return send_from_directory(current_app.config["TEMP_UPLOAD_FOLDER"], filename)
 
 
 @diets_bp.route("/diets/download-temp/<filename>")
 @roles_accepted("admin", "secretary", "nutritionist")
-def download_temp_diet(filename):
+def download_temp_diet(filename: str) -> Response:
+    """Send an edited diet PDF from the temporary folder as an attachment.
+
+    :param filename: Name of the file inside the temporary folder.
+    :return: The file response, as an attachment.
+    """
     folder = current_app.config["TEMP_UPLOAD_FOLDER"]
     return send_from_directory(folder, filename, as_attachment=True)
 
 
 @diets_bp.route("/send_diet_email/<int:diet_id>", methods=["POST"])
 @roles_accepted("admin", "secretary", "nutritionist")
-def send_diet_email(diet_id):
+def send_diet_email(diet_id: int) -> ResponseReturnValue:
+    """E-mail the last edited PDF of a diet to the patient chosen in the form.
+
+    :param diet_id: Id of the diet.
+    :raises NotFound: If the patient or the diet does not exist.
+    :return: A redirect to the diet list, with a flashed result.
+    """
     patient = Patients.query.get_or_404(request.form.get("patient_id"))
     patient_name = patient.name
 
@@ -162,9 +205,6 @@ def send_diet_email(diet_id):
             "danger",
         )
         return redirect(url_for("diets.list_diets"))
-
-    # Generating public URL for the File
-    # diet_file_url = url_for("diets.serve_temp_file", filename=temp_diet_file, _external=True)
 
     msg = Message(
         subject=f"Dieta {diet.name}", recipients=[patient.email], sender=current_app.config.get("MAIL_DEFAULT_SENDER")
@@ -199,7 +239,13 @@ def send_diet_email(diet_id):
 
 @diets_bp.route("/send_diet/<int:diet_id>", methods=["POST"])
 @roles_accepted("admin", "secretary", "nutritionist")
-def send_diet_wpp(diet_id):
+def send_diet_wpp(diet_id: int) -> ResponseReturnValue:
+    """Send the last edited PDF of a diet by WhatsApp to the patient chosen in the form.
+
+    :param diet_id: Id of the diet.
+    :raises NotFound: If the patient or the diet does not exist.
+    :return: A redirect to the diet list, with a flashed result.
+    """
     patient = Patients.query.get_or_404(request.form.get("patient_id"))
     patient_name = patient.name
     cleaned_telephone = re.sub(r"[\s(),-]", "", patient.tel_number)
@@ -217,10 +263,8 @@ def send_diet_wpp(diet_id):
         )
         return redirect(url_for("diets.list_diets"))
 
-    # Generating public URL for the File
     diet_file_url = url_for("diets.serve_temp_file", filename=temp_diet_file, _external=True)
     try:
-        # Send diet by WhatsApp
         response = twilio_send_diet(
             patient=patient_name,
             telephone=telephone,
@@ -241,7 +285,16 @@ def send_diet_wpp(diet_id):
 
 @diets_bp.route("/diets/edit_diet/<int:id>", methods=["GET", "POST"])
 @roles_accepted("admin", "secretary", "nutritionist")
-def edit_diet(id):
+def edit_diet(id: int) -> ResponseReturnValue:
+    """Show the PDF editor of a diet and, on POST, write the posted annotations into a copy of its PDF.
+
+    GET renders the current editor, or the previous one with "?legacy=1". POST downloads the original PDF, applies the
+    annotations, saves the result as the diet's temporary file and answers with JSON (status, message, URLs).
+
+    :param id: Id of the diet.
+    :raises NotFound: If the diet does not exist.
+    :return: The editor page, a redirect to the diet list when the diet has no file, or the JSON answer of the save.
+    """
     diet = Diet.query.get_or_404(id)
     if not diet.diet_file:
         flash("Essa dieta não possui um arquivo.", "danger")
@@ -263,70 +316,7 @@ def edit_diet(id):
                 tmp_in.flush()
                 doc = fitz.open(tmp_in.name)
 
-            for ann in annotations:
-                page_number = ann.get("page", 0) - 1
-                if page_number < 0 or page_number >= len(doc):
-                    current_app.logger.warning(f"Ignorando anotação com página inválida: {page_number}")
-                    continue
-
-                page = doc.load_page(page_number)
-                text = ann.get("text", "")
-                desired_fontsize = 9
-                font_size = max(ann.get("fontSize", 9), 9)
-                color = ann.get("color", "#000000")
-                rgb = hex_to_rgb_normalized(color, current_app)
-
-                # Get the canvas dimensions from the front
-                x_canvas = ann.get("x", 0)
-                y_canvas = ann.get("y", 0)
-                canvas_width = ann.get("canvasWidth")
-                canvas_height = ann.get("canvasHeight")
-
-                if not canvas_width or not canvas_height:
-                    current_app.logger.warning("Dimensões do canvas ausentes ou inválidas.")
-                    continue
-
-                # Real size of the page in point at the backend
-                page_width = page.rect.width
-                page_height = page.rect.height
-
-                # coordinates convertion (proportional to real PDF)
-                x_ratio = x_canvas / canvas_width
-                y_ratio = y_canvas / canvas_height
-
-                x_pdf = x_ratio * page_width
-                y_pdf = y_ratio * page_height
-
-                font = fitz.Font("helv")
-                ascender = font.ascender
-                descender = font.descender
-
-                percentual_position_ratio = desired_fontsize + round((desired_fontsize * 0.4))  # 40% of the font size
-                text_width = fitz.get_text_length(text, fontname="helv", fontsize=desired_fontsize)
-                text_height = (
-                    ((ascender - descender) * font_size)
-                    if font_size <= desired_fontsize
-                    else ((ascender - descender) * (font_size / 2))
-                    if font_size <= percentual_position_ratio
-                    else (ascender - descender)
-                    if font_size <= (desired_fontsize * 2)
-                    else (ascender - descender) - (font_size / 4)
-                )
-
-                # Fix position
-                y_pdf_adjusted = y_pdf - text_height / 2  # vertical centralizer
-
-                # safe border
-                x_pdf_adjusted = max(0, min(x_pdf, page_width - text_width))
-                y_pdf_adjusted = max(0, min(y_pdf_adjusted, page_height - text_height))
-
-                page.insert_text(
-                    (x_pdf_adjusted, (y_pdf_adjusted + ascender * desired_fontsize)),
-                    text,
-                    fontsize=desired_fontsize,
-                    color=rgb,
-                    fontname="helv",
-                )
+            apply_annotations(doc, annotations, current_app.logger)
 
             temp_filename = f"dieta_personalizada_id_{diet.id}.pdf"
             temp_filepath = os.path.join(current_app.config["TEMP_UPLOAD_FOLDER"], temp_filename)
@@ -348,12 +338,20 @@ def edit_diet(id):
             current_app.logger.error(f"Erro ao salvar PDF editado: {e}")
             return jsonify({"status": "error", "message": "Erro ao atualizar o PDF"}), 500
 
-    return render_template("admin/diets/edit_diet.html", diet=diet, pdf_url=diet.diet_file)
+    use_legacy = request.args.get("legacy") == "1"
+    template = "admin/diets/edit_diet_legacy.html" if use_legacy else "admin/diets/edit_diet.html"
+    return render_template(template, diet=diet, pdf_url=diet.diet_file)
 
 
 @diets_bp.route("/diets/edit/<int:id>", methods=["GET", "POST"])
 @roles_accepted("admin", "secretary", "nutritionist")
-def edit_diet_raw(id):
+def edit_diet_raw(id: int) -> ResponseReturnValue:
+    """Show the form to change the name, description and PDF of a diet and save it when valid.
+
+    :param id: Id of the diet.
+    :raises NotFound: If the diet does not exist.
+    :return: The form page, or a redirect to the diet list after saving.
+    """
     diet = Diet.query.get_or_404(id)
     form = DietForm(obj=diet)
 
@@ -389,7 +387,15 @@ def edit_diet_raw(id):
 
 @diets_bp.route("/diets/view_edited<int:id>", methods=["GET"])
 @roles_accepted("admin", "secretary", "nutritionist")
-def view_last_edition(id):
+def view_last_edition(id: int) -> ResponseReturnValue:
+    """Render the last edited PDF of a diet, or an empty state when the diet was never edited.
+
+    :param id: Id of the diet.
+    :raises NotFound: If the diet does not exist.
+    :return: The rendered page.
+    """
     diet = Diet.query.get_or_404(id)
-    pdf_url = url_for("diets.serve_temp_file", filename=diet.temp_diet_file, _external=True)
+    pdf_url = None
+    if diet.temp_diet_file:
+        pdf_url = url_for("diets.serve_temp_file", filename=diet.temp_diet_file)
     return render_template("admin/diets/view_last_edition.html", diet=diet, pdf_url=pdf_url)

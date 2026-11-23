@@ -1,87 +1,125 @@
-{% extends "base_legacy.html" %}
+{% extends "base.html" %}
+{% from "_macros.html" import page_header %}
+
+{% block title %}Editar PDF · {{ diet.name }} · EmagreSER{% endblock %}
 
 {% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/pdf_viewer.css') }}">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/pdf_editor.css') }}">
 {% endblock %}
 
+{% block content_class %}{% endblock %}
+
 {% block content %}
-<div class="alert">
-    <h3>Modal de edição da dieta "{{ diet.name }}"</h3>
-    <br>
-    <p>
-        <span style="font-size: 12px; margin-left: 10px; color: #99a400;">
-            <strong>Atenção:</strong> Evite aplicar zoom à tela durante a edição pois isso pode causar o desalinhamento dos textos
-        </span><br>
-        <span style="font-size: 12px; margin-left: 10px; color: #6a6a6a;">
-            <i>Se houver problemas de posicionamento, certifique de que o Zoom esteja em <strong>"100%"</strong></i>
-        </span>
-    </p>
-    <br>
-    <aside style="padding: 5px; align-content: center;">
-        <span style="font-size: 12px; margin-left: 10px; color: #6a6a6a;">
-            <strong>Dicas de edição:</strong><br>
-            &nbsp; &nbsp; 1. Posicione os textos no inicio das linhas; <br>
-            &nbsp; &nbsp; 2. Evite textos longos <i>(ex: priorize nomes simples em vez de nomes completos)</i>; <br>
-            &nbsp; &nbsp; 3. Sempre revise antes de enviar a dieta. <br>
-        </span>
+{% call page_header(diet.name, "Clique ou toque na página para adicionar um texto.", url_for("diets.list_diets")) %}
+    <a class="btn btn-outline-secondary" href="{{ url_for('diets.edit_diet', id=diet.id, legacy=1) }}">
+        <i class="bi bi-clock-history" aria-hidden="true"></i> Usar editor antigo
+    </a>
+{% endcall %}
+
+<div class="pdfe" id="pdfe-root" data-state="loading" data-pdf-url="{{ pdf_url }}" data-save-url="{{ url_for('diets.edit_diet', id=diet.id) }}">
+    <aside class="pdfe-tips" aria-labelledby="pdfe-tips-title">
+        <h2 class="pdfe-tips-title" id="pdfe-tips-title"><i class="bi bi-lightbulb" aria-hidden="true"></i> Dicas de edição</h2>
+        <ul class="pdfe-tips-list">
+            <li>Posicione os textos no início das linhas.</li>
+            <li>Prefira textos curtos, como nomes simples em vez de nomes completos.</li>
+            <li>Revise o resultado antes de enviar a dieta.</li>
+        </ul>
     </aside>
-</div>
 
-<div id="pdf-container">
-    <canvas id="pdf-canvas"></canvas>
-</div>
+    <div class="pdfe-toolbar" id="pdfe-toolbar" role="toolbar" aria-label="Ferramentas do editor">
+        <div class="pdfe-group pdfe-group-pages" role="group" aria-label="Páginas">
+            <button type="button" class="btn btn-outline-secondary pdfe-icon-button" id="pdfe-prev" aria-label="Página anterior" disabled>
+                <i class="bi bi-chevron-left" aria-hidden="true"></i>
+            </button>
+            <span class="pdfe-page-info" id="pdfe-page-info" aria-live="polite">Página 1</span>
+            <button type="button" class="btn btn-outline-secondary pdfe-icon-button" id="pdfe-next" aria-label="Próxima página" disabled>
+                <i class="bi bi-chevron-right" aria-hidden="true"></i>
+            </button>
+        </div>
+        <div class="pdfe-group pdfe-group-zoom" role="group" aria-label="Zoom">
+            <button type="button" class="btn btn-outline-secondary pdfe-icon-button" id="pdfe-zoom-out" aria-label="Diminuir zoom" disabled>
+                <i class="bi bi-zoom-out" aria-hidden="true"></i>
+            </button>
+            <button type="button" class="btn btn-outline-secondary pdfe-icon-button" id="pdfe-zoom-fit" aria-label="Ajustar à largura" disabled>
+                <i class="bi bi-arrows-angle-contract" aria-hidden="true"></i>
+            </button>
+            <button type="button" class="btn btn-outline-secondary pdfe-icon-button" id="pdfe-zoom-in" aria-label="Aumentar zoom" disabled>
+                <i class="bi bi-zoom-in" aria-hidden="true"></i>
+            </button>
+            <output class="pdfe-zoom-level" id="pdfe-zoom-level" for="pdfe-zoom-out pdfe-zoom-fit pdfe-zoom-in"></output>
+        </div>
+        <button type="button" class="btn btn-primary pdfe-save" id="pdfe-save" aria-label="Salvar alterações no PDF" disabled>
+            <i class="bi bi-check2-circle" aria-hidden="true"></i>
+            <span id="pdfe-save-label">Salvar</span>
+        </button>
+    </div>
 
-<div style="text-align: center; margin: 10px 0;">
-    <button id="prev-page">⬅ Página anterior</button>
-    <span id="page-info">Página 1</span>
-    <button id="next-page">Próxima página ➡</button>
-</div>
+    <p class="pdfe-notice" id="pdfe-feedback" role="status"></p>
 
-<div style="text-align: center; margin: 20px;">
-    <button id="save-changes-btn">Salvar alterações</button>
-    &nbsp;
-    <a class="back-button" href="{{ url_for('diets.list_diets') }}">🔙 Voltar</a>
-</div>
-
-<!-- Modal to add text -->
-<div id="text-modal" class="modal" style="display: none;">
-    <div class="modal-content">
-        <label for="text-input">Insira o texto:</label>
-        <input id="text-input" type="text">
-        <label for="text-size">Tamanho:</label>
-        <input id="text-size" type="number" min="9" max="20" value="9">
-        <label for="text-color">Cor:</label>
-        <input id="text-color" type="color" value="#000000">
-        <div class="modal-actions">
-            <button id="add-text-btn">Adicionar</button>
-            <button id="cancel-btn">Cancelar</button>
+    <div class="pdfe-stage" id="pdfe-stage">
+        <div class="pdfe-frame" id="pdfe-frame" data-state="loading">
+            <canvas class="pdfe-canvas" id="pdfe-canvas"></canvas>
+            <div class="pdfe-layer" id="pdfe-layer"></div>
         </div>
     </div>
-</div>
+    <p class="pdfe-status" id="pdfe-status" role="status">Carregando o PDF...</p>
 
-<!-- Modal to edit/remove text -->
-<div id="edit-text-modal" class="modal" style="display: none;">
-    <div class="modal-content edit">
-        <textarea id="edit-text-input"></textarea>
-        <input type="number" id="edit-text-size" placeholder="Tamanho" min="9" max="10" />
-        <input type="color" id="edit-text-color" />
-        <div class="modal-buttons">
-            <button id="save-edit-btn">Salvar</button>
-            <button id="remove-text-btn">Remover</button>
-            <button id="cancel-edit-btn">Cancelar</button>
+    <form class="pdfe-panel" id="pdfe-panel" role="dialog" aria-labelledby="pdfe-panel-title" data-mode="add" novalidate hidden>
+        <h2 class="pdfe-panel-title" id="pdfe-panel-title">Adicionar texto</h2>
+        <div class="pdfe-field">
+            <label class="form-label" for="pdfe-text">Texto</label>
+            <input class="form-control" id="pdfe-text" type="text" autocomplete="off" autocapitalize="sentences" enterkeyhint="done">
         </div>
-    </div>
+        <div class="pdfe-field-row">
+            <div class="pdfe-field">
+                <label class="form-label" for="pdfe-size">Tamanho</label>
+                <input class="form-control" id="pdfe-size" type="number" min="9" max="20" step="1" value="9" inputmode="numeric">
+            </div>
+            <div class="pdfe-field">
+                <label class="form-label" for="pdfe-color">Cor</label>
+                <input class="form-control form-control-color pdfe-color" id="pdfe-color" type="color" value="#000000">
+            </div>
+        </div>
+        <div class="pdfe-nudge pdfe-edit-only" id="pdfe-nudge" role="group" aria-label="Ajuste fino da posição, 1 pixel por toque">
+            <button type="button" class="btn btn-outline-secondary pdfe-icon-button" id="pdfe-nudge-left" data-dx="-1" data-dy="0" aria-label="Mover para a esquerda">
+                <i class="bi bi-arrow-left" aria-hidden="true"></i>
+            </button>
+            <button type="button" class="btn btn-outline-secondary pdfe-icon-button" id="pdfe-nudge-up" data-dx="0" data-dy="-1" aria-label="Mover para cima">
+                <i class="bi bi-arrow-up" aria-hidden="true"></i>
+            </button>
+            <button type="button" class="btn btn-outline-secondary pdfe-icon-button" id="pdfe-nudge-down" data-dx="0" data-dy="1" aria-label="Mover para baixo">
+                <i class="bi bi-arrow-down" aria-hidden="true"></i>
+            </button>
+            <button type="button" class="btn btn-outline-secondary pdfe-icon-button" id="pdfe-nudge-right" data-dx="1" data-dy="0" aria-label="Mover para a direita">
+                <i class="bi bi-arrow-right" aria-hidden="true"></i>
+            </button>
+        </div>
+        <div class="pdfe-panel-actions">
+            <button type="button" class="btn btn-outline-danger pdfe-edit-only" id="pdfe-remove">Remover</button>
+            <button type="button" class="btn btn-outline-secondary" id="pdfe-cancel">Cancelar</button>
+            <button type="submit" class="btn btn-primary" id="pdfe-submit">Adicionar</button>
+        </div>
+    </form>
+
+    <dialog class="pdfe-result" id="pdfe-result" aria-labelledby="pdfe-result-title">
+        <div class="pdfe-result-head">
+            <h2 class="pdfe-result-title" id="pdfe-result-title">PDF gerado</h2>
+            <p class="pdfe-result-text">Confira o resultado antes de enviar a dieta.</p>
+        </div>
+        <div class="pdfe-result-body" id="pdfe-result-viewer"></div>
+        <div class="pdfe-result-actions">
+            <button type="button" class="btn btn-outline-secondary" id="pdfe-result-continue">Continuar editando</button>
+            <a class="btn btn-outline-secondary" id="pdfe-result-download" href="#" download>
+                <i class="bi bi-download" aria-hidden="true"></i> Baixar
+            </a>
+            <a class="btn btn-primary" id="pdfe-result-finish" href="#">Concluir</a>
+        </div>
+    </dialog>
 </div>
+{% endblock %}
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js"></script>
-<script>
-  pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js";
-</script>
-
-<script>
-  const pdfUrl = "{{ pdf_url }}";
-  const dietId = "{{ diet.id }}";
-</script>
-
-<script src="{{ url_for('static', filename='js/pdf_editor.js') }}" defer></script>
+{% block scripts %}
+{% include "_pdfjs_assets.html" %}
+<script type="module" src="{{ url_for('static', filename='js/pdf_editor.js') }}"></script>
 {% endblock %}

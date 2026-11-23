@@ -75,11 +75,6 @@ HOME = (302, "/")
 PATIENT_LIST = (302, "/patients-manager/patients")
 SPECIALIST_LIST = (302, "/specialists-manager/specialists")
 
-BUG_VIEW_LAST_EDITION = Bug(
-    200,
-    "existing bug: view_last_edition calls url_for(filename=None) when the diet has no temp_diet_file (BuildError)",
-)
-
 EXPECTED: list[dict[str, Any]] = [
     row("home", "main.index", {}, LOGIN, 200, 200, 200),
     row("new-user", "admin.create_user", {}, 403, 200, 200, HOME),
@@ -162,15 +157,7 @@ EXPECTED: list[dict[str, Any]] = [
     row("edit-pdf", "diets.edit_diet", {"id": "@diet_a4"}, 403, 200, 200, 200),
     row("edit-raw", "diets.edit_diet_raw", {"id": "@diet_a4"}, 403, 200, 200, 200),
     row("last-edition-with-file", "diets.view_last_edition", {"id": "@diet_edited"}, 403, 200, 200, 200),
-    row(
-        "last-edition-without-file",
-        "diets.view_last_edition",
-        {"id": "@diet_a4"},
-        403,
-        BUG_VIEW_LAST_EDITION,
-        BUG_VIEW_LAST_EDITION,
-        BUG_VIEW_LAST_EDITION,
-    ),
+    row("last-edition-without-file", "diets.view_last_edition", {"id": "@diet_a4"}, 403, 200, 200, 200),
     row("temp-file", "diets.serve_temp_file", {"filename": "@diet_edited_file"}, 200, 200, 200, 200),
     row("download-temp", "diets.download_temp_diet", {"filename": "@diet_edited_file"}, 403, 200, 200, 200),
     row("login", "security.login", {}, 200, HOME, HOME, HOME),
