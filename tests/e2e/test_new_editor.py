@@ -731,7 +731,7 @@ def test_real_save_shows_the_result_panel_and_keeps_editing(
     page.wait_for_selector("#pdfe-result", state="hidden")
     assert [chip["text"] for chip in editor_driver.record_chips(page)] == ["Salvo de verdade", "Outro texto"]
     assert page.text_content("#pdfe-save-label") == "Salvar" and page.is_enabled("#pdfe-save")
-    assert page.locator("#pdfe-result .pdfv").count() == 0
+    page.wait_for_selector("#pdfe-result .pdfv", state="detached")
     assert dialogs == []
 
 
