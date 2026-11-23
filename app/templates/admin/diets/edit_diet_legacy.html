@@ -1,0 +1,87 @@
+{% extends "base_legacy.html" %}
+
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/pdf_editor_legacy.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="alert">
+    <h3>Modal de edição da dieta "{{ diet.name }}"</h3>
+    <br>
+    <p>
+        <span style="font-size: 12px; margin-left: 10px; color: #99a400;">
+            <strong>Atenção:</strong> Evite aplicar zoom à tela durante a edição pois isso pode causar o desalinhamento dos textos
+        </span><br>
+        <span style="font-size: 12px; margin-left: 10px; color: #6a6a6a;">
+            <i>Se houver problemas de posicionamento, certifique de que o Zoom esteja em <strong>"100%"</strong></i>
+        </span>
+    </p>
+    <br>
+    <aside style="padding: 5px; align-content: center;">
+        <span style="font-size: 12px; margin-left: 10px; color: #6a6a6a;">
+            <strong>Dicas de edição:</strong><br>
+            &nbsp; &nbsp; 1. Posicione os textos no inicio das linhas; <br>
+            &nbsp; &nbsp; 2. Evite textos longos <i>(ex: priorize nomes simples em vez de nomes completos)</i>; <br>
+            &nbsp; &nbsp; 3. Sempre revise antes de enviar a dieta. <br>
+        </span>
+    </aside>
+</div>
+
+<div id="pdf-container">
+    <canvas id="pdf-canvas"></canvas>
+</div>
+
+<div style="text-align: center; margin: 10px 0;">
+    <button id="prev-page">⬅ Página anterior</button>
+    <span id="page-info">Página 1</span>
+    <button id="next-page">Próxima página ➡</button>
+</div>
+
+<div style="text-align: center; margin: 20px;">
+    <button id="save-changes-btn">Salvar alterações</button>
+    &nbsp;
+    <a class="back-button" href="{{ url_for('diets.list_diets') }}">🔙 Voltar</a>
+</div>
+
+<!-- Modal to add text -->
+<div id="text-modal" class="modal" style="display: none;">
+    <div class="modal-content">
+        <label for="text-input">Insira o texto:</label>
+        <input id="text-input" type="text">
+        <label for="text-size">Tamanho:</label>
+        <input id="text-size" type="number" min="9" max="20" value="9">
+        <label for="text-color">Cor:</label>
+        <input id="text-color" type="color" value="#000000">
+        <div class="modal-actions">
+            <button id="add-text-btn">Adicionar</button>
+            <button id="cancel-btn">Cancelar</button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal to edit/remove text -->
+<div id="edit-text-modal" class="modal" style="display: none;">
+    <div class="modal-content edit">
+        <textarea id="edit-text-input"></textarea>
+        <input type="number" id="edit-text-size" placeholder="Tamanho" min="9" max="10" />
+        <input type="color" id="edit-text-color" />
+        <div class="modal-buttons">
+            <button id="save-edit-btn">Salvar</button>
+            <button id="remove-text-btn">Remover</button>
+            <button id="cancel-edit-btn">Cancelar</button>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js"></script>
+<script>
+  pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js";
+</script>
+
+<script>
+  const pdfUrl = "{{ pdf_url }}";
+  const dietId = "{{ diet.id }}";
+</script>
+
+<script src="{{ url_for('static', filename='js/pdf_editor_legacy.js') }}" defer></script>
+{% endblock %}

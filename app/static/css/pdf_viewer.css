@@ -1,0 +1,79 @@
+/* Viewer */
+.pdfv {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    min-width: 0;
+}
+
+.pdfv-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+.pdfv-button {
+    min-width: 2.75rem;
+    padding-inline: 0.5rem;
+}
+
+.pdfv-info {
+    min-width: 7.5rem;
+    color: var(--app-muted);
+    font-variant-numeric: tabular-nums;
+    font-weight: 600;
+    text-align: center;
+}
+
+.pdfv-page {
+    width: 100%;
+    max-width: 64rem;
+    margin-inline: auto;
+    background: #fff;
+    border: 1px solid var(--app-border);
+    border-radius: 0.5rem;
+    box-shadow: var(--app-shadow-sm);
+    overflow: hidden;
+}
+
+.pdfv-canvas {
+    display: block;
+    width: 100%;
+    height: auto;
+}
+
+.pdfv-status {
+    margin: 0;
+    color: var(--app-muted);
+    text-align: center;
+}
+
+.pdfv[data-state="error"] .pdfv-page,
+.pdfv[data-state="error"] .pdfv-toolbar {
+    display: none;
+}
+
+.pdfv[data-state="error"] .pdfv-status {
+    color: var(--app-danger);
+    font-weight: 600;
+}
+
+/* View pages */
+.pdfv-details {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 1rem;
+}
+
+.pdfv-surface {
+    padding: 1rem;
+}
+
+@media (min-width: 768px) {
+    .pdfv-surface {
+        padding: 1.5rem;
+    }
+}

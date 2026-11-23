@@ -142,3 +142,50 @@ def record_or_compare(viewport: ViewportSize, result: dict[str, Any]) -> None:
         write_golden(GOLDEN_NAME, dump_golden(build_golden(viewport, result)))
     else:
         compare_with_golden(viewport, result)
+
+
+def compare_within_tolerance(result: dict[str, Any], tolerance_px: float) -> None:
+    """Compare a scenario result with the golden at any viewport, with a position tolerance in reference pixels.
+
+    Used for editors whose display size differs from the desktop golden (phone, narrow window, zoom): the viewport is
+    not compared. Order, texts, fontSize, color, page and canvas size must still be identical, and the payload x/y and
+    the chips left/top (both in reference pixels) accept the tolerance.
+
+    :param result: Result returned by run_scenario.
+    :param tolerance_px: Largest accepted difference, in reference pixels, for x, y and the chip left and top.
+    :raises AssertionError: If the editor calibration differs from the golden by more than the tolerance.
+    """
+    golden = load_golden(GOLDEN_NAME)
+    assert golden["clicks"] == json.loads(json.dumps(result["clicks"])), "the CLICKS script changed"
+    assert set(golden["payload"]) == set(result["payload"]), "payload keys changed"
+
+    expected = golden["payload"]["annotations"]
+    actual = result["payload"]["annotations"]
+    expected_texts = [a["text"] for a in expected]
+    actual_texts = [a["text"] for a in actual]
+    assert actual_texts == expected_texts, f"payload texts or order changed: {actual_texts} != {expected_texts}"
+    errors = []
+    for index, (exp, act) in enumerate(zip(expected, actual)):
+        assert list(act) == list(exp), f"[{index}] payload keys or their order changed: {list(act)}"
+        for field in ("text", "fontSize", "color", "page", "canvasWidth", "canvasHeight"):
+            if exp[field] != act[field]:
+                errors.append(f"[{index}] {exp['text']!r}: {field} {exp[field]!r} -> {act[field]!r}")
+        for field in ("x", "y"):
+            if abs(exp[field] - act[field]) > tolerance_px:
+                errors.append(
+                    f"[{index}] {exp['text']!r}: {field} {exp[field]} -> {act[field]} (tolerance {tolerance_px})"
+                )
+
+    chips_expected = golden["chips"]
+    chips_actual = result["chips"]
+    assert [(c["page"], c["text"]) for c in chips_actual] == [(c["page"], c["text"]) for c in chips_expected]
+    for exp, act in zip(chips_expected, chips_actual):
+        for field in ("left", "top"):
+            if abs(exp[field] - act[field]) > tolerance_px:
+                errors.append(f"chip {exp['text']!r}: {field} {exp[field]} -> {act[field]} (tolerance {tolerance_px})")
+
+    if errors:
+        diff = unified_diff(
+            dump_lines(expected, 0), dump_lines(actual, 0), from_label="golden payload", to_label="current payload"
+        )
+        raise AssertionError("The editor calibration changed:\n" + "\n".join(errors) + "\n" + diff)
