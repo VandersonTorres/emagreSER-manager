@@ -422,11 +422,11 @@ def test_compat_wrapper_only_on_pages_not_redesigned(app: Flask, client_admin: F
     :param client_admin: Test client logged in as admin.
     """
     home = _soup(client_admin.get("/").get_data(as_text=True))
-    patients = _soup(client_admin.get(_url(app, "patients.list_patients")).get_data(as_text=True))
+    schedules = _soup(client_admin.get(_url(app, "schedules.list_schedules")).get_data(as_text=True))
 
     assert home.select_one(".app-content.compat") is None
     assert home.select_one(".app-content") is not None
-    assert patients.select_one(".app-content.compat") is not None
+    assert schedules.select_one(".app-content.compat") is not None
 
 
 def test_login_page(app: Flask, client: FlaskClient) -> None:

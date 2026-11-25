@@ -16,6 +16,7 @@ if TYPE_CHECKING:
     from playwright.sync_api import Browser, BrowserContext, Page, Route, ViewportSize
 
 DESKTOP_VIEWPORT: ViewportSize = {"width": 1366, "height": 900}
+MOBILE_VIEWPORT: ViewportSize = {"width": 390, "height": 844}
 DEFAULT_TIMEOUT_MS = 30_000
 
 
@@ -108,3 +109,38 @@ def page(context: BrowserContext) -> Page:
     :return: The new Playwright page.
     """
     return context.new_page()
+
+
+@pytest.fixture
+def mobile_context(browser: Browser) -> Iterator[BrowserContext]:
+    """Create a phone browser context (390x844, touch) that serves the synthetic A4 PDF.
+
+    :param browser: Playwright browser.
+    :return: The browser context (yielded; it is closed afterwards).
+    """
+    ctx = browser.new_context(viewport=MOBILE_VIEWPORT, device_scale_factor=1, is_mobile=True, has_touch=True)
+    ctx.set_default_timeout(DEFAULT_TIMEOUT_MS)
+    ctx.route("https://fixtures.test/**", _fulfill_fixture_pdf(make_pdf(*SIZES["a4_596x842"])))
+    yield ctx
+    ctx.close()
+
+
+@pytest.fixture
+def mobile_page(mobile_context: BrowserContext) -> Page:
+    """Open a new page in the phone context.
+
+    :param mobile_context: Playwright phone browser context.
+    :return: The new Playwright page.
+    """
+    return mobile_context.new_page()
+
+
+@pytest.fixture(params=["desktop", "mobile"])
+def device(request: pytest.FixtureRequest) -> tuple[str, Page]:
+    """Provide a page for each viewport: desktop 1366x900 and phone 390x844.
+
+    :param request: Pytest request, whose param is the viewport name.
+    :return: The viewport name and the Playwright page.
+    """
+    page = request.getfixturevalue("page" if request.param == "desktop" else "mobile_page")
+    return request.param, page

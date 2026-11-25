@@ -2,6 +2,7 @@ from datetime import datetime
 from zoneinfo import ZoneInfo
 
 from flask import Blueprint, flash, redirect, render_template, request, url_for
+from flask.typing import ResponseReturnValue
 from flask_security import current_user, roles_accepted
 from sqlalchemy import func, or_
 from sqlalchemy.exc import IntegrityError
@@ -15,7 +16,13 @@ patients_bp = Blueprint("patients", __name__)
 
 @patients_bp.route("/patients")
 @roles_accepted("admin", "secretary", "nutritionist")
-def list_patients():
+def list_patients() -> ResponseReturnValue:
+    """Render the patient list, optionally filtered by name or CPF.
+
+    Nutritionists only see their own patients. A search that matches nothing lists no patient and sets ``search_empty``.
+
+    :return: The rendered list page.
+    """
     search_query = request.args.get("search", "").strip()
     if "nutritionist" in [role.name for role in current_user.roles]:
         now = datetime.now(ZoneInfo("America/Sao_Paulo")).date()
@@ -31,7 +38,7 @@ def list_patients():
     else:
         base_query = Patients.query
 
-    search_empty = False  # flag that indicates if the search didn't find nothing
+    search_empty = False
 
     if search_query:
         filtered_patients = base_query.filter(
@@ -40,9 +47,8 @@ def list_patients():
         if filtered_patients:
             patients = filtered_patients
         else:
-            # The search didn't match
             search_empty = True
-            patients = base_query.all()
+            patients = []
     else:
         patients = base_query.all()
 
@@ -53,7 +59,13 @@ def list_patients():
 
 @patients_bp.route("/patients/add", methods=["GET", "POST"])
 @roles_accepted("admin", "secretary", "nutritionist")
-def add_patient():
+def add_patient() -> ResponseReturnValue:
+    """Show the new patient form and create the patient from the posted data.
+
+    A duplicated name or CPF flashes an explanatory message and shows the form again.
+
+    :return: The rendered form, or a redirect to the patient list after saving.
+    """
     specialists = Specialists.query.all()
     if request.method == "POST":
         try:
@@ -110,7 +122,14 @@ def add_patient():
 
 @patients_bp.route("/patients/<int:patient_id>/anthropometric/add", methods=["GET", "POST"])
 @roles_accepted("admin", "secretary", "nutritionist")
-def add_anthro(patient_id):
+def add_anthro(patient_id: int) -> ResponseReturnValue:
+    """Show the new anthropometric evaluation form of a patient and save the posted evaluation.
+
+    The form starts from the last bioimpedance measurement of the patient.
+
+    :param patient_id: Id of the patient.
+    :return: The rendered form, or a redirect to the patient record after saving.
+    """
     patient = Patients.query.get_or_404(patient_id)
     if not block_access_to_patients(
         patient=patient,
@@ -122,7 +141,6 @@ def add_anthro(patient_id):
         diet_form = DietForm()
         diet_form.name.data = form.ultima_guia.data or ""
 
-        # Search for the last anthro of the patient (except the current, if there was one)
         last_anthro = (
             AnthropometricEvaluation.query.filter_by(patient_id=patient.id)
             .order_by(AnthropometricEvaluation.data_avaliacao.desc())
@@ -133,13 +151,11 @@ def add_anthro(patient_id):
         else:
             grau_atv_fisica = ""
 
-        # Search for the last skinfolds of the patient (except the current, if there was one)
         last_skinfold = SkinFolds.query.filter_by(patient_id=patient.id).order_by(SkinFolds.data_medicao.desc()).first()
         if last_skinfold:
             ultimo_peso = last_skinfold.peso
             ultima_altura = last_skinfold.altura
             evaluation_date = last_skinfold.data_medicao
-            # Searching for the previous record to last weight
             previous_skinfold = (
                 SkinFolds.query.filter(
                     SkinFolds.patient_id == patient.id, SkinFolds.data_medicao < last_skinfold.data_medicao
@@ -196,7 +212,14 @@ def add_anthro(patient_id):
 
 @patients_bp.route("/patients/<int:patient_id>/skinfolds/add", methods=["GET", "POST"])
 @roles_accepted("admin", "secretary", "nutritionist")
-def add_skinfold(patient_id):
+def add_skinfold(patient_id: int) -> ResponseReturnValue:
+    """Show the new bioimpedance form of a patient and save the posted measurement.
+
+    The height of the first measurement is kept for the following ones.
+
+    :param patient_id: Id of the patient.
+    :return: The rendered form, or a redirect to the patient record after saving.
+    """
     patient = Patients.query.get_or_404(patient_id)
     if not block_access_to_patients(
         patient=patient,
@@ -231,7 +254,12 @@ def add_skinfold(patient_id):
 
 @patients_bp.route("/patients/edit/<int:id>", methods=["GET", "POST"])
 @roles_accepted("admin", "secretary", "nutritionist")
-def edit_patient(id):
+def edit_patient(id: int) -> ResponseReturnValue:
+    """Show the patient edit form and store the posted data.
+
+    :param id: Id of the patient.
+    :return: The rendered form, or a redirect to the patient list after saving.
+    """
     patient = Patients.query.get_or_404(id)
     if not block_access_to_patients(
         patient=patient,
@@ -243,8 +271,6 @@ def edit_patient(id):
         if request.method == "POST":
             try:
                 if form.frequency.data is None:
-                    # Even defining a default value in the model,
-                    # SQL doesn't considere this in UPDATE operations
                     form.frequency.data = 0
                 form.populate_obj(patient)
                 db.session.commit()
@@ -274,7 +300,13 @@ def edit_patient(id):
 
 @patients_bp.route("/patients/<int:patient_id>/anthro/edit/<int:evaluation_id>", methods=["GET", "POST"])
 @roles_accepted("admin", "secretary", "nutritionist")
-def edit_anthro(patient_id, evaluation_id):
+def edit_anthro(patient_id: int, evaluation_id: int) -> ResponseReturnValue:
+    """Show the evaluation edit form and store the posted values.
+
+    :param patient_id: Id of the patient.
+    :param evaluation_id: Id of the evaluation.
+    :return: The rendered form, or a redirect to the patient record after saving.
+    """
     evaluation = AnthropometricEvaluation.query.get_or_404(evaluation_id)
     form = AnthropometricAssessmentForm(obj=evaluation)
     diet_form = DietForm(name=evaluation.ultima_guia)
@@ -290,7 +322,13 @@ def edit_anthro(patient_id, evaluation_id):
 
 @patients_bp.route("/patients/<int:patient_id>/skinfolds/edit/<int:skinfold_id>", methods=["GET", "POST"])
 @roles_accepted("admin", "secretary", "nutritionist")
-def edit_skinfold(patient_id, skinfold_id):
+def edit_skinfold(patient_id: int, skinfold_id: int) -> ResponseReturnValue:
+    """Show the bioimpedance edit form and store the posted values.
+
+    :param patient_id: Id of the patient.
+    :param skinfold_id: Id of the measurement.
+    :return: The rendered form, or a redirect to the patient record after saving.
+    """
     skinfold = SkinFolds.query.get_or_404(skinfold_id)
     form = SkinfoldMeasurementForm(obj=skinfold)
     if form.validate_on_submit():
@@ -303,7 +341,14 @@ def edit_skinfold(patient_id, skinfold_id):
 
 @patients_bp.route("/patients/view/<int:id>", methods=["GET"])
 @roles_accepted("admin", "secretary", "nutritionist")
-def view_patient(id):
+def view_patient(id: int) -> ResponseReturnValue:
+    """Render the patient record with its evaluations, measurements and history.
+
+    Each evaluation is paired with the weight of the last measurement taken on or before its date.
+
+    :param id: Id of the patient.
+    :return: The rendered record.
+    """
     patient = Patients.query.get_or_404(id)
     if not block_access_to_patients(
         patient=patient,
@@ -311,7 +356,6 @@ def view_patient(id):
         msg="Acesso negado: Você só pode ver seus próprios pacientes.",
         to_redirect="patients.list_patients",
     ):
-        # Pre-processing: Map each anthro eval to the last skingfold weight available
         sorted_skinfolds = sorted(patient.skinfolds, key=lambda x: x.data_medicao)
         sorted_evals = sorted(patient.anthropometric_evaluations, key=lambda x: x.data_avaliacao)
 
@@ -320,7 +364,7 @@ def view_patient(id):
             weight = None
             for fold in sorted_skinfolds:
                 if fold.data_medicao <= eval.data_avaliacao:
-                    weight = fold.peso  # Update with the most recent eval
+                    weight = fold.peso
                 else:
                     break
             weight_per_evaluation[eval.id] = weight
@@ -332,7 +376,14 @@ def view_patient(id):
 
 @patients_bp.route("/patients/delete/<int:id>", methods=["GET", "POST"])
 @roles_accepted("admin", "secretary", "nutritionist")
-def delete_patient(id):
+def delete_patient(id: int) -> ResponseReturnValue:
+    """Ask for confirmation and remove a patient with its schedules, evaluations and measurements.
+
+    Nutritionists are refused.
+
+    :param id: Id of the patient.
+    :return: The confirmation page, or a redirect to the patient list.
+    """
     patient = Patients.query.get_or_404(id)
     if "nutritionist" in [role.name for role in current_user.roles]:
         flash("Acesso negado! Você não tem permissão para remover pacientes.", "danger")
@@ -354,7 +405,13 @@ def delete_patient(id):
 
 @patients_bp.route("/patients/<int:patient_id>/evaluation/delete/<int:evaluation_id>", methods=["POST"])
 @roles_accepted("admin", "secretary", "nutritionist")
-def delete_anthropometric_evaluation(patient_id, evaluation_id):
+def delete_anthropometric_evaluation(patient_id: int, evaluation_id: int) -> ResponseReturnValue:
+    """Remove an anthropometric evaluation of a patient.
+
+    :param patient_id: Id of the patient.
+    :param evaluation_id: Id of the evaluation.
+    :return: A redirect to the patient record.
+    """
     evaluation = AnthropometricEvaluation.query.filter_by(id=evaluation_id, patient_id=patient_id).first_or_404()
     try:
         db.session.delete(evaluation)
@@ -368,7 +425,13 @@ def delete_anthropometric_evaluation(patient_id, evaluation_id):
 
 @patients_bp.route("/patients/<int:patient_id>/skinfold/delete/<int:skinfold_id>", methods=["POST"])
 @roles_accepted("admin", "secretary", "nutritionist")
-def delete_skinfold(patient_id, skinfold_id):
+def delete_skinfold(patient_id: int, skinfold_id: int) -> ResponseReturnValue:
+    """Remove a bioimpedance measurement of a patient.
+
+    :param patient_id: Id of the patient.
+    :param skinfold_id: Id of the measurement.
+    :return: A redirect to the patient record.
+    """
     skinfold = SkinFolds.query.filter_by(id=skinfold_id, patient_id=patient_id).first_or_404()
     try:
         db.session.delete(skinfold)
@@ -382,7 +445,13 @@ def delete_skinfold(patient_id, skinfold_id):
 
 @patients_bp.route("/patients/<int:id>/view-custom-history?<pat_name>", methods=["GET", "POST"])
 @roles_accepted("admin", "secretary", "nutritionist")
-def view_custom_history(id, pat_name):
+def view_custom_history(id: int, pat_name: str) -> ResponseReturnValue:
+    """Render the printable history of a patient: summary figures, weight result and evolution chart data.
+
+    :param id: Id of the patient.
+    :param pat_name: Patient name carried in the URL; the page reads the patient by id.
+    :return: The rendered history, or the empty page when the patient has no evaluation.
+    """
     patient = Patients.query.get_or_404(id)
     if not block_access_to_patients(
         patient=patient,
@@ -433,7 +502,6 @@ def view_custom_history(id, pat_name):
                 )
             )
 
-            # Preparing data for evolution grafic
             evaluation_dates = [skinfold.data_medicao.strftime("%d/%m/%Y") for skinfold in skinfolds]
             evaluation_weights = [skinfold.peso for skinfold in skinfolds]
 

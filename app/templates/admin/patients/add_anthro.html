@@ -1,136 +1,89 @@
 {% extends "base.html" %}
+{% from "_macros.html" import page_header, field, empty_state %}
+{% from "admin/patients/_patient_macros.html" import form_section %}
+
+{% block title %}Nova avaliação · EmagreSER{% endblock %}
+
+{% block content_class %}{% endblock %}
 
 {% block content %}
+{% set record_url = url_for("patients.view_patient", id=patient.id) ~ "#avaliacoes" %}
+{{ page_header("Avaliação antropométrica", patient.name, record_url) }}
 
-<h2>Avaliação Antropométrica</h2>
-<p><strong>Paciente:</strong> {{ patient.name }}</p>
 {% if ultimo_peso %}
-<form class="add-anthro-form" method="POST" action="{{ url_for('patients.add_anthro', patient_id=patient.id) }}">
+{% set activity_help = "Na última antropometria, o Grau de Atividade Física foi avaliado como “" ~ grau_atv_fisica ~ "”." if grau_atv_fisica else none %}
+<form class="add-anthro-form" method="post" action="{{ url_for('patients.add_anthro', patient_id=patient.id) }}" data-birth-date="{{ patient.birth_date }}">
     {{ form.hidden_tag() }}
-    <label for="data_avaliacao">Data de Avaliação:</label>
-    {{ form.data_avaliacao(size=20) }}
-    <br>
-    <label for="ultima_guia">Nome da Guia:</label>
-    <select id="diet-select" name="ultima_guia">
-        {% for value, label in diet_form.name.choices %}
-        <option value="{{ value }}" {% if diet_form.name.data==value %}selected{% endif %}>{{ label }}</option>
-        {% endfor %}
-    </select>
-    <div id="other-name-field" style="display: none;">
-        <label for="other_name">Outro (especifique):</label>
-        {{ diet_form.other_name() }}
+
+    {% call form_section("Dados da avaliação", "evaluation") %}
+    <div class="col-12 col-md-6">{{ field(form.data_avaliacao) }}</div>
+    <div class="col-12 col-md-6">
+        <div class="mb-3">
+            <label class="form-label" for="diet-select">Nome da Guia</label>
+            <select class="form-select" id="diet-select" name="ultima_guia">
+                {% for value, label in diet_form.name.choices %}
+                <option value="{{ value }}" {% if diet_form.name.data == value %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+            </select>
+        </div>
     </div>
-    <br>
-    <label for="idade">Idade:</label>
-    {{ form.idade(size=5) }}
-    <br>
-    <label for="altura">Altura (m):</label>
-    <input type="number" step="0.1" class="form-control" id="altura" name="altura" value="{{ ultima_altura }}" readonly>
-    <br>
-    <label for="peso">Peso (kg):</label>
-    <input type="number" step="0.1" class="form-control" id="peso" name="peso" placeholder="Ex: 62.5" value="{{ ultimo_peso }}" readonly>
-    <span id="auto_calc_info" style="font-size: 9px; margin-left: 10px; color: #555;">
-        <strong>Última medição em {{ evaluation_date.strftime("%d/%m/%Y") }}</strong>
-    </span>
-    &nbsp;
-    <span title="Se a medição estiver desatualizada, solicite uma nova Bioimpedância antes de submeter esta avaliação." style="cursor: help;"> ℹ️ </span>
+    <div class="col-12 col-md-6" id="other-name-field" hidden>
+        <div class="mb-3">
+            <label class="form-label" for="other_name">Outro (especifique)</label>
+            {{ diet_form.other_name(class="form-control", autocomplete="off") }}
+        </div>
+    </div>
+    <div class="col-12 col-md-6">{{ field(form.idade, inputmode="numeric") }}</div>
+    <div class="col-12 col-md-6">{{ field(form.grau_atv_fisica, help=activity_help) }}</div>
+    {% endcall %}
+
+    {% call form_section("Última bioimpedância", "measure") %}
+    <div class="col-12 col-md-6">
+        <div class="mb-3">
+            <label class="form-label" for="altura">Altura (m)</label>
+            <input type="number" step="0.1" class="form-control calc-field" id="altura" name="altura" value="{{ ultima_altura }}" readonly>
+        </div>
+    </div>
+    <div class="col-12 col-md-6">
+        <div class="mb-3">
+            <label class="form-label" for="peso">Peso (kg)</label>
+            <input type="number" step="0.1" class="form-control calc-field" id="peso" name="peso" placeholder="Ex: 62.5" value="{{ ultimo_peso }}" readonly aria-describedby="peso-help">
+            <div class="form-text" id="peso-help">
+                Última medição em {{ evaluation_date.strftime("%d/%m/%Y") }}. Se estiver desatualizada, faça uma
+                <a href="{{ url_for('patients.add_skinfold', patient_id=patient.id) }}">nova bioimpedância</a> antes de salvar esta avaliação.
+            </div>
+        </div>
+    </div>
     <input type="hidden" id="peso_anterior" value="{{ peso_anterior }}">
-    <br>
-    <label for="evolucao">Evolução:</label>
-    {{ form.evolucao(class="form-control", id="evolucao", readonly=True) }}
-    <span id="auto_calc_info" style="font-size: 9px; margin-left: 10px; color: #555;">
-        Calculado automaticamente
-    </span>
-    <br>
-    <label for="p_max">Peso Máximo:</label>
-    {{ form.p_max(step="0.1", class="form-control", id="p_max", readonly=True) }}
-    <span id="auto_calc_info" style="font-size: 9px; margin-left: 10px; color: #555;">
-        Calculado automaticamente
-    </span>
-    <br>
-    <label for="p_ide">Peso Ideal:</label>
-    {{ form.p_ide(step="0.1", class="form-control", id="p_ide", readonly=True) }}
-    <span id="auto_calc_info" style="font-size: 9px; margin-left: 10px; color: #555;">
-        Calculado automaticamente
-    </span>
-    <br>
-    <label for="p_min">Peso Mínimo:</label>
-    {{ form.p_min(step="0.1", class="form-control", id="p_min", readonly=True) }}
-    <span id="auto_calc_info" style="font-size: 9px; margin-left: 10px; color: #555;">
-        Calculado automaticamente
-    </span>
-    <br>
-    <label for="imc">IMC:</label>
-    {{ form.imc(step="0.01", class="form-control", id="imc", readonly=True) }}
-    <span id="auto_calc_info" style="font-size: 9px; margin-left: 10px; color: #555;">
-        Calculado automaticamente
-    </span>
-    <br>
-    <label for="nutri_class">Classificação Nutricional:</label>
-    {{ form.nutri_class(class="form-control", id="nutri_class", readonly=True) }}
-    <span id="auto_calc_info" style="font-size: 9px; margin-left: 10px; color: #555;">
-        Calculado automaticamente
-    </span>
-    <br>
-    <label for="necessidade_calorica">Necessidade Calórica:</label>
-    {{ form.necessidade_calorica(class="form-control", id="necessidade_calorica", readonly=True) }}
-    <span id="auto_calc_necessidade_calorica" style="font-size: 9px; margin-left: 10px; color: #555;">
-        Calculado automaticamente
-    </span>
-    <br>
-    <label for="ingestao_liquido">Ingestão de Líquido:</label>
-    {{ form.ingestao_liquido(class="form-control", id="ingestao_liquido", readonly=True) }}
-    <span id="auto_calc_ingestao_liquido" style="font-size: 9px; margin-left: 10px; color: #555;">
-        Calculado automaticamente
-    </span>
-    <br>
-    <label for="grau_atv_fisica">Grau de Atividade Física:</label>
-    {{ form.grau_atv_fisica() }}
-    {% if grau_atv_fisica %}
-    <span style="font-size: 9px; margin-left: 10px; color: #555;">
-        Na última antropometria, o Grau de Atividade Física foi avaliado como "{{ grau_atv_fisica }}"
-    </span>
-    {% endif %}
-    <br><br>
-    <button type="submit">Salvar Avaliação</button>
+    {% endcall %}
+
+    {% call form_section("Resultados calculados", "results") %}
+    <div class="col-12 col-md-6">{{ field(form.evolucao, readonly=True, class="calc-field", help="Calculado automaticamente") }}</div>
+    <div class="col-12 col-md-6">{{ field(form.imc, readonly=True, class="calc-field", help="Calculado automaticamente") }}</div>
+    <div class="col-12 col-md-6">{{ field(form.nutri_class, readonly=True, class="calc-field", help="Calculado automaticamente") }}</div>
+    <div class="col-12 col-md-6">{{ field(form.necessidade_calorica, readonly=True, class="calc-field", help="Calculado automaticamente") }}</div>
+    <div class="col-12 col-md-6">{{ field(form.p_max, readonly=True, class="calc-field", help="Calculado automaticamente") }}</div>
+    <div class="col-12 col-md-6">{{ field(form.p_ide, readonly=True, class="calc-field", help="Calculado automaticamente") }}</div>
+    <div class="col-12 col-md-6">{{ field(form.p_min, readonly=True, class="calc-field", help="Calculado automaticamente") }}</div>
+    <div class="col-12 col-md-6">{{ field(form.ingestao_liquido, readonly=True, class="calc-field", help="Calculado automaticamente") }}</div>
+    {% endcall %}
+
+    <div class="form-actions">
+        <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg" aria-hidden="true"></i> Salvar avaliação</button>
+        <a class="btn btn-outline-secondary" href="{{ record_url }}">Cancelar</a>
+    </div>
 </form>
 {% else %}
-<h3>Este paciente ainda não passou pela avaliação de Bioimpedância.</h3>
-<a class="add-skinfold-button" href="{{ url_for('patients.add_skinfold', patient_id=patient.id) }}">Realizar Avaliação de Bioimpedância</a>
-{% endif %}
-
-<hr>
-<br>
-<div class="nav-actions">
-    <a class="back-button" href="{{ url_for('patients.list_patients') }}">🔙 Voltar</a>
+<div class="card">
+    {{ empty_state("rulers", "Este paciente ainda não passou pela avaliação de bioimpedância", "A avaliação usa o peso e a altura da última medição. Faça a bioimpedância primeiro.", url_for("patients.add_skinfold", patient_id=patient.id), "Realizar avaliação de bioimpedância") }}
 </div>
+{% endif %}
+{% endblock %}
 
+{% block scripts %}
+{% if ultimo_peso %}
 <script src="{{ url_for('static', filename='js/add_diet.js') }}"></script>
 <script src="{{ url_for('static', filename='js/automate_anthro_fields.js') }}"></script>
-<script>
-    // Script to automatically calculates the age of the Patient
-    // Needs being here due to jinja's sintax
-    document.addEventListener("DOMContentLoaded", function () {
-        function calculateAge() {
-            const birthDate = "{{ patient.birth_date }}";
-            const dataAvaliacao = document.getElementById("data_avaliacao").value;
-            if (birthDate && dataAvaliacao) {
-                const birth = new Date(birthDate);
-                const evaluation = new Date(dataAvaliacao);
-                let years_old = evaluation.getFullYear() - birth.getFullYear();
-                const current_month = evaluation.getMonth();
-                const born_month = birth.getMonth();
-                if (current_month < born_month || (current_month === born_month && evaluation.getDate() < birth.getDate())) {
-                    years_old--;
-                }
-                document.getElementById("idade").value = years_old;
-            }
-        }
-
-        // When the evaluation date is filled, automatically fill age field
-        document.getElementById("data_avaliacao").addEventListener("change", calculateAge);
-        calculateAge();
-    });
-</script>
-
+<script src="{{ url_for('static', filename='js/anthro_age.js') }}"></script>
+{% endif %}
 {% endblock %}

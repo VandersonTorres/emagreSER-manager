@@ -96,6 +96,30 @@ for visual review; without it nothing is written:
 SCREENSHOT_DIR=/tmp/ui-screens .venv/bin/python -m pytest -m e2e tests/e2e/test_responsive_layout.py
 ```
 
+## Patient page tests
+
+The patient pages were redesigned without changing what their forms send, what the calculation script computes or who
+can do what. `patient_cases.py` holds the records and input sets (a complete patient, a fixed evaluation and
+measurement, eight evaluation cases from child to elderly and from low to high BMI, blood pressure and weight inputs),
+and `patient_baselines.py` holds what the pages before the redesign sent, computed and stored for those inputs. It was
+recorded in Chrome from the previous pages and is only data: do not edit it by hand.
+
+`test_patient_forms.py` (no browser) checks, for every form page, the submitted field names and the rendered values
+against the baseline (with and without the CSRF token), the round trip of the edit page (open, change one field, save:
+only that column changes), the creation of a patient with every field and the values stored by the evaluation and
+measurement forms. `form_helpers.py` reads what a browser would submit from the HTML. `test_patient_pages.py` covers
+the markup: the list (data, "⋯" menu, contact links, `Remover` hidden from nutritionists), the search and its empty
+states, the record (header, accessible tabs and hash keys, 14 and 11 column tables, delete forms with confirmation,
+pinned Chart.js with its integrity hash), the custom history, the delete confirmation, labels, input types, back links,
+and that templates and scripts carry no comments.
+
+`e2e/test_patient_pages.py` replays the calculation cases in Chrome (every computed field, the age, the blood pressure
+and weight normalization, and the stored rows), opens every patient page on both viewports looking for script errors and
+sideways scroll, and covers the phone list, the pagination with more than one page of temporary patients, the search,
+the shortcuts, the new patient form, the edit page, the record tabs with the URL hash, tables turning into cards, the
+weight charts and the delete confirmations. `case_patients` and `complete_patient` (in `conftest.py`) create temporary
+rows and remove them afterwards.
+
 ## Backup tests
 
 `test_backup.py` covers the database backup without PostgreSQL (the test database is SQLite): the superuser list

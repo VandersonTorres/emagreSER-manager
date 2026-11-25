@@ -1,0 +1,587 @@
+"""Form contract of the patient pages: names and values they submit, and what the views store from them."""
+
+from collections.abc import Callable
+from datetime import date
+from typing import Any
+
+import pytest
+from flask import Flask, url_for
+from flask.testing import FlaskClient
+from sqlalchemy import func
+
+from app.models import AnthropometricEvaluation, Patients, SkinFolds, Specialists, db
+from tests.aliases import SeedData
+from tests.form_helpers import changed_columns, form_entries, form_names, row_values
+from tests.patient_baselines import (
+    ANTHRO_ADD_EXPECTED,
+    ANTHRO_EDIT_EXPECTED,
+    EDIT_PATIENT_DIFFS,
+    FORM_FIELD_NAMES,
+    FORM_VALUES,
+    PAGES_WITH_CSRF_TOKEN,
+    SKINFOLD_ADD_EXPECTED,
+    SKINFOLD_EDIT_EXPECTED,
+    STORED_NEW_PATIENT,
+)
+from tests.patient_cases import (
+    ANTHRO_ADD_CASES,
+    ANTHRO_COLUMNS,
+    ANTHRO_EDIT_CASES,
+    NO_SPECIALIST_PATIENT,
+    PATIENT_COLUMNS,
+    SECONDS_PATIENT,
+    SKINFOLD_ADD_CASES,
+    SKINFOLD_COLUMNS,
+    SKINFOLD_EDIT_CASES,
+    AnthroAddCase,
+    AnthroEditCase,
+    SkinfoldAddCase,
+    SkinfoldEditCase,
+)
+from tests.test_csrf_rendering import csrf_on  # noqa: F401
+
+SCRIPT_COMPUTED = {
+    "add_anthro": {
+        "idade",
+        "evolucao",
+        "p_max",
+        "p_ide",
+        "p_min",
+        "imc",
+        "nutri_class",
+        "necessidade_calorica",
+        "ingestao_liquido",
+    },
+    "edit_anthro": {"idade"},
+}
+ADMIN_NAME = "Usuario Teste admin"
+
+
+def _url(app: Flask, endpoint: str, **values: int | str) -> str:
+    """Build a URL path outside a request.
+
+    :param app: Flask application.
+    :param endpoint: Flask endpoint name.
+    :param values: Arguments passed to url_for.
+    :return: The URL path.
+    """
+    with app.test_request_context():
+        return url_for(endpoint, **values)
+
+
+def _html(client: FlaskClient, url: str) -> str:
+    """Open a page that must answer 200.
+
+    :param client: Test client.
+    :param url: URL path of the page.
+    :return: The HTML of the page.
+    """
+    response = client.get(url)
+    assert response.status_code == 200, f"GET {url}: {response.status_code}"
+    return response.get_data(as_text=True)
+
+
+def _post_values(client: FlaskClient, url: str, selector: str, overrides: dict[str, str]) -> dict[str, str]:
+    """Build what a browser posts for a form: the rendered values with the user's changes on top.
+
+    :param client: Test client.
+    :param url: URL path of the page with the form.
+    :param selector: CSS selector of the form.
+    :param overrides: Values typed or computed by the page scripts, by field name.
+    :return: The data to post.
+    """
+    data = dict(form_entries(_html(client, url), selector))
+    data.update(overrides)
+    return data
+
+
+def _snapshot(app: Flask, model: type[db.Model], row_id: int, columns: tuple[str, ...]) -> dict[str, Any]:
+    """Read the stored columns of a row.
+
+    :param app: Flask application.
+    :param model: Model of the row.
+    :param row_id: Id of the row.
+    :param columns: Columns to read.
+    :return: The column values by name.
+    """
+    with app.app_context():
+        return row_values(db.session.get(model, row_id), columns)
+
+
+@pytest.fixture
+def pages(app: Flask, seed: SeedData, complete_patient: dict[str, int]) -> dict[str, tuple[str, str]]:
+    """Map each form page of the patient area to its URL and form selector.
+
+    :param app: Flask application.
+    :param seed: Ids of the fake records.
+    :param complete_patient: Ids of the patient with every field filled and its records.
+    :return: The (URL path, form selector) of each page, keyed by the name used in the baselines.
+    """
+    patient = int(seed["patient_nutritionist"])
+    other = int(seed["patient_other"])
+    complete = complete_patient["patient"]
+    return {
+        "add_patient": (_url(app, "patients.add_patient"), "form.add-patient-form"),
+        "edit_patient": (_url(app, "patients.edit_patient", id=patient), "form.edit-patient-form"),
+        "add_anthro": (_url(app, "patients.add_anthro", patient_id=patient), "form.add-anthro-form"),
+        "edit_anthro": (
+            _url(app, "patients.edit_anthro", patient_id=complete, evaluation_id=complete_patient["evaluation"]),
+            "form.edit-anthro-form",
+        ),
+        "add_skinfold": (_url(app, "patients.add_skinfold", patient_id=patient), "form.add-skinfold-form"),
+        "edit_skinfold": (
+            _url(app, "patients.edit_skinfold", patient_id=complete, skinfold_id=complete_patient["skinfold"]),
+            "form.edit-skinfold-form",
+        ),
+        "delete_patient": (_url(app, "patients.delete_patient", id=other), ".confirm-card form"),
+        "search": (_url(app, "patients.list_patients"), "form.patient-search"),
+        "quick_anthro": (_url(app, "patients.list_patients"), "#anthro-form"),
+        "quick_skinfold": (_url(app, "patients.list_patients"), "#skinfold-form"),
+        "delete_evaluation": (_url(app, "patients.view_patient", id=complete), "form[action*='/evaluation/delete/']"),
+        "delete_skinfold": (_url(app, "patients.view_patient", id=complete), "form[action*='/skinfold/delete/']"),
+    }
+
+
+@pytest.mark.parametrize("page", sorted(FORM_FIELD_NAMES))
+def test_form_submits_the_recorded_field_names(
+    client_admin: FlaskClient, pages: dict[str, tuple[str, str]], page: str
+) -> None:
+    """Check that each form sends exactly the field names recorded before the redesign.
+
+    :param client_admin: Test client logged in as admin.
+    :param pages: URL and form selector of each page.
+    :param page: Name of the page under test.
+    """
+    url, selector = pages[page]
+
+    names = form_names(_html(client_admin, url), selector)
+
+    assert names == sorted(FORM_FIELD_NAMES[page]), page
+
+
+@pytest.mark.usefixtures("csrf_on")
+@pytest.mark.parametrize("page", sorted(FORM_FIELD_NAMES))
+def test_form_carries_the_csrf_token_as_before(
+    client_admin: FlaskClient, pages: dict[str, tuple[str, str]], page: str
+) -> None:
+    """Check that, with CSRF protection on, the forms that had the token keep it and the others stay as they were.
+
+    :param client_admin: Test client logged in as admin.
+    :param pages: URL and form selector of each page.
+    :param page: Name of the page under test.
+    """
+    url, selector = pages[page]
+
+    names = form_names(_html(client_admin, url), selector)
+
+    assert ("csrf_token" in names) is (page in PAGES_WITH_CSRF_TOKEN), page
+    assert [name for name in names if name != "csrf_token"] == sorted(FORM_FIELD_NAMES[page])
+
+
+def test_pages_are_listed_in_the_baseline(pages: dict[str, tuple[str, str]]) -> None:
+    """Check that every form page of the area has a recorded baseline and the other way round.
+
+    :param pages: URL and form selector of each page.
+    """
+    assert sorted(pages) == sorted(FORM_FIELD_NAMES)
+
+
+def _expected_values(key: str, page: str, **replace: str) -> dict[str, str]:
+    """Take the recorded values of a form without the fields a script computes in the browser.
+
+    :param key: Key of the recorded values.
+    :param page: Page name, used to look up the script computed fields.
+    :param replace: Fields whose value depends on the seed, by name.
+    :return: The values the page itself renders.
+    """
+    skipped = SCRIPT_COMPUTED.get(page, set())
+    values = {name: value for name, value in FORM_VALUES[key].items() if name not in skipped}
+    values.update(replace)
+    return values
+
+
+def _rendered_values(
+    client: FlaskClient, pages: dict[str, tuple[str, str]], page: str, page_key: str
+) -> dict[str, str]:
+    """Read the values a page renders for a form, without the fields a script computes in the browser.
+
+    :param client: Test client.
+    :param pages: URL and form selector of each page.
+    :param page: Name of the page.
+    :param page_key: Key of the page in the baseline, used to look up the script computed fields.
+    :return: The rendered values by field name.
+    """
+    url, selector = pages[page]
+    skipped = SCRIPT_COMPUTED.get(page_key, set())
+    return {name: value for name, value in form_entries(_html(client, url), selector) if name not in skipped}
+
+
+def test_add_patient_form_starts_as_before(client_admin: FlaskClient, pages: dict[str, tuple[str, str]]) -> None:
+    """Check the initial values of the new patient form: everything empty and the frequency at zero.
+
+    :param client_admin: Test client logged in as admin.
+    :param pages: URL and form selector of each page.
+    """
+    values = _rendered_values(client_admin, pages, "add_patient", "add_patient")
+
+    assert values == _expected_values("add_patient_initial", "add_patient")
+
+
+def test_edit_patient_form_keeps_the_values_of_a_record(
+    client_admin: FlaskClient, pages: dict[str, tuple[str, str]], seed: SeedData
+) -> None:
+    """Check that the edit form of the seeded patient renders the same values as before.
+
+    :param client_admin: Test client logged in as admin.
+    :param pages: URL and form selector of each page.
+    :param seed: Ids of the fake records.
+    """
+    values = _rendered_values(client_admin, pages, "edit_patient", "edit_patient")
+
+    assert values == _expected_values(
+        "edit_patient_seed", "edit_patient", specialist_id=str(seed["specialist_nutritionist"])
+    )
+
+
+def test_edit_patient_form_keeps_the_values_of_a_complete_record(
+    app: Flask, client_admin: FlaskClient, complete_patient: dict[str, int], seed: SeedData
+) -> None:
+    """Check that a patient with every field filled renders the same values as before, hours included.
+
+    :param app: Flask application.
+    :param client_admin: Test client logged in as admin.
+    :param complete_patient: Ids of the patient with every field filled and its records.
+    :param seed: Ids of the fake records.
+    """
+    url = _url(app, "patients.edit_patient", id=complete_patient["patient"])
+
+    values = dict(form_entries(_html(client_admin, url), "form.edit-patient-form"))
+
+    assert values == _expected_values(
+        "edit_patient_complete", "edit_patient", specialist_id=str(seed["specialist_other"])
+    )
+
+
+def test_edit_patient_form_keeps_the_values_of_special_records(
+    app: Flask, client_admin: FlaskClient, case_patients: Callable[..., int], seed: SeedData
+) -> None:
+    """Check the edit form of a patient with seconds in the hour and of one without specialist, e-mail and CPF.
+
+    The patient without specialist shows the first one, as the browser selects the first option.
+
+    :param app: Flask application.
+    :param client_admin: Test client logged in as admin.
+    :param case_patients: Factory of temporary patients.
+    :param seed: Ids of the fake records.
+    """
+    seconds = case_patients(**SECONDS_PATIENT, specialist="specialist_other")
+    nospec = case_patients(**NO_SPECIALIST_PATIENT, specialist=None)
+
+    for patient_id, key, specialist_id in (
+        (seconds, "edit_patient_seconds", int(seed["specialist_other"])),
+        (nospec, "edit_patient_nospec", _first_specialist_id(app)),
+    ):
+        url = _url(app, "patients.edit_patient", id=patient_id)
+        values = dict(form_entries(_html(client_admin, url), "form.edit-patient-form"))
+        assert values == _expected_values(key, "edit_patient", specialist_id=str(specialist_id)), key
+
+
+def _first_specialist_id(app: Flask) -> int:
+    """Find the id of the first specialist, which a browser selects when a patient has none.
+
+    :param app: Flask application.
+    :return: The lowest specialist id.
+    """
+    with app.app_context():
+        return int(db.session.query(func.min(Specialists.id)).scalar())
+
+
+def test_anthro_forms_keep_the_values_the_server_renders(
+    client_admin: FlaskClient, pages: dict[str, tuple[str, str]]
+) -> None:
+    """Check the values the new and edit evaluation forms render before their scripts compute anything.
+
+    :param client_admin: Test client logged in as admin.
+    :param pages: URL and form selector of each page.
+    """
+    add_values = _rendered_values(client_admin, pages, "add_anthro", "add_anthro")
+    edit_values = _rendered_values(client_admin, pages, "edit_anthro", "edit_anthro")
+
+    assert add_values == _expected_values("add_anthro_initial", "add_anthro")
+    assert edit_values == _expected_values("edit_anthro_fixed", "edit_anthro")
+
+
+def test_skinfold_forms_keep_the_values_the_server_renders(
+    app: Flask, client_admin: FlaskClient, pages: dict[str, tuple[str, str]], seed: SeedData
+) -> None:
+    """Check the values of the new bioimpedance form (with and without an earlier measurement) and of the edit form.
+
+    :param app: Flask application.
+    :param client_admin: Test client logged in as admin.
+    :param pages: URL and form selector of each page.
+    :param seed: Ids of the fake records.
+    """
+    first_url = _url(app, "patients.add_skinfold", patient_id=int(seed["patient_schedule"]))
+
+    existing = _rendered_values(client_admin, pages, "add_skinfold", "add_skinfold")
+    first = dict(form_entries(_html(client_admin, first_url), "form.add-skinfold-form"))
+    edit = _rendered_values(client_admin, pages, "edit_skinfold", "edit_skinfold")
+
+    assert existing == FORM_VALUES["add_skinfold_existing"]
+    assert first == FORM_VALUES["add_skinfold_first"]
+    assert edit == FORM_VALUES["edit_skinfold_fixed"]
+
+
+@pytest.fixture
+def edit_target(app: Flask, case_patients: Callable[..., int]) -> int:
+    """Create a temporary patient the edit tests may change freely, with every field filled.
+
+    :param app: Flask application.
+    :param case_patients: Factory of temporary patients.
+    :return: The id of the patient.
+    """
+    from tests.patient_cases import COMPLETE_PATIENT
+
+    return case_patients(**{**COMPLETE_PATIENT, "name": "Paciente Edicao Completo", "cpf": "333.666.999-57"})
+
+
+@pytest.mark.parametrize(
+    "field, value, key",
+    [
+        ("objective", "Objetivo alterado", "complete_objective"),
+        ("water", "3.5", "complete_water"),
+        ("intestine", "9", "complete_intestine"),
+        ("email", "novo.email@example.com", "complete_email"),
+    ],
+)
+def test_editing_one_field_changes_only_that_field(
+    app: Flask, client_admin: FlaskClient, edit_target: int, field: str, value: str, key: str
+) -> None:
+    """Check the round trip of the edit page: open it, change one field and save, and only that field changes.
+
+    :param app: Flask application.
+    :param client_admin: Test client logged in as admin.
+    :param edit_target: Id of the temporary patient.
+    :param field: Field to change.
+    :param value: New value typed in the field.
+    :param key: Key of the recorded change.
+    """
+    url = _url(app, "patients.edit_patient", id=edit_target)
+    before = _snapshot(app, Patients, edit_target, PATIENT_COLUMNS)
+
+    response = client_admin.post(url, data=_post_values(client_admin, url, "form.edit-patient-form", {field: value}))
+
+    assert response.status_code == 302
+    assert response.headers["Location"].endswith(_url(app, "patients.list_patients"))
+    diff = changed_columns(before, _snapshot(app, Patients, edit_target, PATIENT_COLUMNS))
+    assert diff == EDIT_PATIENT_DIFFS[key]
+    assert list(diff) == [field]
+
+
+def test_saving_the_edit_page_without_changes_keeps_the_data(
+    app: Flask, client_admin: FlaskClient, edit_target: int
+) -> None:
+    """Check that saving a complete record untouched changes nothing.
+
+    :param app: Flask application.
+    :param client_admin: Test client logged in as admin.
+    :param edit_target: Id of the temporary patient.
+    """
+    url = _url(app, "patients.edit_patient", id=edit_target)
+    before = _snapshot(app, Patients, edit_target, PATIENT_COLUMNS)
+
+    client_admin.post(url, data=_post_values(client_admin, url, "form.edit-patient-form", {}))
+
+    assert changed_columns(before, _snapshot(app, Patients, edit_target, PATIENT_COLUMNS)) == {}
+    assert EDIT_PATIENT_DIFFS["complete_unchanged"] == {}
+
+
+def test_saving_records_with_empty_fields_normalizes_them_as_before(
+    app: Flask, client_admin: FlaskClient, case_patients: Callable[..., int]
+) -> None:
+    """Check what an untouched save writes for records with missing data, which the old page also wrote.
+
+    Empty texts become empty strings, hours lose their seconds and a patient without specialist gets the first one.
+
+    :param app: Flask application.
+    :param client_admin: Test client logged in as admin.
+    :param case_patients: Factory of temporary patients.
+    """
+    plain = case_patients("Paciente Campos Nulos", cpf="000.000.000-77", email="nulos@test.local")
+    seconds = case_patients(**SECONDS_PATIENT, specialist="specialist_other")
+    nospec = case_patients(**{**NO_SPECIALIST_PATIENT, "name": "Paciente Sem Profissional Dois"}, specialist=None)
+
+    results = {}
+    for label, patient_id in (("seed", plain), ("seconds", seconds), ("nospec", nospec)):
+        url = _url(app, "patients.edit_patient", id=patient_id)
+        before = _snapshot(app, Patients, patient_id, PATIENT_COLUMNS)
+        client_admin.post(url, data=_post_values(client_admin, url, "form.edit-patient-form", {}))
+        results[label] = changed_columns(before, _snapshot(app, Patients, patient_id, PATIENT_COLUMNS))
+
+    assert results["seed"] == EDIT_PATIENT_DIFFS["seed_unchanged"]
+    assert results["seconds"] == EDIT_PATIENT_DIFFS["seconds_unchanged"]
+    assert results["nospec"] == {
+        **EDIT_PATIENT_DIFFS["nospec_unchanged"],
+        "specialist_id": [None, _first_specialist_id(app)],
+    }
+
+
+@pytest.mark.parametrize("variant", ["sim", "nao"])
+def test_new_patient_is_created_with_every_field(
+    app: Flask, client_admin: FlaskClient, seed: SeedData, variant: str
+) -> None:
+    """Check that the new patient form creates a patient with every field, with and without the conditional answers.
+
+    :param app: Flask application.
+    :param client_admin: Test client logged in as admin.
+    :param seed: Ids of the fake records.
+    :param variant: Which recorded patient to post.
+    """
+    stored = STORED_NEW_PATIENT[variant]
+    url = _url(app, "patients.add_patient")
+    data = {key: "" if value is None else str(value) for key, value in stored.items()}
+    data["phone"] = data.pop("tel_number")
+    data["specialist"] = str(seed["specialist_other"])
+    data["hours"] = data["hours"][:5]
+
+    try:
+        response = client_admin.post(url, data=_post_values(client_admin, url, "form.add-patient-form", data))
+
+        assert response.status_code == 302
+        with app.app_context():
+            patient = Patients.query.filter_by(name=stored["name"]).one()
+            snapshot = row_values(patient, PATIENT_COLUMNS)
+        assert snapshot.pop("specialist_id") == int(seed["specialist_other"])
+        assert snapshot == stored
+    finally:
+        with app.app_context():
+            Patients.query.filter_by(name=stored["name"]).delete(synchronize_session=False)
+            db.session.commit()
+
+
+@pytest.mark.parametrize("case", ANTHRO_ADD_CASES, ids=lambda case: case.key)
+def test_new_evaluation_stores_the_recorded_values(
+    app: Flask,
+    client_admin: FlaskClient,
+    case_patients: Callable[..., int],
+    case: AnthroAddCase,
+) -> None:
+    """Check that posting the values the old page computed stores the same evaluation as before.
+
+    :param app: Flask application.
+    :param client_admin: Test client logged in as admin.
+    :param case_patients: Factory of temporary patients.
+    :param case: Input set under test.
+    """
+    skinfolds = [row for row in (case.previous, case.last) if row]
+    patient_id = case_patients(f"Caso {case.key}", case.gender, case.birth_date, skinfolds)
+    expected = ANTHRO_ADD_EXPECTED[case.key]
+    url = _url(app, "patients.add_anthro", patient_id=patient_id)
+    computed = {name: value for name, value in expected["after_date"].items() if name != "peso_anterior"}
+    overrides = {
+        **computed,
+        "data_avaliacao": case.evaluation_date,
+        "ultima_guia": case.diet,
+        "other_name": case.other_name,
+        "grau_atv_fisica": "Moderado",
+    }
+
+    response = client_admin.post(url, data=_post_values(client_admin, url, "form.add-anthro-form", overrides))
+
+    assert response.status_code == 302
+    with app.app_context():
+        rows = AnthropometricEvaluation.query.filter_by(patient_id=patient_id).all()
+        assert len(rows) == expected["stored_count"] == 1
+        assert row_values(rows[0], ANTHRO_COLUMNS) == expected["stored"]
+
+
+@pytest.mark.parametrize("case", ANTHRO_EDIT_CASES, ids=lambda case: case.key)
+def test_edited_evaluation_stores_the_recorded_values(
+    app: Flask, client_admin: FlaskClient, complete_patient: dict[str, int], case: AnthroEditCase
+) -> None:
+    """Check that saving an evaluation edit changes the same columns as the old page did.
+
+    :param app: Flask application.
+    :param client_admin: Test client logged in as admin.
+    :param complete_patient: Ids of the patient with every field filled and its records.
+    :param case: Input set under test.
+    """
+    with app.app_context():
+        row = AnthropometricEvaluation(patient_id=complete_patient["patient"], **case.stored)
+        db.session.add(row)
+        db.session.commit()
+        evaluation_id = row.id
+    expected = ANTHRO_EDIT_EXPECTED[case.key]
+    url = _url(app, "patients.edit_anthro", patient_id=complete_patient["patient"], evaluation_id=evaluation_id)
+    overrides = {"idade": expected.get("after_date", expected["load"])["idade"]}
+    if case.new_date:
+        overrides["data_avaliacao"] = case.new_date
+    if case.diet:
+        overrides.update({"name": case.diet, "other_name": case.other_name})
+    before = _snapshot(app, AnthropometricEvaluation, evaluation_id, ANTHRO_COLUMNS)
+
+    response = client_admin.post(url, data=_post_values(client_admin, url, "form.edit-anthro-form", overrides))
+
+    assert response.status_code == 302
+    after = _snapshot(app, AnthropometricEvaluation, evaluation_id, ANTHRO_COLUMNS)
+    assert changed_columns(before, after) == expected["diff"]
+
+
+@pytest.mark.parametrize(
+    "case", [case for case in SKINFOLD_ADD_CASES if case.key != "invalid_pressure_blocked"], ids=lambda case: case.key
+)
+def test_new_measurement_stores_the_recorded_values(
+    app: Flask, client_admin: FlaskClient, case_patients: Callable[..., int], case: SkinfoldAddCase
+) -> None:
+    """Check that posting the values typed in the old page stores the same measurement as before.
+
+    :param app: Flask application.
+    :param client_admin: Test client logged in as admin.
+    :param case_patients: Factory of temporary patients.
+    :param case: Input set under test.
+    """
+    previous = [] if case.previous_height is None else [(date(2026, 8, 1), 80.0, case.previous_height)]
+    patient_id = case_patients(f"Caso sk_{case.key}", skinfolds=previous)
+    expected = SKINFOLD_ADD_EXPECTED[case.key]
+    url = _url(app, "patients.add_skinfold", patient_id=patient_id)
+    overrides = {
+        "data_medicao": "2026-11-20",
+        "altura": expected["typed"]["altura"],
+        "peso": expected["typed"]["peso"],
+        "pa": expected["typed"]["pa"],
+    }
+
+    response = client_admin.post(url, data=_post_values(client_admin, url, "form.add-skinfold-form", overrides))
+
+    assert response.status_code == 302
+    with app.app_context():
+        rows = SkinFolds.query.filter_by(patient_id=patient_id).order_by(SkinFolds.id).all()
+        assert [row_values(row, SKINFOLD_COLUMNS) for row in rows] == expected["stored"]
+
+
+@pytest.mark.parametrize("case", SKINFOLD_EDIT_CASES, ids=lambda case: case.key)
+def test_edited_measurement_stores_the_recorded_values(
+    app: Flask, client_admin: FlaskClient, complete_patient: dict[str, int], case: SkinfoldEditCase
+) -> None:
+    """Check that saving a measurement edit changes the same columns as the old page did.
+
+    :param app: Flask application.
+    :param client_admin: Test client logged in as admin.
+    :param complete_patient: Ids of the patient with every field filled and its records.
+    :param case: Input set under test.
+    """
+    with app.app_context():
+        row = SkinFolds(patient_id=complete_patient["patient"], **case.stored)
+        db.session.add(row)
+        db.session.commit()
+        skinfold_id = row.id
+    expected = SKINFOLD_EDIT_EXPECTED[case.key]
+    url = _url(app, "patients.edit_skinfold", patient_id=complete_patient["patient"], skinfold_id=skinfold_id)
+    overrides = {"altura": expected["load"]["altura"], **expected["typed"]}
+    before = _snapshot(app, SkinFolds, skinfold_id, SKINFOLD_COLUMNS)
+
+    response = client_admin.post(url, data=_post_values(client_admin, url, "form.edit-skinfold-form", overrides))
+
+    assert response.status_code == 302
+    after = _snapshot(app, SkinFolds, skinfold_id, SKINFOLD_COLUMNS)
+    assert changed_columns(before, after) == expected["diff"]

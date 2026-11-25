@@ -8,7 +8,7 @@ from __future__ import annotations
 import os
 import re
 import zipfile
-from collections.abc import Callable, Iterator
+from collections.abc import Callable
 from dataclasses import dataclass
 from pathlib import Path
 from typing import TYPE_CHECKING
@@ -19,20 +19,17 @@ from flask import Flask, url_for
 from tests.aliases import SeedData
 from tests.constants import EMAILS, NUTRITIONIST_USERNAME, TEST_PASSWORD
 from tests.e2e import classic_editor_driver
-from tests.e2e.conftest import DEFAULT_TIMEOUT_MS, _fulfill_fixture_pdf
-from tests.pdf_fixtures import SIZES, make_pdf
 
 if TYPE_CHECKING:
-    from playwright.sync_api import Browser, BrowserContext, Page, ViewportSize
+    from playwright.sync_api import Page
 
 pytestmark = pytest.mark.e2e
 
-MOBILE_VIEWPORT: ViewportSize = {"width": 390, "height": 844}
 SCREENSHOT_ENV = "SCREENSHOT_DIR"
 OPEN_MENU = "Abrir menu de navegação"
 CLOSE_MENU = "Fechar menu de navegação"
 SHOWN_CLASS = re.compile(r"(^|\s)show(\s|$)")
-KNOWN_PAGE_ERRORS = {"patients is not defined"}
+KNOWN_PAGE_ERRORS: set[str] = set()
 
 
 @dataclass(frozen=True)
@@ -51,41 +48,6 @@ class Screen:
     path: str
     status: int = 200
     ready: str = "main#main-content"
-
-
-@pytest.fixture
-def mobile_context(browser: Browser) -> Iterator[BrowserContext]:
-    """Create a phone browser context (390x844, touch) that serves the synthetic A4 PDF.
-
-    :param browser: Playwright browser.
-    :return: The browser context (yielded; it is closed afterwards).
-    """
-    ctx = browser.new_context(viewport=MOBILE_VIEWPORT, device_scale_factor=1, is_mobile=True, has_touch=True)
-    ctx.set_default_timeout(DEFAULT_TIMEOUT_MS)
-    ctx.route("https://fixtures.test/**", _fulfill_fixture_pdf(make_pdf(*SIZES["a4_596x842"])))
-    yield ctx
-    ctx.close()
-
-
-@pytest.fixture
-def mobile_page(mobile_context: BrowserContext) -> Page:
-    """Open a new page in the phone context.
-
-    :param mobile_context: Playwright phone browser context.
-    :return: The new Playwright page.
-    """
-    return mobile_context.new_page()
-
-
-@pytest.fixture(params=["desktop", "mobile"])
-def device(request: pytest.FixtureRequest) -> tuple[str, Page]:
-    """Provide a page for each viewport: desktop 1366x900 and phone 390x844.
-
-    :param request: Pytest request, whose param is the viewport name.
-    :return: The viewport name and the Playwright page.
-    """
-    page = request.getfixturevalue("page" if request.param == "desktop" else "mobile_page")
-    return request.param, page
 
 
 def _url(app: Flask, endpoint: str, **values: int | str) -> str:
@@ -334,28 +296,38 @@ TABLES_FIT_SCRIPT = """
 
 @pytest.mark.parametrize("width", WIDE_TABLE_WIDTHS)
 @pytest.mark.parametrize(
-    "endpoint", ["patients.view_patient", "schedules.list_schedules", "specialists.list_specialists"]
+    "endpoint, fragment",
+    [
+        ("patients.view_patient", "#avaliacoes"),
+        ("patients.view_patient", "#bioimpedancia"),
+        ("schedules.list_schedules", ""),
+        ("specialists.list_specialists", ""),
+    ],
 )
 def test_wide_tables_end_inside_the_card_or_scroll_inside_it(
-    app: Flask, seed: SeedData, live_server: str, page: Page, endpoint: str, width: int
+    app: Flask, seed: SeedData, live_server: str, page: Page, endpoint: str, fragment: str, width: int
 ) -> None:
-    """Check that no table of a page shown in the compatibility layer is cut by the card edge.
+    """Check that no table of a page is cut by the card edge.
 
     Every table must either end inside the card or sit in a scroll container that ends inside the card, so no action
-    column is hidden out of reach whatever the fonts of the machine.
+    column is hidden out of reach whatever the fonts of the machine. The patient record shows one table per tab, so
+    each tab is opened through its URL hash.
 
     :param app: Flask application.
     :param seed: Ids of the fake records.
     :param live_server: Base URL of the running test server.
     :param page: Playwright page of the desktop context.
     :param endpoint: Endpoint of the page under test.
+    :param fragment: URL hash that opens the tab of the patient record, empty for the other pages.
     :param width: Viewport width in pixels.
     """
     values = {"id": int(seed["patient_nutritionist"])} if endpoint == "patients.view_patient" else {}
     page.set_viewport_size({"width": width, "height": 900})
     _login(page, live_server, "admin")
-    page.goto(live_server + _url(app, endpoint, **values))
+    page.goto(live_server + _url(app, endpoint, **values) + fragment)
     _settle(page)
+    if fragment:
+        page.wait_for_selector(f"{fragment.replace('#', '#pane-')}.active")
 
     tables = page.evaluate(TABLES_FIT_SCRIPT)
 
@@ -363,7 +335,7 @@ def test_wide_tables_end_inside_the_card_or_scroll_inside_it(
     for table in tables:
         fits = table["right"] <= table["cardRight"] + 1
         scroller_fits = table["scrollerRight"] is not None and table["scrollerRight"] <= table["cardRight"] + 1
-        assert fits or (table["scrolls"] and scroller_fits), (endpoint, width, table)
+        assert fits or (table["scrolls"] and scroller_fits), (endpoint, fragment, width, table)
 
 
 def _screens(app: Flask, seed: SeedData) -> tuple[list[Screen], list[Screen]]:
@@ -383,9 +355,41 @@ def _screens(app: Flask, seed: SeedData) -> tuple[list[Screen], list[Screen]]:
         Screen("home-admin", "admin", "/", ready=".shortcut-tile"),
         Screen("change-password", "admin", "/change", ready="form.change-pass-form"),
         Screen("404-logged-in", "admin", "/this-page-does-not-exist", status=404),
-        Screen("patients-list", "admin", _url(app, "patients.list_patients")),
-        Screen("patient-view", "admin", _url(app, "patients.view_patient", id=patient), ready=".anthro-table"),
+        Screen("patients-list", "admin", _url(app, "patients.list_patients"), ready=".patient-item"),
+        Screen("patient-view", "admin", _url(app, "patients.view_patient", id=patient), ready=".patient-header"),
         Screen("patient-add", "admin", _url(app, "patients.add_patient"), ready="form.add-patient-form"),
+        Screen("patient-edit", "admin", _url(app, "patients.edit_patient", id=patient), ready="form.edit-patient-form"),
+        Screen(
+            "patient-history",
+            "admin",
+            _url(app, "patients.view_custom_history", id=patient, pat_name="Paciente Teste 1"),
+            ready="canvas#evolutionsChart",
+        ),
+        Screen("patient-delete", "admin", _url(app, "patients.delete_patient", id=patient), ready=".confirm-card"),
+        Screen(
+            "anthro-add",
+            "admin",
+            _url(app, "patients.add_anthro", patient_id=patient),
+            ready="form.add-anthro-form",
+        ),
+        Screen(
+            "anthro-edit",
+            "admin",
+            _url(app, "patients.edit_anthro", patient_id=patient, evaluation_id=int(seed["anthro"])),
+            ready="form.edit-anthro-form",
+        ),
+        Screen(
+            "skinfold-add",
+            "admin",
+            _url(app, "patients.add_skinfold", patient_id=patient),
+            ready="form.add-skinfold-form",
+        ),
+        Screen(
+            "skinfold-edit",
+            "admin",
+            _url(app, "patients.edit_skinfold", patient_id=patient, skinfold_id=int(seed["skinfold"])),
+            ready="form.edit-skinfold-form",
+        ),
         Screen("diets-list", "admin", _url(app, "diets.list_diets"), ready="#diet-list"),
         Screen("schedules-list", "admin", _url(app, "schedules.list_schedules")),
         Screen("schedule-action", "admin", _url(app, "schedules.schedule_action"), ready=".select2-container"),
@@ -402,8 +406,8 @@ def _open(page: Page, base_url: str, screen: Screen, device_name: str, errors: l
     :param base_url: Base URL of the running server.
     :param screen: Page to open.
     :param device_name: Viewport name.
-    :param errors: List that collects the uncaught JavaScript errors of the page; the stray "patients" statement that
-        list_patients.js already had is ignored through KNOWN_PAGE_ERRORS.
+    :param errors: List that collects the uncaught JavaScript errors of the page; the ones in KNOWN_PAGE_ERRORS are
+        ignored.
     """
     from playwright.sync_api import expect
 
