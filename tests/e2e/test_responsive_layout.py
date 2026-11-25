@@ -7,7 +7,8 @@ from __future__ import annotations
 
 import os
 import re
-from collections.abc import Iterator
+import zipfile
+from collections.abc import Callable, Iterator
 from dataclasses import dataclass
 from pathlib import Path
 from typing import TYPE_CHECKING
@@ -261,6 +262,49 @@ def test_info_toast_hides_itself(live_server: str, seed: SeedData, device: tuple
     expect(toast).to_have_attribute("role", "status")
     expect(toast).to_contain_text("já existe um agendamento")
     expect(toast).to_have_count(0, timeout=15_000)
+
+
+def test_backup_page_fits_the_screen_and_downloads_the_archive(
+    app: Flask, live_server: str, device: tuple[str, Page], set_superusers: Callable[[str], None]
+) -> None:
+    """Check the backup page of a superuser on both viewports: menu entry, no sideways scroll and a real download.
+
+    :param app: Flask application.
+    :param live_server: Base URL of the running test server.
+    :param device: Viewport name and Playwright page.
+    :param set_superusers: Function that sets the superuser e-mails.
+    """
+    from playwright.sync_api import expect
+
+    device_name, page = device
+    set_superusers(EMAILS["admin"])
+    _login(page, live_server, "admin")
+    page.goto(live_server + _url(app, "backup.show_backup"))
+    _settle(page)
+
+    expect(page.get_by_role("heading", name="Backup do banco de dados", level=1)).to_be_visible()
+    button = page.get_by_role("button", name="Baixar backup")
+    expect(button).to_be_visible()
+    metrics = _overflow(page)
+    assert metrics["scroll"] <= metrics["inner"], metrics
+    _snap(page, device_name, "backup")
+
+    sidebar = page.locator("#app-sidebar")
+    if device_name == "mobile":
+        page.get_by_role("button", name=OPEN_MENU).click()
+        page.wait_for_function("() => !document.querySelector('#app-sidebar').classList.contains('showing')")
+    expect(sidebar.get_by_role("link", name="Backup")).to_be_visible()
+    expect(sidebar.locator("a[aria-current=page]")).to_have_text(re.compile(r"Backup"))
+    _snap(page, device_name, "backup-menu")
+    if device_name == "mobile":
+        page.get_by_role("button", name=CLOSE_MENU).click()
+        expect(sidebar).to_be_hidden()
+
+    with page.expect_download() as download_info:
+        button.click()
+    download = download_info.value
+    assert re.fullmatch(r"emagreser-backup-\d{4}-\d{2}-\d{2}_\d{4}\.zip", download.suggested_filename)
+    assert zipfile.is_zipfile(download.path())
 
 
 WIDE_TABLE_WIDTHS = [1366, 1024, 900, 800]

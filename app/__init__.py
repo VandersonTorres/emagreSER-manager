@@ -9,6 +9,7 @@ from app.extensions import mail
 from app.models import Role, User, db
 from app.navigation import register_navigation
 from app.views.admin import admin_bp
+from app.views.backup import backup_bp
 from app.views.diets import diets_bp
 from app.views.main import main_bp
 from app.views.patients import patients_bp
@@ -47,6 +48,7 @@ def create_app() -> Flask:
 
     app.register_blueprint(main_bp)
     app.register_blueprint(admin_bp, url_prefix="/admin")
+    app.register_blueprint(backup_bp, url_prefix="/admin")
     app.register_blueprint(schedules_bp, url_prefix="/schedules-manager")
     app.register_blueprint(patients_bp, url_prefix="/patients-manager")
     app.register_blueprint(specialists_bp, url_prefix="/specialists-manager")

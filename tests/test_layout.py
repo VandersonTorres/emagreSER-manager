@@ -269,7 +269,7 @@ def test_nav_labels_by_role() -> None:
     secretary = [item.label for item in visible_items(["secretary"])]
 
     assert nutritionist == ["Início", "Pacientes", "Agenda", "Agendar consulta", "Dietas"]
-    assert admin == secretary == [item.label for item in NAV_ITEMS]
+    assert admin == secretary == [item.label for item in NAV_ITEMS if not item.superuser_only]
     assert admin[-2:] == ["Profissionais", "Usuários"]
 
     restricted = NAV_ITEMS + (NavItem("Teste", "main.index", "bug", ("main.index",), roles=frozenset({"admin"})),)

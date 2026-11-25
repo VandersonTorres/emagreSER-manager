@@ -1,3 +1,5 @@
+from typing import Any
+
 from flask_wtf import FlaskForm
 from wtforms import (
     DateField,
@@ -16,6 +18,8 @@ from app.models import Diet, Specialists
 
 
 class SpecialistForm(FlaskForm):
+    """Form to create or edit a specialist."""
+
     name = StringField("Nome do Profissional", validators=[DataRequired()])
     cpf = StringField("CPF", validators=[DataRequired()])
     tel_number = StringField("Telefone", validators=[DataRequired()])
@@ -25,7 +29,8 @@ class SpecialistForm(FlaskForm):
 
 
 class PatientForm(FlaskForm):
-    # Dados pessoais
+    """Form to create or edit a patient, with the personal, clinical and behavioral history."""
+
     name = StringField("Nome", validators=[DataRequired()])
     gender = SelectField(
         "Sexo",
@@ -38,7 +43,6 @@ class PatientForm(FlaskForm):
     email = StringField("E-mail", validators=[Optional()])
     specialist_id = SelectField("Profissional", coerce=int, validators=[DataRequired()])
 
-    # História Clínica
     medication = SelectField(
         "Faz uso de medicação?",
         choices=[("", "Selecione"), ("não", "Não"), ("sim", "Sim")],
@@ -57,7 +61,6 @@ class PatientForm(FlaskForm):
         "Azia / Refluxo", choices=[("", "Selecione"), ("não", "Não"), ("sim", "Sim")], validators=[DataRequired()]
     )
 
-    # História Comportamental
     physical_activities = SelectField(
         "Faz atividade física?",
         choices=[("", "Selecione"), ("não", "Não"), ("sim", "Sim")],
@@ -70,12 +73,19 @@ class PatientForm(FlaskForm):
 
     submit = SubmitField("Salvar")
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
+        """Build the form and fill the specialist choices from the database.
+
+        :param args: Positional arguments of ``FlaskForm``.
+        :param kwargs: Keyword arguments of ``FlaskForm``.
+        """
         super().__init__(*args, **kwargs)
         self.specialist_id.choices = [(s.id, s.name) for s in Specialists.query.all()]
 
 
 class AnthropometricAssessmentForm(FlaskForm):
+    """Form of an anthropometric evaluation of a patient."""
+
     data_avaliacao = DateField("Data de Avaliação", format="%Y-%m-%d", validators=[DataRequired()])
     ultima_guia = StringField("Nome da Guia", validators=[DataRequired()])
     idade = IntegerField("Idade", validators=[DataRequired()])
@@ -102,6 +112,8 @@ class AnthropometricAssessmentForm(FlaskForm):
 
 
 class SkinfoldMeasurementForm(FlaskForm):
+    """Form of a skinfold measurement of a patient."""
+
     data_medicao = DateField("Data de Medição", format="%Y-%m-%d", validators=[DataRequired()])
     altura = FloatField("Altura (m)", validators=[DataRequired()])
     peso = FloatField("Peso (kg)", validators=[InputRequired()])
@@ -117,15 +129,21 @@ class SkinfoldMeasurementForm(FlaskForm):
 
 
 class DietForm(FlaskForm):
+    """Form to create or edit a diet, with the fixed names and the ones already saved."""
+
     name = SelectField("Nome da Dieta", validators=[DataRequired()])
     other_name = StringField("Outro (especifique)", validators=[Optional()])
     description = TextAreaField("Descrição", validators=[Optional()])
     diet_file = FileField("Arquivo da Dieta", validators=[Optional()])
     submit = SubmitField("Salvar")
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
+        """Build the form and fill the name choices with the fixed names, the saved ones and "Outro".
+
+        :param args: Positional arguments of ``FlaskForm``.
+        :param kwargs: Keyword arguments of ``FlaskForm``.
+        """
         super(DietForm, self).__init__(*args, **kwargs)
-        # Static Options
         fixed_choices = [
             ("Dieta Cetogênica", "Dieta Cetogênica"),
             ("Dieta Low Carb I", "Dieta Low Carb I"),
@@ -140,10 +158,13 @@ class DietForm(FlaskForm):
             ("Dieta Primavera", "Dieta Primavera"),
             ("Dieta Zero Açucar", "Dieta Zero Açucar"),
         ]
-        # Search for Diets added that stil are not present in the static choices
         extra_choices = [
             (diet.name, diet.name)
             for diet in Diet.query.all()
             if diet.name.lower() not in [choice[0].lower() for choice in fixed_choices]
         ]
         self.name.choices = fixed_choices + extra_choices + [("Outro", "Outro")]
+
+
+class BackupForm(FlaskForm):
+    """Empty form that carries only the CSRF token of the backup download."""
