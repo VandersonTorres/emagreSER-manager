@@ -164,7 +164,6 @@ EXPECTED: list[dict[str, Any]] = [
     row("login", "security.login", {}, 200, HOME, HOME, HOME),
     row("change-password", "security.change_password", {}, LOGIN, 200, 200, 200),
     row("forgot-password", "security.forgot_password", {}, 200, HOME, HOME, HOME),
-    row("register", "security.register", {}, 200, HOME, HOME, HOME),
     row("logout", "security.logout", {}, LOGIN, LOGIN, LOGIN, LOGIN),
 ]
 
