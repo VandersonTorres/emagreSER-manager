@@ -1,0 +1,59 @@
+{% macro contact_buttons(patient, with_labels=true) %}
+{% set digits = (patient.tel_number or "")|list|select("in", "0123456789")|join %}
+{% if digits %}
+{% set whatsapp_number = "55" ~ digits if digits|length in (10, 11) else digits %}
+<a class="btn btn-outline-secondary btn-sm contact-call" href="tel:{{ digits }}" aria-label="Ligar para {{ patient.name }}">
+    <i class="bi bi-telephone" aria-hidden="true"></i>{% if with_labels %} <span>Ligar</span>{% endif %}
+</a>
+<a class="btn btn-outline-secondary btn-sm contact-whatsapp" href="https://wa.me/{{ whatsapp_number }}" target="_blank" rel="noopener" aria-label="Conversar com {{ patient.name }} pelo WhatsApp">
+    <i class="bi bi-whatsapp" aria-hidden="true"></i>{% if with_labels %} <span>WhatsApp</span>{% endif %}
+</a>
+{% endif %}
+{% endmacro %}
+
+{% macro form_section(title, section_id) %}
+<section class="card form-section" aria-labelledby="{{ section_id }}-title">
+    <div class="card-header app-card-header">
+        <h2 class="app-card-title" id="{{ section_id }}-title">{{ title }}</h2>
+    </div>
+    <div class="card-body">
+        <div class="row gx-3">{{ caller() }}</div>
+    </div>
+</section>
+{% endmacro %}
+
+{% macro text_control(name, label, help=none) %}
+<div class="mb-3">
+    <label class="form-label" for="{{ name }}">{{ label }}</label>
+    <input class="form-control" id="{{ name }}" name="{{ name }}" {{ kwargs|xmlattr }}{% if help %} aria-describedby="{{ name }}-help"{% endif %}>
+    {% if help %}
+    <div class="form-text" id="{{ name }}-help">{{ help }}</div>
+    {% endif %}
+</div>
+{% endmacro %}
+
+{% macro select_control(name, label, options, placeholder="Selecione") %}
+<div class="mb-3">
+    <label class="form-label" for="{{ name }}">{{ label }}</label>
+    <select class="form-select" id="{{ name }}" name="{{ name }}" {{ kwargs|xmlattr }}>
+        <option value="">{{ placeholder }}</option>
+        {% for value, text in options %}
+        <option value="{{ value }}">{{ text }}</option>
+        {% endfor %}
+    </select>
+</div>
+{% endmacro %}
+
+{% macro detail_item(label, value, suffix=none) %}
+<div class="detail-item">
+    <dt>{{ label }}</dt>
+    <dd>{% if value is none or value == "" %}<span class="text-body-secondary">Não informado</span>{% else %}{{ value }}{% if suffix %} {{ suffix }}{% endif %}{% endif %}</dd>
+</div>
+{% endmacro %}
+
+{% macro stat_item(label, value) %}
+<div class="stat-item">
+    <dt>{{ label }}</dt>
+    <dd>{{ value if value is not none and value != "" else "Não informado" }}</dd>
+</div>
+{% endmacro %}

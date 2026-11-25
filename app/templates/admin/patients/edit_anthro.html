@@ -1,130 +1,57 @@
 {% extends "base.html" %}
+{% from "_macros.html" import page_header, field %}
+{% from "admin/patients/_patient_macros.html" import form_section %}
+
+{% block title %}Editar avaliação · EmagreSER{% endblock %}
+
+{% block content_class %}{% endblock %}
 
 {% block content %}
+{% set record_url = url_for("patients.view_patient", id=evaluation.patient_id) ~ "#avaliacoes" %}
+{{ page_header("Editar avaliação antropométrica", evaluation.patient.name, record_url) }}
 
-<h2>Editar Avaliação Antropométrica</h2>
-<section class="editing">
-    <p><strong>Paciente:</strong> {{ evaluation.patient.name }}</p>
-    <form class="edit-anthro-form" method="POST"
-        action="{{ url_for('patients.edit_anthro', patient_id=evaluation.patient_id, evaluation_id=evaluation.id) }}">
-        {{ form.hidden_tag() }}
-        <label for="data_avaliacao">Data de Avaliação:</label>
-        {{ form.data_avaliacao(size=20) }}
-        <br>
+<form class="edit-anthro-form" method="post" action="{{ url_for('patients.edit_anthro', patient_id=evaluation.patient_id, evaluation_id=evaluation.id) }}" data-birth-date="{{ evaluation.patient.birth_date }}">
+    {{ form.hidden_tag() }}
 
-        <label for="ultima_guia">Guia:</label>
-        {{ diet_form.name(id="diet-select") }}
-        <span id="current-diet" style="font-size: 12px; margin-left: 10px; font-weight: bold; color: #555;">
-            Atual: {{ evaluation.ultima_guia if evaluation.ultima_guia else "Nenhum" }}
-        </span>
-        <div id="other-name-field" style="display: none;">
-            <label for="other_name">Nome da nova guia:</label>
-            {{ diet_form.other_name() }}
+    {% call form_section("Dados da avaliação", "evaluation") %}
+    <div class="col-12 col-md-6">{{ field(form.data_avaliacao) }}</div>
+    <div class="col-12 col-md-6">
+        <div class="mb-3">
+            <label class="form-label" for="diet-select">Guia</label>
+            {{ diet_form.name(id="diet-select", class="form-select") }}
+            <div class="form-text" id="current-diet">Atual: {{ evaluation.ultima_guia if evaluation.ultima_guia else "Nenhum" }}</div>
         </div>
-        <br>
+    </div>
+    <div class="col-12 col-md-6" id="other-name-field" hidden>
+        <div class="mb-3">
+            <label class="form-label" for="other_name">Nome da nova guia</label>
+            {{ diet_form.other_name(class="form-control", autocomplete="off") }}
+        </div>
+    </div>
+    <div class="col-12 col-md-6">{{ field(form.idade, inputmode="numeric") }}</div>
+    <div class="col-12 col-md-6">{{ field(form.grau_atv_fisica) }}</div>
+    {% endcall %}
 
-        <label for="idade">Idade:</label>
-        {{ form.idade(size=5) }}
-        <br>
+    {% call form_section("Resultados", "results") %}
+    <div class="col-12 col-md-6">{{ field(form.evolucao, readonly=True, class="calc-field", help="Calculado automaticamente") }}</div>
+    <div class="col-12 col-md-6">{{ field(form.imc, readonly=True, class="calc-field", help="Calculado automaticamente") }}</div>
+    <div class="col-12 col-md-6">{{ field(form.nutri_class, readonly=True, class="calc-field", help="Calculado automaticamente") }}</div>
+    <div class="col-12 col-md-6">{{ field(form.necessidade_calorica, readonly=True, class="calc-field", help="Calculado automaticamente") }}</div>
+    <div class="col-12 col-md-6">{{ field(form.p_max, readonly=True, class="calc-field", help="Calculado automaticamente") }}</div>
+    <div class="col-12 col-md-6">{{ field(form.p_ide, readonly=True, class="calc-field", help="Calculado automaticamente") }}</div>
+    <div class="col-12 col-md-6">{{ field(form.p_min, readonly=True, class="calc-field", help="Calculado automaticamente") }}</div>
+    <div class="col-12 col-md-6">{{ field(form.ingestao_liquido, readonly=True, class="calc-field", help="Calculado automaticamente") }}</div>
+    {% endcall %}
 
-        <label for="evolucao">Evolução:</label>
-        {{ form.evolucao(class="form-control", id="evolucao", readonly=True) }}
-        <span id="auto_calc_info" style="font-size: 9px; margin-left: 10px; color: #555;">
-            Calculado automaticamente
-        </span>
-        <br>
+    <div class="form-actions">
+        <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg" aria-hidden="true"></i> Atualizar avaliação</button>
+        <a class="btn btn-outline-secondary" href="{{ record_url }}">Cancelar</a>
+    </div>
+</form>
+{% endblock %}
 
-        <label for="p_max">Peso Máximo:</label>
-        {{ form.p_max(step="0.1", class="form-control", id="p_max", readonly=True) }}
-        <span id="auto_calc_info" style="font-size: 9px; margin-left: 10px; color: #555;">
-            Calculado automaticamente
-        </span>
-        <br>
-
-        <label for="p_ide">Peso Ideal:</label>
-        {{ form.p_ide(step="0.1", class="form-control", id="p_ide", readonly=True) }}
-        <span id="auto_calc_info" style="font-size: 9px; margin-left: 10px; color: #555;">
-            Calculado automaticamente
-        </span>
-        <br>
-
-        <label for="p_min">Peso Mínimo:</label>
-        {{ form.p_min(step="0.1", class="form-control", id="p_min", readonly=True) }}
-        <span id="auto_calc_info" style="font-size: 9px; margin-left: 10px; color: #555;">
-            Calculado automaticamente
-        </span>
-        <br>
-
-        <label for="imc">IMC:</label>
-        {{ form.imc(step="0.01", class="form-control", id="imc", readonly=True) }}
-        <span id="auto_calc_info" style="font-size: 9px; margin-left: 10px; color: #555;">
-            Calculado automaticamente
-        </span>
-        <br>
-
-        <label for="nutri_class">Classificação Nutricional:</label>
-        {{ form.nutri_class(class="form-control", id="nutri_class", readonly=True) }}
-        <span id="auto_calc_info" style="font-size: 9px; margin-left: 10px; color: #555;">
-            Calculado automaticamente
-        </span>
-        <br>
-
-        <label for="necessidade_calorica">Necessidade Calórica:</label>
-        {{ form.necessidade_calorica(class="form-control", id="necessidade_calorica", readonly=True) }}
-        <span id="auto_calc_necessidade_calorica" style="font-size: 9px; margin-left: 10px; color: #555;">
-            Calculado automaticamente
-        </span>
-        <br>
-
-        <label for="ingestao_liquido">Ingestão de Líquido:</label>
-        {{ form.ingestao_liquido(class="form-control", id="ingestao_liquido", readonly=True) }}
-        <span id="auto_calc_ingestao_liquido" style="font-size: 9px; margin-left: 10px; color: #555;">
-            Calculado automaticamente
-        </span>
-        <br>
-
-        <label for="grau_atv_fisica">Grau de Atividade Física:</label>
-        {{ form.grau_atv_fisica() }}
-        <br>
-
-        <br><br>
-
-        <button type="submit">Atualizar Avaliação</button>
-    </form>
-</section>
-
-<hr>
-<br>
-<div class="nav-actions">
-    <a class="back-button" href="{{ url_for('patients.edit_patient', id=evaluation.patient_id) }}">🔙 Voltar</a>
-</div>
-
+{% block scripts %}
 <script src="{{ url_for('static', filename='js/add_diet.js') }}"></script>
 <script src="{{ url_for('static', filename='js/automate_anthro_fields.js') }}"></script>
-<script>
-    // Script to automatically calculates the age of the Patient
-    // Needs being here due to jinja's sintax
-    document.addEventListener("DOMContentLoaded", function () {
-        function calculateAge() {
-            const birthDate = "{{ evaluation.patient.birth_date }}";
-            const dataAvaliacao = document.getElementById("data_avaliacao").value;
-            if (birthDate && dataAvaliacao) {
-                const birth = new Date(birthDate);
-                const evaluation = new Date(dataAvaliacao);
-                let years_old = evaluation.getFullYear() - birth.getFullYear();
-                const current_month = evaluation.getMonth();
-                const born_month = birth.getMonth();
-                if (current_month < born_month || (current_month === born_month && evaluation.getDate() < birth.getDate())) {
-                    years_old--;
-                }
-                document.getElementById("idade").value = years_old;
-            }
-        }
-
-        // When the evaluation date is filled, automatically fill age field
-        document.getElementById("data_avaliacao").addEventListener("change", calculateAge);
-        calculateAge();
-    });
-</script>
-
+<script src="{{ url_for('static', filename='js/anthro_age.js') }}"></script>
 {% endblock %}

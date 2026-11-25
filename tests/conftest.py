@@ -3,7 +3,7 @@
 import os
 import shutil
 import tempfile
-from collections.abc import Callable, Iterator
+from collections.abc import Callable, Iterator, Sequence
 from datetime import date, datetime, time, timedelta
 from pathlib import Path
 from typing import Any
@@ -436,6 +436,116 @@ def tricky_rows(app: Flask) -> Iterator[dict[str, Any]]:
         Role.query.filter_by(id=ids["role"]).delete(synchronize_session=False)
         User.query.filter_by(id=ids["user"]).delete(synchronize_session=False)
         Patients.query.filter_by(id=ids["patient"]).delete(synchronize_session=False)
+        db.session.commit()
+
+
+@pytest.fixture
+def complete_patient(app: Flask, seed: SeedData) -> Iterator[dict[str, int]]:
+    """Add a patient with every field filled, a fixed evaluation and a fixed measurement, and remove them afterwards.
+
+    :param app: Flask application.
+    :param seed: Ids of the fake records.
+    :return: The ids of the patient, evaluation and measurement (yielded; the rows are deleted at the end of the test).
+    """
+    from app.models import AnthropometricEvaluation, Patients, SkinFolds, db
+    from tests.patient_cases import COMPLETE_PATIENT, FIXED_EVALUATION, FIXED_SKINFOLD
+
+    with app.app_context():
+        patient = Patients(**COMPLETE_PATIENT, specialist_id=int(seed["specialist_other"]))
+        db.session.add(patient)
+        db.session.commit()
+        evaluation = AnthropometricEvaluation(patient_id=patient.id, **FIXED_EVALUATION)
+        skinfold = SkinFolds(patient_id=patient.id, **FIXED_SKINFOLD)
+        db.session.add_all([evaluation, skinfold])
+        db.session.commit()
+        ids = {"patient": patient.id, "evaluation": evaluation.id, "skinfold": skinfold.id}
+    yield ids
+    with app.app_context():
+        SkinFolds.query.filter_by(patient_id=ids["patient"]).delete(synchronize_session=False)
+        AnthropometricEvaluation.query.filter_by(patient_id=ids["patient"]).delete(synchronize_session=False)
+        Patients.query.filter_by(id=ids["patient"]).delete(synchronize_session=False)
+        db.session.commit()
+
+
+@pytest.fixture
+def case_patients(app: Flask, seed: SeedData) -> Iterator[Callable[..., int]]:
+    """Provide a factory of temporary patients with measurements; every patient it created is removed afterwards.
+
+    :param app: Flask application.
+    :param seed: Ids of the fake records.
+    :return: The factory (yielded; the created patients and their rows are deleted at the end of the test).
+    """
+    from app.models import AnthropometricEvaluation, Patients, Schedules, SkinFolds, db
+
+    created: list[int] = []
+
+    def create(
+        name: str,
+        gender: str = "feminino",
+        birth_date: date = date(1990, 1, 1),
+        skinfolds: Sequence[tuple[date, float, float]] = (),
+        specialist: str | None = "specialist_other",
+        **overrides: Any,
+    ) -> int:
+        """Create a patient and its bioimpedance measurements.
+
+        :param name: Name of the patient.
+        :param gender: Gender of the patient.
+        :param birth_date: Birth date of the patient.
+        :param skinfolds: Measurements to add, each one as (date, weight, height).
+        :param specialist: Seed key of the specialist the patient belongs to, or None for no specialist.
+        :param overrides: Other columns of the patient.
+        :return: The id of the new patient.
+        """
+        values: dict[str, Any] = {
+            "name": name,
+            "gender": gender,
+            "birth_date": birth_date,
+            "cpf": None,
+            "tel_number": "(31) 92222-0000",
+            "email": None,
+            "specialist_id": int(seed[specialist]) if specialist else None,
+            "medication": "não",
+            "intestine": 7,
+            "allergies": "não",
+            "water": 2.0,
+            "heartburn": "não",
+            "physical_activities": "não",
+            "frequency": 0,
+            "objective": "Objetivo ficticio de teste",
+        }
+        values.update(overrides)
+        with app.app_context():
+            patient = Patients(**values)
+            db.session.add(patient)
+            db.session.commit()
+            for when, weight, height in skinfolds:
+                db.session.add(
+                    SkinFolds(
+                        patient_id=patient.id,
+                        data_medicao=when,
+                        altura=height,
+                        peso=weight,
+                        massa_muscular=0,
+                        gordura=0,
+                        abdominal=0,
+                        cintura=0,
+                        quadril=0,
+                        idade_metabolica=0,
+                        pa="12/8",
+                    )
+                )
+            db.session.commit()
+            created.append(patient.id)
+            return patient.id
+
+    yield create
+    with app.app_context():
+        for patient_id in created:
+            SkinFolds.query.filter_by(patient_id=patient_id).delete(synchronize_session=False)
+            AnthropometricEvaluation.query.filter_by(patient_id=patient_id).delete(synchronize_session=False)
+            Schedules.query.filter_by(patient_id=patient_id).delete(synchronize_session=False)
+            Patients.query.filter_by(id=patient_id).delete(synchronize_session=False)
         db.session.commit()
 
 

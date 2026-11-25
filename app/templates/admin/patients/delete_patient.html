@@ -1,16 +1,12 @@
 {% extends "base.html" %}
+{% from "_macros.html" import confirm_card %}
+
+{% block title %}Remover {{ patient.name }} · EmagreSER{% endblock %}
+
+{% block content_class %}{% endblock %}
 
 {% block content %}
-
-<h2>Remover Paciente</h2>
-<p>Tem certeza de que deseja remover {{ patient.name }} - CPF: {{ patient.cpf }}?</p>
-<form class="delete-patient-form" method="POST" action="{{ url_for('patients.delete_patient', id=patient.id) }}">
-    <button type="submit">Confirmar Remoção</button>
-    <a class="remove-button" href="{{ url_for('patients.list_patients') }}">Cancelar</a>
-</form>
-<hr>
-<br>
-<div class="nav-actions">
-    <a href="{{ url_for('patients.list_patients') }}" class="btn btn-secondary back-button">🔙 Voltar</a>
-</div>
+{% call confirm_card("Remover paciente", "Tem certeza de que deseja remover " ~ patient.name ~ " - CPF: " ~ (patient.cpf or "não informado") ~ "?", "Confirmar remoção", url_for("patients.list_patients")) %}
+<p class="text-body-secondary">As avaliações, as medições de bioimpedância e os agendamentos deste paciente também serão removidos. Esta ação não pode ser desfeita.</p>
+{% endcall %}
 {% endblock %}
