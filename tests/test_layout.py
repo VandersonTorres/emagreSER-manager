@@ -1,6 +1,7 @@
 """Tests of the application shell: flash toasts, role-aware menu, home dashboard, auth pages and error pages."""
 
 import re
+import uuid
 from collections.abc import Iterator
 from datetime import datetime, timedelta
 from pathlib import Path
@@ -11,8 +12,9 @@ from flask import Flask, flash, render_template, url_for
 from flask.testing import FlaskClient
 from flask_login import login_user
 from flask_security.core import _default_messages
+from flask_security.utils import hash_password
 
-from app.dashboard import UPCOMING_LIMIT, format_when, local_now, upcoming_schedules
+from app.dashboard import UPCOMING_LIMIT, format_when, has_staff_role, local_now, sees_all_schedules, upcoming_schedules
 from app.models import Schedules, Specialists, User, db
 from app.navigation import NAV_ITEMS, NavItem, build_navigation, visible_items
 from config import Config
@@ -112,6 +114,37 @@ def extra_schedules(app: Flask, seed: SeedData) -> Iterator[dict[str, int]]:
     yield ids
     with app.app_context():
         Schedules.query.filter(Schedules.id.in_(ids.values())).delete(synchronize_session=False)
+        db.session.commit()
+
+
+@pytest.fixture(params=["sem-funcao@test.local", "prof2@test.local"], ids=["new-email", "specialist-email"])
+def roleless_client(app: Flask, request: pytest.FixtureRequest) -> Iterator[FlaskClient]:
+    """Create an account without any role, log it in and remove the account after the test.
+
+    The second e-mail is the one of a seeded professional, so the specialist lookup of the dashboard is covered too.
+
+    :param app: Flask application.
+    :param request: pytest request, whose param is the e-mail of the account.
+    :return: A test client logged in as the account (yielded; the account is deleted afterwards).
+    """
+    email = request.param
+    with app.app_context():
+        user = User(
+            email=email,
+            username="Sem Função",
+            active=True,
+            password=hash_password(TEST_PASSWORD),
+            fs_uniquifier=uuid.uuid4().hex,
+        )
+        db.session.add(user)
+        db.session.commit()
+        user_id = user.id
+    client = app.test_client()
+    response = client.post("/login", data={"email": email, "password": TEST_PASSWORD})
+    assert response.status_code == 302, f"login of the account without role failed: {response.status_code}"
+    yield client
+    with app.app_context():
+        db.session.delete(db.session.get(User, user_id))
         db.session.commit()
 
 
@@ -716,6 +749,42 @@ def test_home_shows_every_upcoming_schedule_to_the_admin(
         ("Paciente Teste 2", NUTRITIONIST_USERNAME),
     ]
     assert _soup(html).find("a", string="Ver agenda completa") is not None
+
+
+def test_home_hides_the_appointments_from_an_account_without_role(
+    roleless_client: FlaskClient, extra_schedules: dict[str, int]
+) -> None:
+    """Check that an account without a staff role sees no appointment card and no patient name on the home page.
+
+    :param roleless_client: Test client logged in as an account without any role.
+    :param extra_schedules: Ids of the temporary schedules.
+    """
+    response = roleless_client.get("/")
+    html = response.get_data(as_text=True)
+
+    assert response.status_code == 200
+    assert _soup(html).select(".upcoming-item") == []
+    assert _soup(html).find(id="upcoming-title") is None
+    for number in (1, 2, 3):
+        assert f"Paciente Teste {number}" not in html
+
+
+@pytest.mark.parametrize("email", ["sem-funcao@test.local", "prof2@test.local"])
+def test_upcoming_schedules_is_empty_without_a_staff_role(
+    app: Flask, extra_schedules: dict[str, int], email: str
+) -> None:
+    """Check that the dashboard query is empty for an account without a staff role, even with a professional's e-mail.
+
+    :param app: Flask application.
+    :param extra_schedules: Ids of the temporary schedules.
+    :param email: E-mail of the account.
+    """
+    with app.app_context():
+        user = User(email=email)
+
+        assert has_staff_role(user) is False
+        assert sees_all_schedules(user) is False
+        assert upcoming_schedules(user) == []
 
 
 def test_home_limits_the_upcoming_list(app: Flask, seed: SeedData, client_admin: FlaskClient) -> None:

@@ -6,9 +6,10 @@ BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 class Config:
     """Application settings, read from the environment with development defaults.
 
-    Flask-Security is configured with registration, password recovery, password change and login tracking enabled, and
-    its user-facing messages are translated to pt-BR (``SECURITY_MSG_*``, each one a ``(text, category)`` pair that
-    keeps the ``%(placeholders)s`` of the default message).
+    Flask-Security is configured with password recovery, password change and login tracking enabled, and its
+    user-facing messages are translated to pt-BR (``SECURITY_MSG_*``, each one a ``(text, category)`` pair that keeps
+    the ``%(placeholders)s`` of the default message). Self-registration is closed: accounts are created by the staff in
+    the users page (``admin.create_user``), which does not depend on ``SECURITY_REGISTERABLE``.
 
     WhatsApp messages go through Twilio, whose credentials come from https://console.twilio.com/. E-mail goes through
     Gmail over SSL (port 465; use 587 for TLS): the account needs two-factor authentication and an "app password",
@@ -20,7 +21,7 @@ class Config:
 
     SECRET_KEY = os.getenv("FLASK_SECRET_KEY", "your-secret-key")
     SECURITY_PASSWORD_SALT = os.getenv("FLASK_SECURITY_PASSWORD_SALT", "your-password-salt")
-    SECURITY_REGISTERABLE = True
+    SECURITY_REGISTERABLE = False
     SECURITY_RECOVERABLE = True
     SECURITY_TRACKABLE = True
     SECURITY_PASSWORD_HASH = "bcrypt"  # pragma: allowlist secret
