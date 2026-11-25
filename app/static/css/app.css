@@ -1305,3 +1305,35 @@ body {
 .form-narrow {
     max-width: 32rem;
 }
+
+/* Backup */
+.backup-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.9rem;
+    padding: 0.9rem 1rem;
+}
+
+.backup-item-icon {
+    display: inline-flex;
+    flex: none;
+    align-items: center;
+    justify-content: center;
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 0.65rem;
+    background: var(--app-primary-subtle);
+    color: var(--app-primary);
+    font-size: 1.2rem;
+}
+
+.backup-item-title {
+    display: block;
+    font-weight: 600;
+}
+
+.backup-item-text {
+    display: block;
+    color: var(--app-muted);
+    font-size: 0.92rem;
+}

@@ -3,9 +3,10 @@
 import os
 import shutil
 import tempfile
-from collections.abc import Iterator
-from datetime import date, datetime, timedelta
+from collections.abc import Callable, Iterator
+from datetime import date, datetime, time, timedelta
 from pathlib import Path
+from typing import Any
 from zoneinfo import ZoneInfo
 
 import pytest
@@ -14,7 +15,18 @@ from flask.testing import FlaskClient
 from werkzeug.test import TestResponse
 
 from tests.aliases import ClientFactory, SeedData
-from tests.constants import EMAILS, FIXTURE_DIET_URL, NUTRITIONIST_USERNAME, ROLES, TEST_PASSWORD
+from tests.constants import (
+    ALEMBIC_REVISION,
+    EMAILS,
+    FIXTURE_DIET_URL,
+    FORMULAS,
+    NUTRITIONIST_USERNAME,
+    RECOVERY_CODES,
+    ROLES,
+    SECRETS,
+    TEST_PASSWORD,
+    TRICKY_TEXT,
+)
 from tests.pdf_fixtures import SIZES, make_pdf
 
 _TMP_DIR = Path(tempfile.mkdtemp(prefix="emagreser-tests-"))
@@ -332,3 +344,113 @@ def client_nutritionist(client_for: ClientFactory) -> FlaskClient:
     :return: A new nutritionist test client.
     """
     return client_for("nutritionist")
+
+
+@pytest.fixture
+def set_superusers(app: Flask) -> Iterator[Callable[[str], None]]:
+    """Provide a function that sets the superuser e-mails of the app for one test.
+
+    The session app starts with no superuser, and the setting is restored when the test ends.
+
+    :param app: Flask application.
+    :return: The function that receives the ``SUPERUSER_EMAILS`` value (yielded; the previous value is restored).
+    """
+    previous = app.config.get("SUPERUSER_EMAILS")
+
+    def setter(value: str) -> None:
+        """Set the superuser e-mails.
+
+        :param value: Text in the format of the ``SUPERUSER_EMAILS`` setting.
+        """
+        app.config["SUPERUSER_EMAILS"] = value
+
+    yield setter
+    app.config["SUPERUSER_EMAILS"] = previous
+
+
+@pytest.fixture
+def tricky_rows(app: Flask) -> Iterator[dict[str, Any]]:
+    """Add temporary rows with hostile text, NULLs, odd numbers and secrets, and remove them afterwards.
+
+    :param app: Flask application.
+    :return: The ids of the rows (yielded; the rows are deleted at the end of the test).
+    """
+    from app.models import Diet, Patients, Role, SkinFolds, User, db
+
+    with app.app_context():
+        diets = [Diet(name=TRICKY_TEXT, description="descrição", diet_file=None)]
+        diets += [
+            Diet(name=f"{prefix}fórmula", description=prefix, order=index) for index, prefix in enumerate(FORMULAS)
+        ]
+        role = Role(name="papel-de-teste", description=None, permissions=["ler", "escrever"])
+        user = User(
+            email="segredos@test.local",
+            username="Usuario Segredos",
+            active=True,
+            password=SECRETS["password"],
+            fs_uniquifier=SECRETS["fs_uniquifier"],
+            fs_webauthn_user_handle=SECRETS["fs_webauthn_user_handle"],
+            tf_totp_secret=SECRETS["tf_totp_secret"],
+            us_totp_secrets=SECRETS["us_totp_secrets"],
+            mf_recovery_codes=RECOVERY_CODES,
+        )
+        patient = Patients(
+            name=TRICKY_TEXT,
+            gender="feminino",
+            birth_date=date(1985, 3, 9),
+            tel_number="(31) 90000-0000",
+            medication="não",
+            intestine=3,
+            allergies="não",
+            water=72.5,
+            heartburn="não",
+            physical_activities="sim",
+            hours=time(7, 30, 5),
+            started_at=datetime(2025, 1, 2, 3, 4, 5, 123456),
+            frequency=2,
+            objective="=Objetivo",
+        )
+        db.session.add_all([*diets, role, user, patient])
+        db.session.commit()
+        skinfold = SkinFolds(
+            patient_id=patient.id,
+            data_medicao=date(2026, 1, 2),
+            altura=0.1 + 0.2,
+            peso=float("inf"),
+            massa_muscular=-float("inf"),
+            pa="12/8",
+        )
+        db.session.add(skinfold)
+        db.session.commit()
+        ids = {
+            "diets": [diet.id for diet in diets],
+            "role": role.id,
+            "user": user.id,
+            "patient": patient.id,
+            "skinfold": skinfold.id,
+        }
+    yield ids
+    with app.app_context():
+        SkinFolds.query.filter_by(id=ids["skinfold"]).delete(synchronize_session=False)
+        Diet.query.filter(Diet.id.in_(ids["diets"])).delete(synchronize_session=False)
+        Role.query.filter_by(id=ids["role"]).delete(synchronize_session=False)
+        User.query.filter_by(id=ids["user"]).delete(synchronize_session=False)
+        Patients.query.filter_by(id=ids["patient"]).delete(synchronize_session=False)
+        db.session.commit()
+
+
+@pytest.fixture
+def alembic_table(app: Flask) -> Iterator[str]:
+    """Create the Alembic version table, which the test database does not have, and drop it afterwards.
+
+    :param app: Flask application.
+    :return: The revision stored in the table (yielded; the table is dropped at the end of the test).
+    """
+    from app.models import db
+
+    with app.app_context(), db.engine.begin() as connection:
+        connection.exec_driver_sql("CREATE TABLE alembic_version (version_num VARCHAR(32) NOT NULL PRIMARY KEY)")
+        connection.exec_driver_sql(f"INSERT INTO alembic_version VALUES ('{ALEMBIC_REVISION}')")
+    yield ALEMBIC_REVISION
+    with app.app_context(), db.engine.begin() as connection:
+        connection.exec_driver_sql("DROP TABLE alembic_version")

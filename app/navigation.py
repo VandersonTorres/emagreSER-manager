@@ -1,7 +1,8 @@
 """Role-aware navigation of the application shell.
 
 Every sidebar entry is declared once in ``NAV_ITEMS``. Adding an entry with its own visibility rule is a single new
-``NavItem`` there: ``roles`` limits it to some roles and ``active_on`` tells which endpoints highlight it.
+``NavItem`` there: ``roles`` limits it to some roles, ``superuser_only`` limits it to the e-mails listed in
+``SUPERUSER_EMAILS`` and ``active_on`` tells which endpoints highlight it.
 """
 
 from collections.abc import Iterable
@@ -10,6 +11,8 @@ from fnmatch import fnmatchcase
 
 from flask import Flask, request, url_for
 from flask_security import current_user
+
+from app.superusers import is_superuser
 
 
 @dataclass(frozen=True)
@@ -22,6 +25,7 @@ class NavItem:
     :param active_on: Endpoint patterns that highlight the entry; ``*`` matches any suffix (``patients.*``) and an
         exact endpoint always wins over a wildcard.
     :param roles: Role names allowed to see the entry; ``None`` shows it to every authenticated user.
+    :param superuser_only: Whether only superusers see the entry, whatever their roles; it adds to ``roles``.
     """
 
     label: str
@@ -29,6 +33,7 @@ class NavItem:
     icon: str
     active_on: tuple[str, ...]
     roles: frozenset[str] | None = None
+    superuser_only: bool = False
 
 
 @dataclass(frozen=True)
@@ -59,6 +64,7 @@ NAV_ITEMS: tuple[NavItem, ...] = (
         "Profissionais", "specialists.list_specialists", "person-badge", ("specialists.*",), roles=MANAGEMENT_ROLES
     ),
     NavItem("Usuários", "admin.list_users", "person-gear", ("admin.*",), roles=MANAGEMENT_ROLES),
+    NavItem("Backup", "backup.show_backup", "database-down", ("backup.*",), superuser_only=True),
 )
 
 
@@ -94,27 +100,33 @@ def active_item(items: Iterable[NavItem], endpoint: str | None) -> NavItem | Non
     return best
 
 
-def visible_items(role_names: Iterable[str], items: Iterable[NavItem] = NAV_ITEMS) -> list[NavItem]:
+def visible_items(
+    role_names: Iterable[str], items: Iterable[NavItem] = NAV_ITEMS, superuser: bool = False
+) -> list[NavItem]:
     """Filter the entries a user may see.
 
     :param role_names: Names of the roles of the user.
     :param items: Entries to filter.
+    :param superuser: Whether the user is a superuser, which unlocks the ``superuser_only`` entries.
     :return: The visible entries, in declaration order.
     """
     roles = set(role_names)
-    return [item for item in items if item.roles is None or item.roles & roles]
+    return [
+        item for item in items if (item.roles is None or item.roles & roles) and (superuser or not item.superuser_only)
+    ]
 
 
-def build_navigation(role_names: Iterable[str], endpoint: str | None) -> list[NavLink]:
+def build_navigation(role_names: Iterable[str], endpoint: str | None, superuser: bool = False) -> list[NavLink]:
     """Build the sidebar links of a user for the current endpoint.
 
     Must run inside a request context because the URLs are resolved with ``url_for``.
 
     :param role_names: Names of the roles of the user.
     :param endpoint: Current endpoint, or ``None`` when no route matched.
+    :param superuser: Whether the user is a superuser.
     :return: The links to render, with the active one flagged.
     """
-    items = visible_items(role_names)
+    items = visible_items(role_names, superuser=superuser)
     current = active_item(items, endpoint)
     return [NavLink(item.label, url_for(item.endpoint), item.icon, item is current) for item in items]
 
@@ -126,7 +138,11 @@ def inject_navigation() -> dict[str, list[NavLink]]:
     """
     if not current_user.is_authenticated:
         return {"nav_links": []}
-    return {"nav_links": build_navigation((role.name for role in current_user.roles), request.endpoint)}
+    return {
+        "nav_links": build_navigation(
+            (role.name for role in current_user.roles), request.endpoint, superuser=is_superuser(current_user)
+        )
+    }
 
 
 def register_navigation(app: Flask) -> None:

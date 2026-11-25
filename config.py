@@ -13,6 +13,9 @@ class Config:
     WhatsApp messages go through Twilio, whose credentials come from https://console.twilio.com/. E-mail goes through
     Gmail over SSL (port 465; use 587 for TLS): the account needs two-factor authentication and an "app password",
     which is what ``EMAGRESER_MAIL_PASSWORD`` must hold.
+
+    ``SUPERUSER_EMAILS`` lists, separated by commas, semicolons or spaces, the e-mails allowed to download the database
+    backup. It is empty by default, so nobody has access until it is set.
     """
 
     SECRET_KEY = os.getenv("FLASK_SECRET_KEY", "your-secret-key")
@@ -55,6 +58,8 @@ class Config:
     SECURITY_MSG_REAUTHENTICATION_REQUIRED = ("Confirme sua identidade para acessar esta página.", "warning")
     SECURITY_MSG_REAUTHENTICATION_SUCCESSFUL = ("Identidade confirmada com sucesso.", "success")
     SECURITY_MSG_GENERIC_AUTHN_FAILED = ("Falha na autenticação: e-mail ou senha inválidos.", "error")
+
+    SUPERUSER_EMAILS = os.getenv("SUPERUSER_EMAILS", "")
 
     SQLALCHEMY_DATABASE_URI = os.environ.get(
         "SQLALCHEMY_DATABASE_URI", f"sqlite:///{os.path.join(BASE_DIR, 'database.db')}"

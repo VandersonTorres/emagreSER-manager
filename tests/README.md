@@ -19,12 +19,13 @@ The e2e tests use the installed Google Chrome (`/usr/bin/google-chrome`). Withou
 ## Run
 
 ```bash
-.venv/bin/python -m pytest              # backend golden + page smoke tests; does not run the e2e tests
+.venv/bin/python -m pytest              # backend golden + page smoke tests; does not run the e2e or pg_restore tests
 .venv/bin/python -m pytest -m e2e       # browser e2e tests (needs internet: pdf.js CDN)
+.venv/bin/python -m pytest -m pg_restore  # restores a backup into PostgreSQL (needs a server, see "Backup tests")
 ```
 
-The GitHub Actions workflow `.github/workflows/tests.yml` runs both commands on pull requests to `develop`,
-`release/**` and `main`.
+The GitHub Actions workflow `.github/workflows/tests.yml` runs the first two commands on pull requests to `develop`,
+`release/**` and `main`. The `pg_restore` tests run only on your machine.
 
 ## What each golden represents (`tests/golden/`)
 
@@ -94,6 +95,35 @@ for visual review; without it nothing is written:
 ```bash
 SCREENSHOT_DIR=/tmp/ui-screens .venv/bin/python -m pytest -m e2e tests/e2e/test_responsive_layout.py
 ```
+
+## Backup tests
+
+`test_backup.py` covers the database backup without PostgreSQL (the test database is SQLite): the superuser list
+(`SUPERUSER_EMAILS`, empty in the session app; tests set it through the `set_superusers` fixture, which restores it),
+the access rules (anonymous visitors go to the login page, everybody outside the list gets 403 on GET and POST, whatever
+the role), the Backup menu entry, the ZIP members and names, the manifest counts, the Excel-friendly CSVs (BOM, `;`,
+decimal comma, no secret columns, formula injection), the SQL script (transaction, quoted `"user"` and `"order"`,
+sequences, tricky text), the audit log line, the flash on failure, a check that nothing is written to disk and a
+50,000-row timing check. `test_csrf_rendering.py` also checks the token of the download form and that a POST without it
+builds nothing.
+
+`test_backup_restore.py` restores the generated script into a real PostgreSQL server with `psql -v ON_ERROR_STOP=1`:
+into an empty database, into one whose empty tables already exist, and into a migrated one; it compares the counts with
+the manifest and every row with the source (a temporary row with quotes, backslashes, newlines, semicolons, accents,
+emoji, a leading `=`, NULLs and infinite numbers is added and removed by the `tricky_rows` fixture), checks that new
+rows get the next id, and checks that restoring into a database that already has data fails and changes nothing. Each
+test creates databases with unique names and drops them at the end. The tests are marked `pg_restore`, never run by
+default, and fail (they never skip) when `BACKUP_RESTORE_DATABASE_URL` or `psql` is missing.
+
+Run them against a throwaway PostgreSQL 16 (the version of Heroku Postgres), for example with Docker:
+
+```bash
+docker run --rm -d --name emagreser-restore-check -e POSTGRES_PASSWORD=<throwaway> -p 127.0.0.1:55432:5432 postgres:16
+BACKUP_RESTORE_DATABASE_URL=postgresql://postgres:<throwaway>@127.0.0.1:55432/postgres .venv/bin/python -m pytest -m pg_restore
+docker rm -f emagreser-restore-check
+```
+
+The container is bound to `127.0.0.1` only. Wait a few seconds after `docker run` until the server accepts connections.
 
 ## Re-recording goldens
 

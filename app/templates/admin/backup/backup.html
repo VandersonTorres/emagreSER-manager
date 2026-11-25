@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% from "_macros.html" import page_header %}
+
+{% block title %}Backup · EmagreSER{% endblock %}
+
+{% block content_class %}{% endblock %}
+
+{% block content %}
+{% set contents = [
+    ("database", "Cópia completa para restaurar o sistema", "Um arquivo .sql que recria todo o banco de dados em um PostgreSQL vazio."),
+    ("file-earmark-spreadsheet", "Planilhas para o Excel", "Uma planilha (.csv) por tabela, sem senhas nem códigos de acesso."),
+    ("card-checklist", "Resumo do backup", "A data, quem gerou e quantos registros há em cada tabela."),
+    ("journal-check", "Passo a passo de restauração", "Um guia (LEIA-ME) que explica como colocar os dados de volta."),
+] %}
+
+{{ page_header("Backup do banco de dados", "Baixe uma cópia completa dos dados do sistema sempre que precisar.") }}
+
+<div class="row g-4">
+    <div class="col-12 col-lg-7">
+        <section class="card h-100" aria-labelledby="backup-contents-title">
+            <div class="card-header app-card-header">
+                <h2 class="app-card-title" id="backup-contents-title">O que vem no arquivo</h2>
+            </div>
+            <ul class="list-group list-group-flush">
+                {% for icon, title, text in contents %}
+                <li class="list-group-item backup-item">
+                    <span class="backup-item-icon"><i class="bi bi-{{ icon }}" aria-hidden="true"></i></span>
+                    <span>
+                        <span class="backup-item-title">{{ title }}</span>
+                        <span class="backup-item-text">{{ text }}</span>
+                    </span>
+                </li>
+                {% endfor %}
+            </ul>
+        </section>
+    </div>
+
+    <div class="col-12 col-lg-5">
+        <section class="card h-100" aria-labelledby="backup-download-title">
+            <div class="card-header app-card-header">
+                <h2 class="app-card-title" id="backup-download-title">Antes de baixar</h2>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-warning d-flex align-items-start gap-2" role="note">
+                    <i class="bi bi-shield-exclamation" aria-hidden="true"></i>
+                    <div>
+                        <strong>Dados pessoais e de saúde.</strong>
+                        O arquivo tem informações de pacientes protegidas pela LGPD. Guarde em um lugar seguro e não compartilhe.
+                    </div>
+                </div>
+                <p>Os arquivos PDF das dietas não estão incluídos: o backup guarda apenas os links deles.</p>
+                <p class="text-body-secondary small">O arquivo é montado na hora do download e não fica salvo no servidor.</p>
+                <form method="post" action="{{ url_for('backup.download_backup') }}">
+                    {{ form.hidden_tag() }}
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="bi bi-download" aria-hidden="true"></i> Baixar backup
+                    </button>
+                </form>
+            </div>
+        </section>
+    </div>
+</div>
+{% endblock %}

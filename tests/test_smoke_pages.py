@@ -160,6 +160,7 @@ EXPECTED: list[dict[str, Any]] = [
     row("last-edition-without-file", "diets.view_last_edition", {"id": "@diet_a4"}, 403, 200, 200, 200),
     row("temp-file", "diets.serve_temp_file", {"filename": "@diet_edited_file"}, 200, 200, 200, 200),
     row("download-temp", "diets.download_temp_diet", {"filename": "@diet_edited_file"}, 403, 200, 200, 200),
+    row("show", "backup.show_backup", {}, LOGIN, 403, 403, 403),
     row("login", "security.login", {}, 200, HOME, HOME, HOME),
     row("change-password", "security.change_password", {}, LOGIN, 200, 200, 200),
     row("forgot-password", "security.forgot_password", {}, 200, HOME, HOME, HOME),
@@ -168,7 +169,7 @@ EXPECTED: list[dict[str, Any]] = [
 ]
 
 EXCLUDED: set[str] = set()
-APP_BLUEPRINTS = {"main", "admin", "schedules", "patients", "specialists", "diets"}
+APP_BLUEPRINTS = {"main", "admin", "backup", "schedules", "patients", "specialists", "diets"}
 
 
 def _parametrized_cases() -> Iterator[ParameterSet]:

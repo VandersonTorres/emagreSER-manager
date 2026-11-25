@@ -1,16 +1,20 @@
 """Render pages with CSRF protection on, as in production; the rest of the suite runs with it off."""
 
-from collections.abc import Iterator
+import io
+import zipfile
+from collections.abc import Callable, Iterator
 from typing import Any
 
 import pytest
 from _pytest.mark.structures import ParameterSet
+from bs4 import BeautifulSoup
 from flask import Flask, url_for
 from flask_security.recoverable import generate_reset_password_token
 
 from app.models import User
 from tests.aliases import ClientFactory, SeedData
 from tests.constants import EMAILS, TEST_PASSWORD
+from tests.test_backup import _forbidden_build
 from tests.test_smoke_pages import EXPECTED, ROLES, Bug, _resolve_params
 
 CSRF_INPUT = 'name="csrf_token"'
@@ -123,3 +127,57 @@ def test_login_without_csrf_token_shows_the_session_message(client_for: ClientFa
     assert response.status_code == 200
     assert 'role="alert"' in body
     assert CSRF_MESSAGE in body
+
+
+@pytest.mark.usefixtures("csrf_on")
+def test_backup_form_renders_the_csrf_token(
+    app: Flask, client_for: ClientFactory, set_superusers: Callable[[str], None]
+) -> None:
+    """Check that the backup download form renders with its CSRF token.
+
+    :param app: Flask application.
+    :param client_for: Factory of test clients by role.
+    :param set_superusers: Function that sets the superuser e-mails.
+    """
+    set_superusers(EMAILS["admin"])
+    with app.test_request_context():
+        url = url_for("backup.show_backup")
+
+    response = client_for("admin").get(url)
+
+    assert response.status_code == 200
+    assert CSRF_INPUT in response.get_data(as_text=True)
+
+
+@pytest.mark.usefixtures("csrf_on")
+def test_backup_download_is_refused_without_the_csrf_token(
+    app: Flask, client_for: ClientFactory, set_superusers: Callable[[str], None], monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Check that a download posted without the token builds nothing, and that the token of the page is accepted.
+
+    :param app: Flask application.
+    :param client_for: Factory of test clients by role.
+    :param set_superusers: Function that sets the superuser e-mails.
+    :param monkeypatch: Pytest monkeypatch fixture.
+    """
+    set_superusers(EMAILS["admin"])
+    with app.test_request_context():
+        url = url_for("backup.show_backup")
+    client = client_for("admin")
+
+    with monkeypatch.context() as patch:
+        patch.setattr("app.views.backup.build_backup", _forbidden_build)
+        refused = client.post(url)
+        wrong = client.post(url, data={"csrf_token": "not-a-valid-token"})
+    page = client.get(url).get_data(as_text=True)
+    token = BeautifulSoup(page, "html.parser").select_one("input[name=csrf_token]")["value"]
+    accepted = client.post(url, data={"csrf_token": token})
+
+    for response in (refused, wrong):
+        assert response.status_code == 302
+        assert response.headers["Location"] == url
+        assert response.mimetype != "application/zip"
+    assert accepted.status_code == 200 and accepted.mimetype == "application/zip"
+    with zipfile.ZipFile(io.BytesIO(accepted.data)) as archive:
+        assert "manifest.json" in archive.namelist()
+    assert "Atualize a página e tente novamente." in page
