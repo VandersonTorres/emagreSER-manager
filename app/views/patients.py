@@ -242,6 +242,7 @@ def add_skinfold(patient_id: int) -> ResponseReturnValue:
                 quadril=form.quadril.data,
                 idade_metabolica=form.idade_metabolica.data,
                 pa=form.pa.data,
+                observacoes=form.observacoes.data,
             )
             db.session.add(skinfold)
             db.session.commit()
@@ -344,7 +345,8 @@ def edit_skinfold(patient_id: int, skinfold_id: int) -> ResponseReturnValue:
 def view_patient(id: int) -> ResponseReturnValue:
     """Render the patient record with its evaluations, measurements and history.
 
-    Each evaluation is paired with the weight of the last measurement taken on or before its date.
+    Each evaluation is paired with the weight of the last measurement taken on or before its date. The latest
+    measurement (the highest date, then the highest id) goes to the template, which opens its observation in a dialog.
 
     :param id: Id of the patient.
     :return: The rendered record.
@@ -369,8 +371,13 @@ def view_patient(id: int) -> ResponseReturnValue:
                     break
             weight_per_evaluation[eval.id] = weight
 
+        latest_skinfold = max(patient.skinfolds, key=lambda fold: (fold.data_medicao, fold.id), default=None)
+
         return render_template(
-            "admin/patients/view_patient.html", patient=patient, weight_per_evaluation=weight_per_evaluation
+            "admin/patients/view_patient.html",
+            patient=patient,
+            weight_per_evaluation=weight_per_evaluation,
+            latest_skinfold=latest_skinfold,
         )
 
 

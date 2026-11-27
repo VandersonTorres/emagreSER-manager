@@ -33,6 +33,10 @@
     <div class="col-12 col-md-6">{{ field(form.idade_metabolica, id="idade_metabolica", step="1", inputmode="numeric", autocomplete="off") }}</div>
     {% endcall %}
 
+    {% call form_section("Observações", "notes") %}
+    <div class="col-12">{{ field(form.observacoes, rows="4", maxlength="1000", autocomplete="off", help="Opcional, até 1000 caracteres. Se esta for a bioimpedância mais recente, a observação aparece em destaque ao abrir a ficha do paciente.") }}</div>
+    {% endcall %}
+
     <div class="form-actions">
         <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg" aria-hidden="true"></i> Salvar bioimpedância</button>
         <a class="btn btn-outline-secondary" href="{{ record_url }}">Cancelar</a>

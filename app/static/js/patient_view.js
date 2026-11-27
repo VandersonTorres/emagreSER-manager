@@ -1,5 +1,6 @@
 /**
- * Drives the patient record: age, tabs kept in the URL hash, show-more buttons and delete confirmations.
+ * Drives the patient record: age, tabs kept in the URL hash, show-more buttons, delete confirmations and the dialog
+ * with the observation of the latest bioimpedance.
  * @returns {void}
  */
 (function () {
@@ -16,6 +17,18 @@
      * @type {string}
      */
     const STORAGE_PREFIX = "patient-tab:";
+
+    /**
+     * Id of the dialog that shows the observation of the latest bioimpedance.
+     * @type {string}
+     */
+    const NOTE_MODAL_ID = "note-modal";
+
+    /**
+     * Id of the heading that receives the focus when the observation dialog closes.
+     * @type {string}
+     */
+    const NOTE_RETURN_FOCUS_ID = "patient-name";
 
     /**
      * Pages that lead back to a given tab of the record after saving.
@@ -250,6 +263,44 @@
     }
 
     /**
+     * Moves the focus to the button that closes the observation dialog once it is fully shown.
+     * @param {Event} event The shown.bs.modal event.
+     * @returns {void}
+     */
+    function focusAcknowledgeButton(event) {
+        const dialog = /** @type {HTMLElement} */ (event.target);
+        const button = /** @type {HTMLElement | null} */ (dialog.querySelector(".modal-footer .btn-primary"));
+        if (button) {
+            button.focus();
+        }
+    }
+
+    /**
+     * Gives the focus back to the page, on the patient name, after the observation dialog closes.
+     * @returns {void}
+     */
+    function returnFocusToPage() {
+        const heading = document.getElementById(NOTE_RETURN_FOCUS_ID);
+        if (heading) {
+            heading.focus({ preventScroll: true });
+        }
+    }
+
+    /**
+     * Opens the dialog with the observation of the latest bioimpedance, which the server only renders when it exists.
+     * @returns {void}
+     */
+    function initNoteModal() {
+        const dialog = document.getElementById(NOTE_MODAL_ID);
+        if (!dialog || !window.bootstrap) {
+            return;
+        }
+        dialog.addEventListener("shown.bs.modal", focusAcknowledgeButton);
+        dialog.addEventListener("hidden.bs.modal", returnFocusToPage);
+        window.bootstrap.Modal.getOrCreateInstance(dialog).show();
+    }
+
+    /**
      * Prepares the patient record once the page is ready.
      * @returns {void}
      */
@@ -257,6 +308,7 @@
         showAge();
         initToggles();
         initTabs();
+        initNoteModal();
         document.addEventListener("submit", confirmSubmit);
     }
 

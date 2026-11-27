@@ -739,6 +739,10 @@ body {
     pointer-events: auto;
 }
 
+body:has(#note-modal.show) .toast-region {
+    z-index: 1040;
+}
+
 .app-toast {
     --bs-toast-bg: var(--app-surface);
     --bs-toast-border-color: var(--app-border);
@@ -1557,6 +1561,101 @@ body {
     .record-table.table-stack tr:hover > * {
         --bs-table-bg-state: transparent;
     }
+}
+
+.patient-header .page-header-title:focus {
+    outline: 0;
+}
+
+.record-table .skinfold-row.has-note > td {
+    border-bottom-width: 0;
+}
+
+.record-table .skinfold-note-row > td {
+    padding-top: 0.15rem;
+}
+
+.skinfold-note {
+    max-width: 75ch;
+    padding: 0.55rem 0.85rem;
+    border-left: 3px solid var(--app-accent);
+    border-radius: 0 0.5rem 0.5rem 0;
+    background: var(--app-primary-subtle);
+}
+
+.skinfold-note-label {
+    display: block;
+    color: var(--app-primary);
+    font-size: 0.82rem;
+    font-weight: 700;
+}
+
+.skinfold-note-text {
+    margin: 0.15rem 0 0;
+    overflow-wrap: anywhere;
+    white-space: pre-line;
+}
+
+@media (max-width: 575.98px) {
+    .record-table.table-stack tr.has-note {
+        margin-bottom: 0;
+        border-bottom: 0;
+        border-bottom-left-radius: 0;
+        border-bottom-right-radius: 0;
+    }
+
+    .record-table.table-stack tr.skinfold-note-row {
+        border-top: 0;
+        border-top-left-radius: 0;
+        border-top-right-radius: 0;
+    }
+
+    .record-table.table-stack .skinfold-note-row td {
+        display: block;
+        padding: 0.25rem 0 0.7rem;
+        text-align: left;
+    }
+}
+
+.note-modal .modal-header {
+    align-items: flex-start;
+    border-bottom-color: var(--app-primary-subtle-border);
+    background: var(--app-primary-subtle);
+}
+
+.note-modal .modal-title {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5rem;
+    color: var(--app-primary);
+    font-size: 1.15rem;
+    font-weight: 700;
+}
+
+.note-modal .btn-close {
+    box-sizing: content-box;
+    width: 1.25rem;
+    height: 1.25rem;
+    padding: 0.75rem;
+}
+
+.note-modal .modal-body:focus-visible {
+    outline: 2px solid var(--app-focus-ring);
+    outline-offset: -2px;
+}
+
+.note-modal-date {
+    margin: 0 0 0.5rem;
+    color: var(--app-muted);
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+.note-modal-text {
+    margin: 0;
+    font-size: 1.05rem;
+    overflow-wrap: anywhere;
+    white-space: pre-line;
 }
 
 .chart-wrap {

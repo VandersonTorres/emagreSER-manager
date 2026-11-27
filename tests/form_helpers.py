@@ -22,6 +22,19 @@ def _select_value(select: Tag) -> str:
     return str(chosen.get("value", chosen.get_text()))
 
 
+def _textarea_value(textarea: Tag) -> str:
+    """Read the value a browser submits for a textarea: the text without the line break that follows the opening tag.
+
+    :param textarea: The textarea element.
+    :return: The text of the element, without one leading line break (``\\n`` or ``\\r\\n``).
+    """
+    text = textarea.get_text()
+    for prefix in ("\r\n", "\n"):
+        if text.startswith(prefix):
+            return text[len(prefix) :]
+    return text
+
+
 def form_entries(html: str, selector: str) -> list[tuple[str, str]]:
     """List the name and value pairs a browser submits for a form, before any script runs.
 
@@ -47,7 +60,7 @@ def form_entries(html: str, selector: str) -> list[tuple[str, str]]:
         elif control.name == "select":
             entries.append((str(name), _select_value(control)))
         else:
-            entries.append((str(name), control.get_text().removeprefix("\n")))
+            entries.append((str(name), _textarea_value(control)))
     return entries
 
 

@@ -22,10 +22,11 @@ The e2e tests use the installed Google Chrome (`/usr/bin/google-chrome`). Withou
 .venv/bin/python -m pytest              # backend golden + page smoke tests; does not run the e2e or pg_restore tests
 .venv/bin/python -m pytest -m e2e       # browser e2e tests (needs internet: pdf.js CDN)
 .venv/bin/python -m pytest -m pg_restore  # restores a backup into PostgreSQL (needs a server, see "Backup tests")
+.venv/bin/python -m pytest -m pg_migration  # applies the migrations to PostgreSQL (needs a server, see "Migration tests")
 ```
 
 The GitHub Actions workflow `.github/workflows/tests.yml` runs the first two commands on pull requests to `develop`,
-`release/**` and `main`. The `pg_restore` tests run only on your machine.
+`release/**` and `main`. The `pg_restore` and `pg_migration` tests run only on your machine.
 
 ## What each golden represents (`tests/golden/`)
 
@@ -102,11 +103,13 @@ The patient pages were redesigned without changing what their forms send, what t
 can do what. `patient_cases.py` holds the records and input sets (a complete patient, a fixed evaluation and
 measurement, eight evaluation cases from child to elderly and from low to high BMI, blood pressure and weight inputs),
 and `patient_baselines.py` holds what the pages before the redesign sent, computed and stored for those inputs. It was
-recorded in Chrome from the previous pages and is only data: do not edit it by hand. The one intended difference from
-the recorded pages is the "Azia / Refluxo" question, which the clinic no longer asks: `REMOVED_FIELDS` in
-`patient_cases.py` lists it, the tests take it out of the recorded names and values, and `REMOVED_FIELD_STORED_VALUES`
-holds the empty answer a new patient gets. The column stays, so the answers already stored are kept (the edit page does
-not touch them).
+recorded in Chrome from the previous pages and is only data: do not edit it by hand. The intended differences from
+the recorded pages are the "Azia / Refluxo" question, which the clinic no longer asks, and the optional "Observações"
+of the bioimpedance forms, which the recording did not have. `REMOVED_FIELDS` in `patient_cases.py` lists the first, the
+tests take it out of the recorded names and values, and `REMOVED_FIELD_STORED_VALUES` holds the empty answer a new
+patient gets; the column stays, so the answers already stored are kept (the edit page does not touch them).
+`ADDED_FIELDS` lists, by page, the fields the tests add to the recorded names, and `ADDED_FIELD_RENDERED_VALUES` holds
+what the page renders in them when the stored row has nothing there. The baselines themselves are never re-recorded.
 
 `test_patient_forms.py` (no browser) checks, for every form page, the submitted field names and the rendered values
 against the baseline (with and without the CSRF token), the round trip of the edit page (open, change one field, save:
@@ -116,6 +119,15 @@ the markup: the list (data, "⋯" menu, contact links, `Remover` hidden from nut
 states, the record (header, accessible tabs and hash keys, 14 and 11 column tables, delete forms with confirmation,
 pinned Chart.js with its integrity hash), the custom history, the delete confirmation, labels, input types, back links,
 and that templates and scripts carry no comments.
+
+`test_bioimpedance_notes.py` covers the observation of a bioimpedance measurement (`note_helpers.py` adds measurements
+with or without a note). The record opens a dialog with the note of the latest measurement only: the highest date, and
+the highest id on a tie; no dialog when that measurement has no note, even if an older one has, and none without
+measurements. The text is escaped and keeps its line breaks, every role that opens the record sees it, and the
+Bioimpedância tab lists every note in a detail row under its measurement (the table keeps its 11 columns, and the row
+carries the class that the "show more" button hides together with the measurement). The custom history never shows a
+note. `test_patient_forms.py` covers what the forms store: NULL for a blank note, the stripped text otherwise, NULL
+again after clearing it, the limit of 1000 characters and its message in Portuguese.
 
 `test_custom_history.py` covers the custom history page. `history_cases.py` holds six patients with evaluations and
 measurements (one evaluation, gain, loss, unchanged weight, fat and muscle filled and empty, measurements entered out of
@@ -135,6 +147,12 @@ São Paulo, and that the record shows "Paciente desde" in the São Paulo time zo
 installed WTForms and fails when a message has no translation, so an upgrade that adds messages cannot show English. It
 also checks real errors (required, float, integer, date, choice) on the patient forms and on rendered pages, and that
 the CSRF token is still required and accepted by the forms that validate, with the Portuguese message.
+
+`e2e/test_bioimpedance_notes.py` drives the dialog and the notes in Chrome on both viewports: the dialog is visible
+after the load with the focus inside, "Entendi" and Escape close it and the focus returns to the patient name, a reload
+shows it again, a long note with an unbreakable word wraps and scrolls inside it on a 390px phone, a script in a note is
+text, the tab shows the notes next to their measurements and the "show more" button hides them together, and a note is
+saved and cleared through the forms. It also checks the 11 and 14 columns of the two tables.
 
 `e2e/test_patient_pages.py` replays the calculation cases in Chrome (every computed field, the age, the blood pressure
 and weight normalization, and the stored rows), opens every patient page on both viewports looking for script errors and
@@ -168,6 +186,34 @@ Run them against a throwaway PostgreSQL 16 (the version of Heroku Postgres), for
 docker run --rm -d --name emagreser-restore-check -e POSTGRES_PASSWORD=<throwaway> -p 127.0.0.1:55432:5432 postgres:16
 BACKUP_RESTORE_DATABASE_URL=postgresql://postgres:<throwaway>@127.0.0.1:55432/postgres .venv/bin/python -m pytest -m pg_restore
 docker rm -f emagreser-restore-check
+```
+
+The container is bound to `127.0.0.1` only. Wait a few seconds after `docker run` until the server accepts connections.
+
+## Migration tests
+
+`test_migrations.py` reads the Alembic scripts without a database: there is exactly one head (the revision that adds
+`skinfolds.observacoes`), its `down_revision` is the previous head, its source only adds and drops that nullable text
+column inside `batch_alter_table`, it runs on an in-memory SQLite table, and the `Procfile` has the `release` line that
+runs the migrations plus the unchanged `web` line.
+
+`test_migration_postgres.py` applies the migration to a real PostgreSQL server the way Heroku does. The old chain of
+migrations cannot build a database from nothing (its first steps alter tables the application created, and every `flask`
+command creates the missing tables from the current models first), so each test builds the schema of the previous
+revision from the models of commit `OLD_SCHEMA_COMMIT` (read with `git archive` into a temporary folder, never from the
+working tree), runs `flask db stamp` and stores one measurement. Then it runs the exact `release:` command of the
+`Procfile` (with `FLASK_SKIP_DOTENV=1` and `SQLALCHEMY_DATABASE_URI` pointing to the throwaway database) and checks the
+column (type `text`, nullable, no default), the intact measurement with a NULL observation, a second release that
+changes nothing, `flask db downgrade` dropping the column and a new upgrade adding it back, and that Alembic's
+`compare_metadata` finds no difference on `skinfolds` between the models and the migrated database (and finds the
+missing column before the migration). The tests are marked `pg_migration`, never run by default, and stop with an error
+(they never skip) when `MIGRATION_TEST_DATABASE_URL` or `git` is missing. Every test creates a database with a unique
+name and drops it at the end.
+
+```bash
+docker run --rm -d --name emagreser-migration-check -e POSTGRES_PASSWORD=<throwaway> -p 127.0.0.1:55433:5432 postgres:16
+MIGRATION_TEST_DATABASE_URL=postgresql://postgres:<throwaway>@127.0.0.1:55433/postgres .venv/bin/python -m pytest -m pg_migration
+docker rm -f emagreser-migration-check
 ```
 
 The container is bound to `127.0.0.1` only. Wait a few seconds after `docker run` until the server accepts connections.

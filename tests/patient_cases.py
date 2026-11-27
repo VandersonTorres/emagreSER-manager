@@ -1,8 +1,10 @@
 """Records and input sets of the patient page tests, whose recorded results are in tests/patient_baselines.py.
 
-The baselines keep what the pages did when they were recorded. The only intended difference is the set of fields the
-clinic no longer asks (``REMOVED_FIELDS``): the tests take them out of the recorded names and values, and a new patient
-gets the empty answer listed in ``REMOVED_FIELD_STORED_VALUES``.
+The baselines keep what the pages did when they were recorded. The intended differences are the fields the clinic no
+longer asks (``REMOVED_FIELDS``): the tests take them out of the recorded names and values, and a new patient gets the
+empty answer listed in ``REMOVED_FIELD_STORED_VALUES``; and the fields the pages ask now and the recording did not have
+(``ADDED_FIELDS``, by page): the tests add them to the recorded names, and ``ADDED_FIELD_RENDERED_VALUES`` holds what a
+page renders in them when the stored row has nothing there.
 """
 
 from dataclasses import dataclass
@@ -11,6 +13,11 @@ from typing import Any
 
 REMOVED_FIELDS: frozenset[str] = frozenset({"heartburn"})
 REMOVED_FIELD_STORED_VALUES: dict[str, str] = {"heartburn": ""}
+ADDED_FIELDS: dict[str, frozenset[str]] = {
+    "add_skinfold": frozenset({"observacoes"}),
+    "edit_skinfold": frozenset({"observacoes"}),
+}
+ADDED_FIELD_RENDERED_VALUES: dict[str, str] = {"observacoes": ""}
 
 COMPLETE_PATIENT: dict[str, Any] = {
     "name": "Paciente Completo Base",

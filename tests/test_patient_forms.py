@@ -24,9 +24,12 @@ from tests.patient_baselines import (
     STORED_NEW_PATIENT,
 )
 from tests.patient_cases import (
+    ADDED_FIELD_RENDERED_VALUES,
+    ADDED_FIELDS,
     ANTHRO_ADD_CASES,
     ANTHRO_COLUMNS,
     ANTHRO_EDIT_CASES,
+    FIXED_SKINFOLD,
     NO_SPECIALIST_PATIENT,
     PATIENT_COLUMNS,
     REMOVED_FIELD_STORED_VALUES,
@@ -60,12 +63,13 @@ ADMIN_NAME = "Usuario Teste admin"
 
 
 def _expected_names(page: str) -> list[str]:
-    """Take the recorded field names of a page without the fields the clinic no longer asks, sorted.
+    """Take the recorded field names of a page without the fields the clinic no longer asks and with the added ones.
 
     :param page: Name of the page in the baselines.
-    :return: The names the page must submit.
+    :return: The sorted names the page must submit.
     """
-    return sorted(name for name in FORM_FIELD_NAMES[page] if name not in REMOVED_FIELDS)
+    recorded = {name for name in FORM_FIELD_NAMES[page] if name not in REMOVED_FIELDS}
+    return sorted(recorded | ADDED_FIELDS.get(page, frozenset()))
 
 
 def _url(app: Flask, endpoint: str, **values: int | str) -> str:
@@ -187,6 +191,23 @@ def test_form_carries_the_csrf_token_as_before(
 
     assert ("csrf_token" in names) is (page in PAGES_WITH_CSRF_TOKEN), page
     assert [name for name in names if name != "csrf_token"] == _expected_names(page)
+
+
+def test_only_the_measurement_forms_submit_the_observation(
+    client_admin: FlaskClient, pages: dict[str, tuple[str, str]]
+) -> None:
+    """Check that the added field is submitted by the two measurement forms and by no other form of the area.
+
+    :param client_admin: Test client logged in as admin.
+    :param pages: URL and form selector of each page.
+    """
+    assert set(ADDED_FIELDS) <= set(FORM_FIELD_NAMES)
+    assert ADDED_FIELDS == {"add_skinfold": {"observacoes"}, "edit_skinfold": {"observacoes"}}
+    for page, (url, selector) in pages.items():
+        names = form_names(_html(client_admin, url), selector)
+
+        assert ("observacoes" in names) is (page in ADDED_FIELDS), page
+        assert all(name in FORM_FIELD_NAMES[page] for name in names if name not in ADDED_FIELDS.get(page, ())), page
 
 
 def test_pages_are_listed_in_the_baseline(pages: dict[str, tuple[str, str]]) -> None:
@@ -338,9 +359,10 @@ def test_skinfold_forms_keep_the_values_the_server_renders(
     first = dict(form_entries(_html(client_admin, first_url), "form.add-skinfold-form"))
     edit = _rendered_values(client_admin, pages, "edit_skinfold", "edit_skinfold")
 
-    assert existing == FORM_VALUES["add_skinfold_existing"]
-    assert first == FORM_VALUES["add_skinfold_first"]
-    assert edit == FORM_VALUES["edit_skinfold_fixed"]
+    added = {name: ADDED_FIELD_RENDERED_VALUES[name] for name in ADDED_FIELDS["add_skinfold"]}
+    assert existing == {**FORM_VALUES["add_skinfold_existing"], **added}
+    assert first == {**FORM_VALUES["add_skinfold_first"], **added}
+    assert edit == {**FORM_VALUES["edit_skinfold_fixed"], **added}
 
 
 @pytest.fixture
@@ -669,3 +691,224 @@ def test_edited_measurement_stores_the_recorded_values(
     assert response.status_code == 302
     after = _snapshot(app, SkinFolds, skinfold_id, SKINFOLD_COLUMNS)
     assert changed_columns(before, after) == expected["diff"]
+
+
+OBSERVATION_TOO_LONG_MESSAGE = "O campo não pode ter mais de 1000 caracteres."
+
+
+def _observation(app: Flask, skinfold_id: int) -> str | None:
+    """Read the stored observation of a measurement.
+
+    :param app: Flask application.
+    :param skinfold_id: Id of the measurement.
+    :return: The stored text, or None when the column is NULL.
+    """
+    return _snapshot(app, SkinFolds, skinfold_id, ("observacoes",))["observacoes"]
+
+
+def _add_measurement_data(client: FlaskClient, url: str, **overrides: str) -> dict[str, str]:
+    """Build the data a browser posts from the new measurement form, with a valid measurement typed in.
+
+    :param client: Test client.
+    :param url: URL path of the new measurement page.
+    :param overrides: Fields typed or changed by the test, by name.
+    :return: The data to post.
+    """
+    typed = {"data_medicao": "2026-11-20", "altura": "1.7", "peso": "70.5", "pa": "12/8", **overrides}
+    return _post_values(client, url, "form.add-skinfold-form", typed)
+
+
+def _new_measurement_observation(app: Flask, patient_id: int) -> list[str | None]:
+    """List the stored observations of the measurements of a patient, by id.
+
+    :param app: Flask application.
+    :param patient_id: Id of the patient.
+    :return: The observation of each measurement.
+    """
+    with app.app_context():
+        rows = SkinFolds.query.filter_by(patient_id=patient_id).order_by(SkinFolds.id).all()
+        return [row.observacoes for row in rows]
+
+
+@pytest.mark.parametrize(
+    "typed, stored",
+    [
+        ("", None),
+        ("   \r\n \t ", None),
+        ("Alergia a lactose", "Alergia a lactose"),
+        ("  Texto com bordas  \r\n", "Texto com bordas"),
+        ("linha 1\r\n\r\nlinha 3", "linha 1\n\nlinha 3"),
+        ('<b>negrito</b> & "aspas"', '<b>negrito</b> & "aspas"'),
+    ],
+    ids=["empty", "blank", "text", "stripped", "line_breaks", "markup"],
+)
+def test_new_measurement_stores_the_observation(
+    app: Flask, client_admin: FlaskClient, case_patients: Callable[..., int], typed: str, stored: str | None
+) -> None:
+    """Check that the new measurement page stores NULL for a blank observation and the stripped text otherwise.
+
+    Line breaks sent by a browser (``\\r\\n``) are stored as ``\\n``.
+
+    :param app: Flask application.
+    :param client_admin: Test client logged in as admin.
+    :param case_patients: Factory of temporary patients.
+    :param typed: Text typed in the observation field.
+    :param stored: Value the column must hold.
+    """
+    patient_id = case_patients("Paciente Observacao Nova")
+    url = _url(app, "patients.add_skinfold", patient_id=patient_id)
+
+    response = client_admin.post(url, data=_add_measurement_data(client_admin, url, observacoes=typed))
+
+    assert response.status_code == 302
+    assert _new_measurement_observation(app, patient_id) == [stored]
+
+
+def test_new_measurement_without_the_observation_field_stores_null(
+    app: Flask, client_admin: FlaskClient, case_patients: Callable[..., int]
+) -> None:
+    """Check that a page that does not send the field, such as one opened before the change, still saves.
+
+    :param app: Flask application.
+    :param client_admin: Test client logged in as admin.
+    :param case_patients: Factory of temporary patients.
+    """
+    patient_id = case_patients("Paciente Observacao Ausente")
+    url = _url(app, "patients.add_skinfold", patient_id=patient_id)
+    data = _add_measurement_data(client_admin, url)
+    del data["observacoes"]
+
+    response = client_admin.post(url, data=data)
+
+    assert response.status_code == 302
+    assert _new_measurement_observation(app, patient_id) == [None]
+
+
+@pytest.fixture
+def noted_measurement(app: Flask, complete_patient: dict[str, int]) -> dict[str, Any]:
+    """Add a measurement with an observation to the complete patient; the fixture of the patient removes it.
+
+    :param app: Flask application.
+    :param complete_patient: Ids of the patient with every field filled and its records.
+    :return: The ids of the patient and of the measurement.
+    """
+    with app.app_context():
+        row = SkinFolds(patient_id=complete_patient["patient"], **{**FIXED_SKINFOLD, "observacoes": "Nota antiga"})
+        db.session.add(row)
+        db.session.commit()
+        return {"patient": complete_patient["patient"], "skinfold": row.id}
+
+
+def test_edit_page_shows_saves_and_clears_the_observation(
+    app: Flask, client_admin: FlaskClient, noted_measurement: dict[str, Any]
+) -> None:
+    """Check the round trip of the edit page: the note is shown, an untouched save keeps it, a change replaces it.
+
+    A blank text clears it, which stores NULL again.
+
+    :param app: Flask application.
+    :param client_admin: Test client logged in as admin.
+    :param noted_measurement: Ids of the patient and of the measurement with a note.
+    """
+    skinfold_id = noted_measurement["skinfold"]
+    url = _url(app, "patients.edit_skinfold", patient_id=noted_measurement["patient"], skinfold_id=skinfold_id)
+    selector = "form.edit-skinfold-form"
+    assert dict(form_entries(_html(client_admin, url), selector))["observacoes"] == "Nota antiga"
+
+    for typed, expected in (
+        ({}, "Nota antiga"),
+        ({"observacoes": "  Nota nova  "}, "Nota nova"),
+        ({"observacoes": "   "}, None),
+    ):
+        response = client_admin.post(url, data=_post_values(client_admin, url, selector, typed))
+
+        assert response.status_code == 302
+        assert _observation(app, skinfold_id) == expected, typed
+    assert dict(form_entries(_html(client_admin, url), selector))["observacoes"] == ""
+
+
+def test_edit_page_keeps_the_observation_when_the_field_is_not_sent(
+    app: Flask, client_admin: FlaskClient, noted_measurement: dict[str, Any]
+) -> None:
+    """Check that a page that does not send the field cannot erase a note that was saved meanwhile.
+
+    :param app: Flask application.
+    :param client_admin: Test client logged in as admin.
+    :param noted_measurement: Ids of the patient and of the measurement with a note.
+    """
+    skinfold_id = noted_measurement["skinfold"]
+    url = _url(app, "patients.edit_skinfold", patient_id=noted_measurement["patient"], skinfold_id=skinfold_id)
+    data = _post_values(client_admin, url, "form.edit-skinfold-form", {"peso": "71"})
+    del data["observacoes"]
+
+    response = client_admin.post(url, data=data)
+
+    assert response.status_code == 302
+    assert _observation(app, skinfold_id) == "Nota antiga"
+    assert _snapshot(app, SkinFolds, skinfold_id, ("peso",)) == {"peso": 71.0}
+
+
+def test_observation_of_exactly_1000_characters_is_accepted(
+    app: Flask, client_admin: FlaskClient, case_patients: Callable[..., int]
+) -> None:
+    """Check the limit: 1000 characters are stored, even when the browser sends its line break as two characters.
+
+    The browser counts a line break as one character in ``maxlength``, so the text below is 1000 characters long for
+    the user and 1001 in the request.
+
+    :param app: Flask application.
+    :param client_admin: Test client logged in as admin.
+    :param case_patients: Factory of temporary patients.
+    """
+    patient_id = case_patients("Paciente Observacao Limite")
+    url = _url(app, "patients.add_skinfold", patient_id=patient_id)
+    plain = "a" * 1000
+    with_break = "b" * 500 + "\r\n" + "c" * 499
+
+    for typed in (plain, with_break):
+        response = client_admin.post(url, data=_add_measurement_data(client_admin, url, observacoes=typed))
+
+        assert response.status_code == 302
+
+    assert _new_measurement_observation(app, patient_id) == [plain, with_break.replace("\r\n", "\n")]
+
+
+@pytest.mark.parametrize("page", ["add_skinfold", "edit_skinfold"])
+def test_observation_longer_than_1000_characters_is_refused_in_portuguese(
+    app: Flask,
+    client_admin: FlaskClient,
+    case_patients: Callable[..., int],
+    noted_measurement: dict[str, Any],
+    page: str,
+) -> None:
+    """Check that 1001 characters give the Portuguese message next to the field and save nothing.
+
+    :param app: Flask application.
+    :param client_admin: Test client logged in as admin.
+    :param case_patients: Factory of temporary patients.
+    :param noted_measurement: Ids of the patient and of the measurement with a note.
+    :param page: Measurement form under test.
+    """
+    too_long = "x" * 1001
+    if page == "add_skinfold":
+        patient_id = case_patients("Paciente Observacao Longa")
+        url = _url(app, "patients.add_skinfold", patient_id=patient_id)
+        data = _add_measurement_data(client_admin, url, observacoes=too_long)
+    else:
+        url = _url(
+            app,
+            "patients.edit_skinfold",
+            patient_id=noted_measurement["patient"],
+            skinfold_id=noted_measurement["skinfold"],
+        )
+        data = _post_values(client_admin, url, "form.edit-skinfold-form", {"observacoes": too_long})
+
+    response = client_admin.post(url, data=data)
+
+    assert response.status_code == 200
+    body = response.get_data(as_text=True)
+    assert OBSERVATION_TOO_LONG_MESSAGE in body and too_long in body
+    if page == "add_skinfold":
+        assert _new_measurement_observation(app, patient_id) == []
+    else:
+        assert _observation(app, noted_measurement["skinfold"]) == "Nota antiga"
