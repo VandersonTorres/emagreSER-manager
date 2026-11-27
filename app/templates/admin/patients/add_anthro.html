@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% from "_macros.html" import page_header, field, empty_state %}
+{% from "_macros.html" import page_header, field, empty_state, form_errors %}
 {% from "admin/patients/_patient_macros.html" import form_section %}
 
 {% block title %}Nova avaliação · EmagreSER{% endblock %}
@@ -14,6 +14,7 @@
 {% set activity_help = "Na última antropometria, o Grau de Atividade Física foi avaliado como “" ~ grau_atv_fisica ~ "”." if grau_atv_fisica else none %}
 <form class="add-anthro-form" method="post" action="{{ url_for('patients.add_anthro', patient_id=patient.id) }}" data-birth-date="{{ patient.birth_date }}">
     {{ form.hidden_tag() }}
+    {{ form_errors(form) }}
 
     {% call form_section("Dados da avaliação", "evaluation") %}
     <div class="col-12 col-md-6">{{ field(form.data_avaliacao) }}</div>

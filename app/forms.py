@@ -5,6 +5,7 @@ from wtforms import (
     DateField,
     FileField,
     FloatField,
+    Form,
     IntegerField,
     SelectField,
     StringField,
@@ -16,8 +17,113 @@ from wtforms.validators import DataRequired, InputRequired, Optional
 
 from app.models import Diet, Specialists
 
+MESSAGES_PT_BR: dict[str, str] = {
+    "Invalid field name '%s'.": "Nome de campo inválido: '%s'.",
+    "Field must be equal to %(other_name)s.": "O campo deve ser igual a %(other_name)s.",
+    "Field must be between %(min)d and %(max)d characters long.": (
+        "O campo deve ter entre %(min)d e %(max)d caracteres."
+    ),
+    "Number must be at least %(min)s.": "O número deve ser no mínimo %(min)s.",
+    "Number must be at most %(max)s.": "O número deve ser no máximo %(max)s.",
+    "Number must be between %(min)s and %(max)s.": "O número deve estar entre %(min)s e %(max)s.",
+    "This field is required.": "Este campo é obrigatório.",
+    "Invalid input.": "Valor inválido.",
+    "Invalid email address.": "Endereço de e-mail inválido.",
+    "Invalid IP address.": "Endereço IP inválido.",
+    "Invalid Mac address.": "Endereço MAC inválido.",
+    "Invalid URL.": "Endereço da internet (URL) inválido.",
+    "Invalid UUID.": "Identificador (UUID) inválido.",
+    "Invalid value, must be one of: %(values)s.": "Valor inválido; use um destes: %(values)s.",
+    "Invalid value, can't be any of: %(values)s.": "Valor inválido; não pode ser nenhum destes: %(values)s.",
+    "This field cannot be edited.": "Este campo não pode ser editado.",
+    "This field is disabled and cannot have a value.": "Este campo está desativado e não pode ter valor.",
+    "Invalid CSRF Token.": "Token de segurança (CSRF) inválido.",
+    "CSRF token missing.": "Token de segurança (CSRF) ausente.",
+    "CSRF failed.": "Falha na verificação de segurança (CSRF).",
+    "CSRF token expired.": "Token de segurança (CSRF) expirado.",
+    "Invalid Choice: could not coerce.": "Opção inválida: não foi possível interpretar o valor.",
+    "Choices cannot be None.": "As opções não podem ser nulas.",
+    "Not a valid choice.": "Selecione uma opção válida.",
+    "Invalid choice(s): one or more data inputs could not be coerced.": (
+        "Opções inválidas: um ou mais valores não puderam ser interpretados."
+    ),
+    "Not a valid datetime value.": "Informe uma data e hora válidas.",
+    "Not a valid date value.": "Informe uma data válida.",
+    "Not a valid time value.": "Informe uma hora válida.",
+    "Not a valid week value.": "Informe uma semana válida.",
+    "Not a valid integer value.": "Informe um número inteiro válido.",
+    "Not a valid decimal value.": "Informe um número decimal válido.",
+    "Not a valid float value.": "Informe um número válido.",
+}
 
-class SpecialistForm(FlaskForm):
+PLURAL_MESSAGES_PT_BR: dict[str, tuple[str, str]] = {
+    "Field must be at least %(min)d character long.": (
+        "O campo deve ter pelo menos %(min)d caractere.",
+        "O campo deve ter pelo menos %(min)d caracteres.",
+    ),
+    "Field cannot be longer than %(max)d character.": (
+        "O campo não pode ter mais de %(max)d caractere.",
+        "O campo não pode ter mais de %(max)d caracteres.",
+    ),
+    "Field must be exactly %(max)d character long.": (
+        "O campo deve ter exatamente %(max)d caractere.",
+        "O campo deve ter exatamente %(max)d caracteres.",
+    ),
+    "'%(value)s' is not a valid choice for this field.": (
+        "'%(value)s' não é uma opção válida para este campo.",
+        "'%(value)s' não são opções válidas para este campo.",
+    ),
+}
+
+
+class PortugueseTranslations:
+    """Brazilian Portuguese translations of the WTForms messages, written in the app.
+
+    The ``pt`` catalog shipped with WTForms is the Portuguese from Portugal and has odd phrases, so it is not used. A
+    message that is not in the catalogs, such as a custom one, is returned unchanged.
+    """
+
+    def gettext(self, string: str) -> str:
+        """Translate a message.
+
+        :param string: The English message of WTForms.
+        :return: The Brazilian Portuguese message, or ``string`` when it has no translation.
+        """
+        return MESSAGES_PT_BR.get(string, string)
+
+    def ngettext(self, singular: str, plural: str, n: int) -> str:
+        """Translate a message that depends on a number; in Brazilian Portuguese only values above one are plural.
+
+        :param singular: The English message for one.
+        :param plural: The English message for other numbers.
+        :param n: The number that selects the form.
+        :return: The Brazilian Portuguese message, or the English one when it has no translation.
+        """
+        forms = PLURAL_MESSAGES_PT_BR.get(singular)
+        if forms is None:
+            return singular if n == 1 else plural
+        return forms[1] if n > 1 else forms[0]
+
+
+PORTUGUESE_TRANSLATIONS = PortugueseTranslations()
+
+
+class AppForm(FlaskForm):
+    """Base of every form of the app: a Flask-WTF form whose validation messages are in Brazilian Portuguese."""
+
+    class Meta:
+        """Form options; the translations of the app win over the ones of Flask-WTF."""
+
+        def get_translations(self, form: Form) -> PortugueseTranslations:
+            """Provide the translations used by the fields and validators of the form.
+
+            :param form: The form being built.
+            :return: The Brazilian Portuguese translations.
+            """
+            return PORTUGUESE_TRANSLATIONS
+
+
+class SpecialistForm(AppForm):
     """Form to create or edit a specialist."""
 
     name = StringField("Nome do Profissional", validators=[DataRequired()])
@@ -28,7 +134,7 @@ class SpecialistForm(FlaskForm):
     submit = SubmitField("Salvar")
 
 
-class PatientForm(FlaskForm):
+class PatientForm(AppForm):
     """Form to create or edit a patient, with the personal, clinical and behavioral history."""
 
     name = StringField("Nome", validators=[DataRequired()])
@@ -57,9 +163,6 @@ class PatientForm(FlaskForm):
     )
     allergies_details = StringField("Se sim, quais?", validators=[Optional()])
     water = FloatField("Litros de água por dia", validators=[DataRequired()])
-    heartburn = SelectField(
-        "Azia / Refluxo", choices=[("", "Selecione"), ("não", "Não"), ("sim", "Sim")], validators=[DataRequired()]
-    )
 
     physical_activities = SelectField(
         "Faz atividade física?",
@@ -76,14 +179,14 @@ class PatientForm(FlaskForm):
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         """Build the form and fill the specialist choices from the database.
 
-        :param args: Positional arguments of ``FlaskForm``.
-        :param kwargs: Keyword arguments of ``FlaskForm``.
+        :param args: Positional arguments of ``AppForm``.
+        :param kwargs: Keyword arguments of ``AppForm``.
         """
         super().__init__(*args, **kwargs)
         self.specialist_id.choices = [(s.id, s.name) for s in Specialists.query.all()]
 
 
-class AnthropometricAssessmentForm(FlaskForm):
+class AnthropometricAssessmentForm(AppForm):
     """Form of an anthropometric evaluation of a patient."""
 
     data_avaliacao = DateField("Data de Avaliação", format="%Y-%m-%d", validators=[DataRequired()])
@@ -111,7 +214,7 @@ class AnthropometricAssessmentForm(FlaskForm):
     submit = SubmitField("Salvar")
 
 
-class SkinfoldMeasurementForm(FlaskForm):
+class SkinfoldMeasurementForm(AppForm):
     """Form of a skinfold measurement of a patient."""
 
     data_medicao = DateField("Data de Medição", format="%Y-%m-%d", validators=[DataRequired()])
@@ -128,7 +231,7 @@ class SkinfoldMeasurementForm(FlaskForm):
     submit = SubmitField("Salvar")
 
 
-class DietForm(FlaskForm):
+class DietForm(AppForm):
     """Form to create or edit a diet, with the fixed names and the ones already saved."""
 
     name = SelectField("Nome da Dieta", validators=[DataRequired()])
@@ -140,8 +243,8 @@ class DietForm(FlaskForm):
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         """Build the form and fill the name choices with the fixed names, the saved ones and "Outro".
 
-        :param args: Positional arguments of ``FlaskForm``.
-        :param kwargs: Keyword arguments of ``FlaskForm``.
+        :param args: Positional arguments of ``AppForm``.
+        :param kwargs: Keyword arguments of ``AppForm``.
         """
         super(DietForm, self).__init__(*args, **kwargs)
         fixed_choices = [
@@ -166,5 +269,5 @@ class DietForm(FlaskForm):
         self.name.choices = fixed_choices + extra_choices + [("Outro", "Outro")]
 
 
-class BackupForm(FlaskForm):
+class BackupForm(AppForm):
     """Empty form that carries only the CSRF token of the backup download."""

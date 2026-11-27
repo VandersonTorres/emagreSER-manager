@@ -48,7 +48,7 @@
             </div>
             <div class="patient-fact">
                 <dt>Paciente desde</dt>
-                <dd>{{ patient.started_at.strftime("%d/%m/%Y") if patient.started_at else "Não informado" }}</dd>
+                <dd>{{ patient.started_at|clinic_date or "Não informado" }}</dd>
             </div>
         </dl>
         <div class="patient-header-actions">
@@ -119,7 +119,6 @@
                             {{ detail_item("Alergias / intolerâncias?", patient.allergies) }}
                             {% if patient.allergies == "sim" %}{{ detail_item("Quais alergias?", patient.allergies_details) }}{% endif %}
                             {{ detail_item("Consumo de água", patient.water, "litros por dia") }}
-                            {{ detail_item("Azia / Refluxo", patient.heartburn) }}
                             {{ detail_item("Faz atividade física?", patient.physical_activities) }}
                             {% if patient.physical_activities == "sim" %}{{ detail_item("Quais atividades?", patient.physical_details) }}{% endif %}
                             {{ detail_item("Horário das atividades", patient.hours.strftime("%H:%M") if patient.hours else none) }}

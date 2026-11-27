@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% from "_macros.html" import page_header, field %}
+{% from "_macros.html" import page_header, field, form_errors %}
 {% from "admin/patients/_patient_macros.html" import form_section %}
 
 {% block title %}Editar avaliação · EmagreSER{% endblock %}
@@ -12,6 +12,7 @@
 
 <form class="edit-anthro-form" method="post" action="{{ url_for('patients.edit_anthro', patient_id=evaluation.patient_id, evaluation_id=evaluation.id) }}" data-birth-date="{{ evaluation.patient.birth_date }}">
     {{ form.hidden_tag() }}
+    {{ form_errors(form) }}
 
     {% call form_section("Dados da avaliação", "evaluation") %}
     <div class="col-12 col-md-6">{{ field(form.data_avaliacao) }}</div>

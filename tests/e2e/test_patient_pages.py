@@ -31,6 +31,8 @@ from tests.patient_cases import (
     FIXED_EVALUATION,
     NO_SPECIALIST_PATIENT,
     PATIENT_COLUMNS,
+    REMOVED_FIELD_STORED_VALUES,
+    REMOVED_FIELDS,
     SKINFOLD_ADD_CASES,
     SKINFOLD_COLUMNS,
     SKINFOLD_EDIT_CASES,
@@ -625,7 +627,6 @@ def _fill_new_patient_habits(page: Page, stored: dict[str, Any]) -> None:
     """
     page.fill("#intestine", str(stored["intestine"]))
     page.fill("#water", str(stored["water"]))
-    page.select_option("#heartburn", stored["heartburn"])
     page.fill("#objective", stored["objective"])
     page.locator("#objective").blur()
 
@@ -653,6 +654,8 @@ def test_new_patient_form_in_the_browser_creates_the_recorded_patient(
         expect(page.locator(field)).to_be_hidden()
 
     _fill_new_patient_identity(page, seed, stored, yes)
+    for removed in REMOVED_FIELDS:
+        expect(page.locator(f"#{removed}")).to_have_count(0)
     for field in ("#medications_details", "#allergies_details", "#physical_details", "#hours"):
         if yes:
             expect(page.locator(field)).to_be_visible()
@@ -676,7 +679,7 @@ def test_new_patient_form_in_the_browser_creates_the_recorded_patient(
         with app.app_context():
             snapshot = row_values(Patients.query.filter_by(name=stored["name"]).one(), PATIENT_COLUMNS)
         assert snapshot.pop("specialist_id") == int(seed["specialist_other"])
-        assert snapshot == stored
+        assert snapshot == {**stored, **REMOVED_FIELD_STORED_VALUES}
         assert errors == []
     finally:
         with app.app_context():
