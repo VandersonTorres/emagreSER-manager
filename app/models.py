@@ -116,7 +116,10 @@ class AnthropometricEvaluation(db.Model):
 
 
 class SkinFolds(db.Model):
-    """Bioimpedance measurement of a patient; the date defaults to today in the São Paulo time zone."""
+    """Bioimpedance measurement of a patient; the date defaults to today in the São Paulo time zone.
+
+    ``observacoes`` is an optional note of the nutritionist; the record shows the one of the latest measurement.
+    """
 
     __tablename__ = "skinfolds"
 
@@ -132,6 +135,7 @@ class SkinFolds(db.Model):
     quadril = db.Column(db.Float, default=0, nullable=False)
     idade_metabolica = db.Column(db.Integer, default=0, nullable=False)
     pa = db.Column(db.String(6), nullable=False)
+    observacoes = db.Column(db.Text, nullable=True)
 
     def __repr__(self) -> str:
         """Describe the measurement by patient id and date.

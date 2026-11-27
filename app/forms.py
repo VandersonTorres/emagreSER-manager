@@ -13,7 +13,7 @@ from wtforms import (
     TextAreaField,
     TimeField,
 )
-from wtforms.validators import DataRequired, InputRequired, Optional
+from wtforms.validators import DataRequired, InputRequired, Length, Optional
 
 from app.models import Diet, Specialists
 
@@ -106,6 +106,23 @@ class PortugueseTranslations:
 
 
 PORTUGUESE_TRANSLATIONS = PortugueseTranslations()
+
+OBSERVATION_MAX_LENGTH = 1000
+
+
+def clean_observation(value: str | None) -> str | None:
+    """Prepare the text of an observation for storage: browser line breaks become ``\\n``, the ends are stripped.
+
+    The browser counts a line break as one character in ``maxlength`` but sends two, so the breaks are normalized
+    before the length is validated. A blank text becomes ``None``, which clears the observation of the measurement.
+
+    :param value: Text typed in the field, or ``None`` when the field was not sent.
+    :return: The text without surrounding blanks, or ``None`` when nothing but blanks was typed.
+    """
+    if value is None:
+        return None
+    text = value.replace("\r\n", "\n").replace("\r", "\n").strip()
+    return text or None
 
 
 class AppForm(FlaskForm):
@@ -227,6 +244,9 @@ class SkinfoldMeasurementForm(AppForm):
     quadril = FloatField("Quadril", validators=[InputRequired()])
     idade_metabolica = IntegerField("Idade Metabólica", validators=[InputRequired()])
     pa = StringField("Pressão Arterial", validators=[InputRequired()])
+    observacoes = TextAreaField(
+        "Observações", validators=[Optional(), Length(max=OBSERVATION_MAX_LENGTH)], filters=[clean_observation]
+    )
 
     submit = SubmitField("Salvar")
 

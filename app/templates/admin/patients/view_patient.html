@@ -11,6 +11,7 @@
 {% set evaluations = patient.anthropometric_evaluations|sort(attribute="data_avaliacao", reverse=true) %}
 {% set folds = patient.skinfolds|sort(attribute="data_medicao", reverse=true) %}
 {% set series = patient.skinfolds|sort(attribute="data_medicao") %}
+{% set latest_note = (latest_skinfold.observacoes or "")|trim if latest_skinfold else "" %}
 {% set chart = namespace(dates=[], weights=[]) %}
 {% for fold in series %}
 {% set chart.dates = chart.dates + [fold.data_medicao.strftime("%d/%m/%Y")] %}
@@ -24,7 +25,7 @@
         <div class="patient-header-top">
             <span class="patient-avatar" aria-hidden="true">{{ (patient.name or "?")[:1]|upper }}</span>
             <div class="patient-header-text">
-                <h1 class="page-header-title" id="patient-name">{{ patient.name }}</h1>
+                <h1 class="page-header-title" id="patient-name" tabindex="-1">{{ patient.name }}</h1>
                 <p class="patient-header-sub">
                     Nascimento: {{ patient.birth_date.strftime("%d/%m/%Y") }}<span class="patient-age" data-birth-date="{{ patient.birth_date.isoformat() }}"></span>
                 </p>
@@ -228,7 +229,8 @@
                     <tbody>
                         {% for fold in folds %}
                         {% set when = fold.data_medicao.strftime("%d/%m/%Y") %}
-                        <tr class="skinfold-row{{ ' record-row-extra' if loop.index > 5 }}">
+                        {% set note = (fold.observacoes or "")|trim %}
+                        <tr class="skinfold-row{{ ' has-note' if note }}{{ ' record-row-extra' if loop.index > 5 }}">
                             <td data-label="Data Medição">{{ when }}</td>
                             <td data-label="Altura">{{ fold.altura }}</td>
                             <td data-label="Peso">{{ fold.peso }}</td>
@@ -246,6 +248,16 @@
                                 </form>
                             </td>
                         </tr>
+                        {% if note %}
+                        <tr class="skinfold-note-row{{ ' record-row-extra' if loop.index > 5 }}">
+                            <td colspan="11">
+                                <div class="skinfold-note">
+                                    <span class="skinfold-note-label"><i class="bi bi-chat-left-text" aria-hidden="true"></i> Observações<span class="visually-hidden"> da medição de {{ when }}</span></span>
+                                    <p class="skinfold-note-text">{{ note }}</p>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endif %}
                         {% endfor %}
                     </tbody>
                 </table>
@@ -279,6 +291,26 @@
         </section>
     </div>
 </div>
+
+{% if latest_note %}
+<div class="modal fade note-modal" id="note-modal" tabindex="-1" aria-labelledby="note-modal-title" aria-describedby="note-modal-text" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title" id="note-modal-title"><i class="bi bi-exclamation-circle" aria-hidden="true"></i> Este paciente possui observações adicionais</h2>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+            </div>
+            <div class="modal-body" tabindex="0">
+                <p class="note-modal-date">Bioimpedância de <time datetime="{{ latest_skinfold.data_medicao.isoformat() }}">{{ latest_skinfold.data_medicao.strftime("%d/%m/%Y") }}</time></p>
+                <p class="note-modal-text" id="note-modal-text">{{ latest_note }}</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Entendi</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
 {% endblock %}
 
 {% block scripts %}
