@@ -4,6 +4,7 @@ from flask_migrate import Migrate
 from flask_security import Security, SQLAlchemyUserDatastore
 
 from app.auth import register_auth_hooks
+from app.dates import format_clinic_date
 from app.errors import register_error_handlers
 from app.extensions import mail
 from app.models import Role, User, db
@@ -22,6 +23,7 @@ def create_app() -> Flask:
     """Build the Flask application with its extensions, blueprints, navigation and error pages.
 
     The User and Role models live in ``app/models.py``; the database tables are created when they do not exist yet.
+    The ``clinic_date`` template filter shows a stored UTC time as a date in the São Paulo time zone.
 
     :return: The configured Flask application.
     """
@@ -41,6 +43,7 @@ def create_app() -> Flask:
     user_datastore = SQLAlchemyUserDatastore(db, User, Role)
     security = Security(app, user_datastore)
     register_auth_hooks(app, security)
+    app.add_template_filter(format_clinic_date, "clinic_date")
     migrate = Migrate(app, db)  # noqa: F841
 
     with app.app_context():

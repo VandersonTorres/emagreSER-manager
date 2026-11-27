@@ -1,8 +1,16 @@
-"""Records and input sets of the patient page tests, whose recorded results are in tests/patient_baselines.py."""
+"""Records and input sets of the patient page tests, whose recorded results are in tests/patient_baselines.py.
+
+The baselines keep what the pages did when they were recorded. The only intended difference is the set of fields the
+clinic no longer asks (``REMOVED_FIELDS``): the tests take them out of the recorded names and values, and a new patient
+gets the empty answer listed in ``REMOVED_FIELD_STORED_VALUES``.
+"""
 
 from dataclasses import dataclass
 from datetime import date, time
 from typing import Any
+
+REMOVED_FIELDS: frozenset[str] = frozenset({"heartburn"})
+REMOVED_FIELD_STORED_VALUES: dict[str, str] = {"heartburn": ""}
 
 COMPLETE_PATIENT: dict[str, Any] = {
     "name": "Paciente Completo Base",

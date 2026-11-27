@@ -102,7 +102,11 @@ The patient pages were redesigned without changing what their forms send, what t
 can do what. `patient_cases.py` holds the records and input sets (a complete patient, a fixed evaluation and
 measurement, eight evaluation cases from child to elderly and from low to high BMI, blood pressure and weight inputs),
 and `patient_baselines.py` holds what the pages before the redesign sent, computed and stored for those inputs. It was
-recorded in Chrome from the previous pages and is only data: do not edit it by hand.
+recorded in Chrome from the previous pages and is only data: do not edit it by hand. The one intended difference from
+the recorded pages is the "Azia / Refluxo" question, which the clinic no longer asks: `REMOVED_FIELDS` in
+`patient_cases.py` lists it, the tests take it out of the recorded names and values, and `REMOVED_FIELD_STORED_VALUES`
+holds the empty answer a new patient gets. The column stays, so the answers already stored are kept (the edit page does
+not touch them).
 
 `test_patient_forms.py` (no browser) checks, for every form page, the submitted field names and the rendered values
 against the baseline (with and without the CSRF token), the round trip of the edit page (open, change one field, save:
@@ -112,6 +116,25 @@ the markup: the list (data, "⋯" menu, contact links, `Remover` hidden from nut
 states, the record (header, accessible tabs and hash keys, 14 and 11 column tables, delete forms with confirmation,
 pinned Chart.js with its integrity hash), the custom history, the delete confirmation, labels, input types, back links,
 and that templates and scripts carry no comments.
+
+`test_custom_history.py` covers the custom history page. `history_cases.py` holds six patients with evaluations and
+measurements (one evaluation, gain, loss, unchanged weight, fat and muscle filled and empty, measurements entered out of
+order, weight equal to the maximum) and a reader of what the page shows; `history_baselines.py` holds what the page
+showed for them before patients without bioimpedance were supported, read with the same reader, so the values and
+texts of a complete patient must stay identical. The same file tests a patient with evaluations and no bioimpedance
+(the page answers 200, shows what comes from the evaluations and the notice "Ainda não há bioimpedância registrada.",
+with no chart and no Chart.js script), a patient without evaluations (page header with the name, the way back to the
+record and an empty state that opens a new evaluation) and the access rules by role.
+
+`test_clinic_dates.py` freezes the clock of `app/dates.py` to prove that `started_at`, `data_avaliacao` and
+`data_medicao` take their default when the row is inserted (not when the app starts), that the two dates use the day of
+São Paulo, and that the record shows "Paciente desde" in the São Paulo time zone for naive UTC and aware values.
+
+`test_form_messages.py` checks the validation messages in Brazilian Portuguese. The translations live in
+`app/forms.py` and the base form `AppForm` gives them to every form. The test reads `wtforms/locale/wtforms.pot` of the
+installed WTForms and fails when a message has no translation, so an upgrade that adds messages cannot show English. It
+also checks real errors (required, float, integer, date, choice) on the patient forms and on rendered pages, and that
+the CSRF token is still required and accepted by the forms that validate, with the Portuguese message.
 
 `e2e/test_patient_pages.py` replays the calculation cases in Chrome (every computed field, the age, the blood pressure
 and weight normalization, and the stored rows), opens every patient page on both viewports looking for script errors and

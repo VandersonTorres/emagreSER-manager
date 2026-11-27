@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% from "_macros.html" import page_header, field %}
+{% from "_macros.html" import page_header, field, form_errors %}
 {% from "admin/patients/_patient_macros.html" import form_section %}
 
 {% block title %}Nova bioimpedância · EmagreSER{% endblock %}
@@ -19,6 +19,7 @@
 
 <form class="add-skinfold-form" method="post" action="{{ url_for('patients.add_skinfold', patient_id=patient.id) }}">
     {{ form.hidden_tag() }}
+    {{ form_errors(form) }}
 
     {% call form_section("Medição", "measure") %}
     <div class="col-12 col-md-6">{{ field(form.data_medicao) }}</div>

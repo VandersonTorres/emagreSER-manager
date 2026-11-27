@@ -29,6 +29,8 @@ from tests.patient_cases import (
     ANTHRO_EDIT_CASES,
     NO_SPECIALIST_PATIENT,
     PATIENT_COLUMNS,
+    REMOVED_FIELD_STORED_VALUES,
+    REMOVED_FIELDS,
     SECONDS_PATIENT,
     SKINFOLD_ADD_CASES,
     SKINFOLD_COLUMNS,
@@ -55,6 +57,15 @@ SCRIPT_COMPUTED = {
     "edit_anthro": {"idade"},
 }
 ADMIN_NAME = "Usuario Teste admin"
+
+
+def _expected_names(page: str) -> list[str]:
+    """Take the recorded field names of a page without the fields the clinic no longer asks, sorted.
+
+    :param page: Name of the page in the baselines.
+    :return: The names the page must submit.
+    """
+    return sorted(name for name in FORM_FIELD_NAMES[page] if name not in REMOVED_FIELDS)
 
 
 def _url(app: Flask, endpoint: str, **values: int | str) -> str:
@@ -156,7 +167,7 @@ def test_form_submits_the_recorded_field_names(
 
     names = form_names(_html(client_admin, url), selector)
 
-    assert names == sorted(FORM_FIELD_NAMES[page]), page
+    assert names == _expected_names(page), page
 
 
 @pytest.mark.usefixtures("csrf_on")
@@ -175,7 +186,7 @@ def test_form_carries_the_csrf_token_as_before(
     names = form_names(_html(client_admin, url), selector)
 
     assert ("csrf_token" in names) is (page in PAGES_WITH_CSRF_TOKEN), page
-    assert [name for name in names if name != "csrf_token"] == sorted(FORM_FIELD_NAMES[page])
+    assert [name for name in names if name != "csrf_token"] == _expected_names(page)
 
 
 def test_pages_are_listed_in_the_baseline(pages: dict[str, tuple[str, str]]) -> None:
@@ -187,14 +198,14 @@ def test_pages_are_listed_in_the_baseline(pages: dict[str, tuple[str, str]]) -> 
 
 
 def _expected_values(key: str, page: str, **replace: str) -> dict[str, str]:
-    """Take the recorded values of a form without the fields a script computes in the browser.
+    """Take the recorded values of a form without the fields a script computes in the browser or the clinic dropped.
 
     :param key: Key of the recorded values.
     :param page: Page name, used to look up the script computed fields.
     :param replace: Fields whose value depends on the seed, by name.
     :return: The values the page itself renders.
     """
-    skipped = SCRIPT_COMPUTED.get(page, set())
+    skipped = SCRIPT_COMPUTED.get(page, set()) | REMOVED_FIELDS
     values = {name: value for name, value in FORM_VALUES[key].items() if name not in skipped}
     values.update(replace)
     return values
@@ -438,8 +449,9 @@ def test_new_patient_is_created_with_every_field(
     :param variant: Which recorded patient to post.
     """
     stored = STORED_NEW_PATIENT[variant]
+    expected = {**stored, **REMOVED_FIELD_STORED_VALUES}
     url = _url(app, "patients.add_patient")
-    data = {key: "" if value is None else str(value) for key, value in stored.items()}
+    data = {key: "" if value is None else str(value) for key, value in stored.items() if key not in REMOVED_FIELDS}
     data["phone"] = data.pop("tel_number")
     data["specialist"] = str(seed["specialist_other"])
     data["hours"] = data["hours"][:5]
@@ -452,11 +464,83 @@ def test_new_patient_is_created_with_every_field(
             patient = Patients.query.filter_by(name=stored["name"]).one()
             snapshot = row_values(patient, PATIENT_COLUMNS)
         assert snapshot.pop("specialist_id") == int(seed["specialist_other"])
-        assert snapshot == stored
+        assert snapshot == expected
     finally:
         with app.app_context():
             Patients.query.filter_by(name=stored["name"]).delete(synchronize_session=False)
             db.session.commit()
+
+
+def test_new_patient_ignores_a_heartburn_answer_sent_by_an_old_page(
+    app: Flask, client_admin: FlaskClient, seed: SeedData
+) -> None:
+    """Check that an answer posted for the removed question is not stored: the patient gets the empty answer.
+
+    :param app: Flask application.
+    :param client_admin: Test client logged in as admin.
+    :param seed: Ids of the fake records.
+    """
+    stored = STORED_NEW_PATIENT["nao"]
+    url = _url(app, "patients.add_patient")
+    data = {key: "" if value is None else str(value) for key, value in stored.items()}
+    data["phone"] = data.pop("tel_number")
+    data["specialist"] = str(seed["specialist_other"])
+    data["heartburn"] = "sim"
+    data["name"] = "Paciente Pagina Antiga"
+    data["cpf"] = "246.810.121-47"
+
+    try:
+        response = client_admin.post(url, data=data)
+
+        assert response.status_code == 302
+        with app.app_context():
+            assert Patients.query.filter_by(name=data["name"]).one().heartburn == ""
+    finally:
+        with app.app_context():
+            Patients.query.filter_by(name=data["name"]).delete(synchronize_session=False)
+            db.session.commit()
+
+
+def test_editing_a_patient_keeps_the_stored_heartburn_answer(
+    app: Flask, client_admin: FlaskClient, edit_target: int
+) -> None:
+    """Check that saving the edit page leaves the old answer alone, even when an old page still posts the field.
+
+    :param app: Flask application.
+    :param client_admin: Test client logged in as admin.
+    :param edit_target: Id of the temporary patient, whose stored answer is "sim".
+    """
+    url = _url(app, "patients.edit_patient", id=edit_target)
+    assert _snapshot(app, Patients, edit_target, PATIENT_COLUMNS)["heartburn"] == "sim"
+
+    plain = client_admin.post(url, data=_post_values(client_admin, url, "form.edit-patient-form", {}))
+    stale = client_admin.post(
+        url, data=_post_values(client_admin, url, "form.edit-patient-form", {"objective": "Novo", "heartburn": "não"})
+    )
+
+    assert plain.status_code == 302 and stale.status_code == 302
+    after = _snapshot(app, Patients, edit_target, PATIENT_COLUMNS)
+    assert after["heartburn"] == "sim" and after["objective"] == "Novo"
+
+
+def test_heartburn_question_is_not_asked_or_shown_anywhere(
+    app: Flask, client_admin: FlaskClient, complete_patient: dict[str, int]
+) -> None:
+    """Check that the new patient form, the edit form and the record of a patient answered "sim" do not mention it.
+
+    :param app: Flask application.
+    :param client_admin: Test client logged in as admin.
+    :param complete_patient: Ids of the patient with every field filled and its records.
+    """
+    patient = complete_patient["patient"]
+    assert _snapshot(app, Patients, patient, PATIENT_COLUMNS)["heartburn"] == "sim"
+
+    for endpoint in ("patients.add_patient", "patients.edit_patient", "patients.view_patient"):
+        values = {"id": patient} if endpoint != "patients.add_patient" else {}
+        html = _html(client_admin, _url(app, endpoint, **values))
+
+        assert "heartburn" not in html, endpoint
+        assert "Azia" not in html and "Refluxo" not in html, endpoint
 
 
 @pytest.mark.parametrize("case", ANTHRO_ADD_CASES, ids=lambda case: case.key)

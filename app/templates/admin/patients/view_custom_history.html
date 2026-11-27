@@ -7,13 +7,24 @@
 {% block content_class %}{% endblock %}
 
 {% block content %}
-{% if patient %}
-{% call page_header("Histórico personalizado", patient.name, url_for("patients.view_patient", id=patient.id) ~ "#evolucao") %}
+{% set record_url = url_for("patients.view_patient", id=patient.id) ~ "#evolucao" %}
+{% if has_evaluations %}
+{% call page_header("Histórico personalizado", patient.name, record_url) %}
     <button type="button" class="btn btn-outline-secondary no-print" data-print><i class="bi bi-printer" aria-hidden="true"></i> Imprimir histórico</button>
 {% endcall %}
 
 <div class="row g-4">
     <div class="col-12 col-lg-8">
+        {% if not has_skinfolds %}
+        <div class="alert alert-info d-flex align-items-start gap-2 mb-4" role="status">
+            <i class="bi bi-info-circle" aria-hidden="true"></i>
+            <div>
+                <strong>Ainda não há bioimpedância registrada.</strong>
+                A altura, os pesos, os percentuais, o resultado final e o gráfico de evolução aparecem depois da primeira bioimpedância.
+                <a class="no-print" href="{{ url_for('patients.add_skinfold', patient_id=patient.id) }}">Adicionar bioimpedância</a>
+            </div>
+        </div>
+        {% endif %}
         <section class="card mb-4" aria-labelledby="history-summary-title">
             <div class="card-header app-card-header"><h2 class="app-card-title" id="history-summary-title">Paciente</h2></div>
             <div class="card-body">
@@ -32,6 +43,7 @@
         <section class="card mb-4" aria-labelledby="history-details-title">
             <div class="card-header app-card-header"><h2 class="app-card-title" id="history-details-title">Detalhamento</h2></div>
             <div class="card-body">
+                {% if has_skinfolds %}
                 <dl class="stat-grid">
                     {{ stat_item("IMC atual", last_imc) }}
                     {{ stat_item("Altura", height) }}
@@ -42,9 +54,17 @@
                     {{ stat_item("Peso ideal", ideal_weight) }}
                     {{ stat_item("Resultado final", final_weight_result) }}
                 </dl>
+                {% else %}
+                <dl class="stat-grid">
+                    {{ stat_item("IMC atual", last_imc) }}
+                    {{ stat_item("Peso ideal", ideal_weight) }}
+                    {{ stat_item("Peso máximo", max_weight) }}
+                </dl>
+                {% endif %}
             </div>
         </section>
 
+        {% if has_skinfolds %}
         <section class="card" aria-labelledby="history-chart-title">
             <div class="card-header app-card-header"><h2 class="app-card-title" id="history-chart-title">Histórico de evoluções</h2></div>
             <div class="card-body">
@@ -54,21 +74,25 @@
                 <p class="history-message" role="status">{{ final_message }}</p>
             </div>
         </section>
+        {% endif %}
     </div>
     <div class="col-12 col-lg-4 d-none d-lg-block">
         <img class="history-image" src="{{ url_for('static', filename='img/body_contour.jpeg') }}" alt="" width="398" height="360">
     </div>
 </div>
 {% else %}
+{{ page_header("Histórico personalizado", patient.name, record_url) }}
 <div class="card">
-    {{ empty_state("clipboard-x", "O paciente ainda não possui avaliações", "O histórico personalizado aparece depois da primeira avaliação antropométrica.", url_for("patients.list_patients"), "Voltar para os pacientes") }}
+    {{ empty_state("clipboard-x", "O paciente ainda não possui avaliações", "O histórico personalizado aparece depois da primeira avaliação antropométrica.", url_for("patients.add_anthro", patient_id=patient.id), "Nova avaliação") }}
 </div>
 {% endif %}
 {% endblock %}
 
 {% block scripts %}
-{% if patient %}
+{% if has_skinfolds %}
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js" integrity="sha384-bs/nf9FbdNouRbMiFcrcZfLXYPKiPaGVGplVbv7dLGECccEXDW+S3zjqSKR5ZEaD" crossorigin="anonymous"></script> {# pragma: allowlist secret #}
+{% endif %}
+{% if has_evaluations %}
 <script src="{{ url_for('static', filename='js/chart_config.js') }}"></script>
 {% endif %}
 {% endblock %}

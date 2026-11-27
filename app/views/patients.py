@@ -83,7 +83,7 @@ def add_patient() -> ResponseReturnValue:
                 allergies=request.form.get("allergies"),
                 allergies_details=request.form.get("allergies_details"),
                 water=request.form.get("water"),
-                heartburn=request.form.get("heartburn"),
+                heartburn="",
                 physical_activities=request.form.get("physical_activities"),
                 physical_details=request.form.get("physical_details"),
                 hours=(
@@ -448,9 +448,13 @@ def delete_skinfold(patient_id: int, skinfold_id: int) -> ResponseReturnValue:
 def view_custom_history(id: int, pat_name: str) -> ResponseReturnValue:
     """Render the printable history of a patient: summary figures, weight result and evolution chart data.
 
+    A patient without evaluations gets the empty page. A patient with evaluations but without bioimpedance
+    measurements gets only what comes from the evaluations and a notice, because the height, the weights, the result
+    and the chart depend on the measurements.
+
     :param id: Id of the patient.
     :param pat_name: Patient name carried in the URL; the page reads the patient by id.
-    :return: The rendered history, or the empty page when the patient has no evaluation.
+    :return: The rendered history.
     """
     patient = Patients.query.get_or_404(id)
     if not block_access_to_patients(
@@ -459,68 +463,83 @@ def view_custom_history(id: int, pat_name: str) -> ResponseReturnValue:
         msg="Acesso negado: Você só pode visualizar o histórico dos seus próprios pacientes.",
         to_redirect="patients.list_patients",
     ):
-        if len(patient.anthropometric_evaluations):
-            skinfolds = sorted(
-                patient.skinfolds,
-                key=lambda x: x.data_medicao,
-            )
-            patient_age = patient.anthropometric_evaluations[-1].idade
-            initial_evaluation_date = patient.anthropometric_evaluations[0].data_avaliacao.strftime("%d/%m/%Y")
-            last_imc = patient.anthropometric_evaluations[-1].imc
-            height = skinfolds[-1].altura
-            initial_weight_evaluated = skinfolds[0].peso
-            last_weight_evaluated = skinfolds[-1].peso
-            ideal_weight = patient.anthropometric_evaluations[-1].p_ide
-            max_weight = patient.anthropometric_evaluations[-1].p_max
+        if not len(patient.anthropometric_evaluations):
+            return render_template("admin/patients/view_custom_history.html", patient=patient, has_evaluations=False)
 
-            fat_percentual = "Ainda não houve registro do índice de gordura"
-            muscle_percentual = "Ainda não houve registro do índice de massa magra"
-            if len(skinfolds):
-                for eval_ in skinfolds:
-                    if eval_.gordura and eval_.gordura > 0:
-                        fat_percentual = f"{eval_.gordura}%"
-                    if eval_.massa_muscular and eval_.massa_muscular > 0:
-                        muscle_percentual = f"{eval_.massa_muscular}%"
+        skinfolds = sorted(
+            patient.skinfolds,
+            key=lambda x: x.data_medicao,
+        )
+        patient_age = patient.anthropometric_evaluations[-1].idade
+        initial_evaluation_date = patient.anthropometric_evaluations[0].data_avaliacao.strftime("%d/%m/%Y")
+        last_imc = patient.anthropometric_evaluations[-1].imc
+        ideal_weight = patient.anthropometric_evaluations[-1].p_ide
+        max_weight = patient.anthropometric_evaluations[-1].p_max
 
-            if len(patient.anthropometric_evaluations) > 1:
-                final_weight_result = round(last_weight_evaluated - initial_weight_evaluated, 2)
-                if final_weight_result < 0:
-                    final_weight_result = f"Perda de {final_weight_result} Kg".replace("-", "")
-                elif final_weight_result == 0:
-                    final_weight_result = f"Manutenção do peso inicial: {initial_weight_evaluated} Kg"
-                else:
-                    final_weight_result = f"Ganho de {final_weight_result} Kg"
-            else:
-                final_weight_result = "Paciente ainda está na primeira avaliação"
-
-            final_message = (
-                (f"Muito bom! Seu peso máximo é {max_weight}kg e você está com " f"{last_weight_evaluated}kg.")
-                if last_weight_evaluated < max_weight
-                else (
-                    f"Força! Mantenha o foco! Seu peso máximo é {max_weight}kg e você está com "
-                    f"{last_weight_evaluated}kg."
-                )
-            )
-
-            evaluation_dates = [skinfold.data_medicao.strftime("%d/%m/%Y") for skinfold in skinfolds]
-            evaluation_weights = [skinfold.peso for skinfold in skinfolds]
-
+        if not len(skinfolds):
             return render_template(
                 "admin/patients/view_custom_history.html",
                 patient=patient,
+                has_evaluations=True,
+                has_skinfolds=False,
                 patient_age=patient_age,
                 initial_evaluation_date=initial_evaluation_date,
                 last_imc=last_imc,
-                height=height,
-                fat_percentual=fat_percentual,
-                muscle_percentual=muscle_percentual,
-                initial_weight_evaluated=initial_weight_evaluated,
-                last_weight_evaluated=last_weight_evaluated,
                 ideal_weight=ideal_weight,
-                final_weight_result=final_weight_result,
-                final_message=final_message,
-                evaluation_dates=evaluation_dates,
-                evaluation_weights=evaluation_weights,
+                max_weight=max_weight,
             )
 
-        return render_template("admin/patients/view_custom_history.html")
+        height = skinfolds[-1].altura
+        initial_weight_evaluated = skinfolds[0].peso
+        last_weight_evaluated = skinfolds[-1].peso
+
+        fat_percentual = "Ainda não houve registro do índice de gordura"
+        muscle_percentual = "Ainda não houve registro do índice de massa magra"
+        for eval_ in skinfolds:
+            if eval_.gordura and eval_.gordura > 0:
+                fat_percentual = f"{eval_.gordura}%"
+            if eval_.massa_muscular and eval_.massa_muscular > 0:
+                muscle_percentual = f"{eval_.massa_muscular}%"
+
+        if len(patient.anthropometric_evaluations) > 1:
+            final_weight_result = round(last_weight_evaluated - initial_weight_evaluated, 2)
+            if final_weight_result < 0:
+                final_weight_result = f"Perda de {final_weight_result} Kg".replace("-", "")
+            elif final_weight_result == 0:
+                final_weight_result = f"Manutenção do peso inicial: {initial_weight_evaluated} Kg"
+            else:
+                final_weight_result = f"Ganho de {final_weight_result} Kg"
+        else:
+            final_weight_result = "Paciente ainda está na primeira avaliação"
+
+        final_message = (
+            (f"Muito bom! Seu peso máximo é {max_weight}kg e você está com " f"{last_weight_evaluated}kg.")
+            if last_weight_evaluated < max_weight
+            else (
+                f"Força! Mantenha o foco! Seu peso máximo é {max_weight}kg e você está com "
+                f"{last_weight_evaluated}kg."
+            )
+        )
+
+        evaluation_dates = [skinfold.data_medicao.strftime("%d/%m/%Y") for skinfold in skinfolds]
+        evaluation_weights = [skinfold.peso for skinfold in skinfolds]
+
+        return render_template(
+            "admin/patients/view_custom_history.html",
+            patient=patient,
+            has_evaluations=True,
+            has_skinfolds=True,
+            patient_age=patient_age,
+            initial_evaluation_date=initial_evaluation_date,
+            last_imc=last_imc,
+            height=height,
+            fat_percentual=fat_percentual,
+            muscle_percentual=muscle_percentual,
+            initial_weight_evaluated=initial_weight_evaluated,
+            last_weight_evaluated=last_weight_evaluated,
+            ideal_weight=ideal_weight,
+            final_weight_result=final_weight_result,
+            final_message=final_message,
+            evaluation_dates=evaluation_dates,
+            evaluation_weights=evaluation_weights,
+        )
