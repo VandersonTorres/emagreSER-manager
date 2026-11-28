@@ -1,21 +1,25 @@
+import re
 from typing import Any
 
 from flask_wtf import FlaskForm
+from sqlalchemy import func
 from wtforms import (
     DateField,
     FileField,
     FloatField,
     Form,
     IntegerField,
+    PasswordField,
+    RadioField,
     SelectField,
     StringField,
     SubmitField,
     TextAreaField,
     TimeField,
 )
-from wtforms.validators import DataRequired, InputRequired, Length, Optional
+from wtforms.validators import DataRequired, InputRequired, Length, Optional, Regexp, ValidationError
 
-from app.models import Diet, Specialists
+from app.models import Diet, Specialists, User
 
 MESSAGES_PT_BR: dict[str, str] = {
     "Invalid field name '%s'.": "Nome de campo inválido: '%s'.",
@@ -108,6 +112,18 @@ class PortugueseTranslations:
 PORTUGUESE_TRANSLATIONS = PortugueseTranslations()
 
 OBSERVATION_MAX_LENGTH = 1000
+USER_TEXT_MAX_LENGTH = 255
+USER_ROLES: tuple[tuple[str, str], ...] = (
+    ("admin", "Gestor"),
+    ("secretary", "Secretária"),
+    ("nutritionist", "Nutricionista"),
+)
+USER_ROLE_LABELS: dict[str, str] = dict(USER_ROLES)
+PASSWORD_REQUIREMENTS = (
+    "pelo menos 6 caracteres, com letra minúscula, letra maiúscula, número e símbolo"  # pragma: allowlist secret
+)
+PASSWORD_PATTERN = re.compile(r"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{6,}\Z", re.ASCII)
+EMAIL_PATTERN = re.compile(r"^[^\s@]+@[^\s@]+\.[^\s@]+\Z")
 
 
 def clean_observation(value: str | None) -> str | None:
@@ -123,6 +139,15 @@ def clean_observation(value: str | None) -> str | None:
         return None
     text = value.replace("\r\n", "\n").replace("\r", "\n").strip()
     return text or None
+
+
+def strip_text(value: str | None) -> str | None:
+    """Remove the blanks around a typed text.
+
+    :param value: Text typed in the field, or ``None`` when the field was not sent.
+    :return: The text without surrounding blanks, or ``None`` when the field was not sent.
+    """
+    return value.strip() if isinstance(value, str) else value
 
 
 class AppForm(FlaskForm):
@@ -149,6 +174,58 @@ class SpecialistForm(AppForm):
     email = StringField("E-mail", validators=[DataRequired()])
 
     submit = SubmitField("Salvar")
+
+
+class UserForm(AppForm):
+    """Form to create a user account, with a name, an e-mail, a password and one of the three roles.
+
+    The e-mail must not be registered yet, whatever the letter case, and the name must be free as well, because both
+    are unique in the database. The password is never sent back to the page.
+    """
+
+    name = StringField(
+        "Nome",
+        validators=[DataRequired(message="Informe o nome do usuário."), Length(max=USER_TEXT_MAX_LENGTH)],
+        filters=[strip_text],
+    )
+    email = StringField(
+        "E-mail",
+        validators=[DataRequired(message="Informe o e-mail do usuário."), Length(max=USER_TEXT_MAX_LENGTH)],
+        filters=[strip_text],
+    )
+    password = PasswordField(
+        "Senha",
+        validators=[
+            DataRequired(message="Informe a senha."),
+            Regexp(PASSWORD_PATTERN, message=f"A senha deve ter {PASSWORD_REQUIREMENTS}."),
+        ],
+        description=f"Use {PASSWORD_REQUIREMENTS}.",
+    )
+    role = RadioField(
+        "Função", choices=list(USER_ROLES), validators=[DataRequired(message="Escolha a função do usuário.")]
+    )
+
+    submit = SubmitField("Cadastrar usuário")
+
+    def validate_name(self, field: StringField) -> None:
+        """Refuse a name that another user already has.
+
+        :param field: The name field.
+        :raises ValidationError: If a user with the same name exists.
+        """
+        if User.query.filter(User.username == field.data).first() is not None:
+            raise ValidationError("Já existe um usuário com este nome. Use outro nome.")
+
+    def validate_email(self, field: StringField) -> None:
+        """Refuse an e-mail with a wrong format or one that is already registered, whatever the letter case.
+
+        :param field: The e-mail field.
+        :raises ValidationError: If the format is wrong or a user with the same e-mail exists.
+        """
+        if EMAIL_PATTERN.fullmatch(field.data) is None:
+            raise ValidationError("Informe um e-mail válido, como nome@exemplo.com.")
+        if User.query.filter(func.lower(User.email) == field.data.lower()).first() is not None:
+            raise ValidationError("Já existe um usuário cadastrado com este e-mail.")
 
 
 class PatientForm(AppForm):

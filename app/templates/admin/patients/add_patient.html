@@ -23,6 +23,7 @@
 {% endif %}
 
 <form class="add-patient-form" method="post" action="{{ url_for('patients.add_patient') }}">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
     {% call form_section("Dados pessoais", "personal") %}
     <div class="col-12">{{ text_control("name", "Nome", type="text", required="required", autocomplete="off", autocapitalize="words") }}</div>
     <div class="col-12 col-md-6">{{ select_control("gender", "Sexo", [("masculino", "Masculino"), ("feminino", "Feminino")], required="required", autocomplete="off") }}</div>

@@ -1,4 +1,7 @@
+"""Professional management pages: list, create, edit and remove the professionals who look after the patients."""
+
 from flask import Blueprint, flash, redirect, render_template, request, url_for
+from flask.typing import ResponseReturnValue
 from flask_security import current_user, roles_accepted
 from sqlalchemy.exc import IntegrityError
 
@@ -10,7 +13,11 @@ specialists_bp = Blueprint("specialists", __name__)
 
 @specialists_bp.route("/specialists")
 @roles_accepted("admin", "secretary", "nutritionist")
-def list_specialists():
+def list_specialists() -> ResponseReturnValue:
+    """Render the list of professionals; nutritionists are sent back to the home page.
+
+    :return: The rendered professionals page, or a redirect to the home page.
+    """
     if "nutritionist" in [role.name for role in current_user.roles]:
         flash("Acesso negado! Você não tem permissão para acessar essa seção.", "danger")
         return redirect(url_for("main.index"))
@@ -21,7 +28,11 @@ def list_specialists():
 
 @specialists_bp.route("/specialists/add", methods=["GET", "POST"])
 @roles_accepted("admin", "secretary", "nutritionist")
-def add_specialist():
+def add_specialist() -> ResponseReturnValue:
+    """Show the form to register a professional and, on a valid submission, save it.
+
+    :return: The form page, or a redirect to the professionals list after saving.
+    """
     if "nutritionist" in [role.name for role in current_user.roles]:
         flash("Acesso negado! Você não tem permissão para acessar essa seção.", "danger")
         return redirect(url_for("specialists.list_specialists"))
@@ -46,7 +57,15 @@ def add_specialist():
 
 @specialists_bp.route("/specialists/edit/<int:id>", methods=["GET", "POST"])
 @roles_accepted("admin", "secretary", "nutritionist")
-def edit_specialist(id):
+def edit_specialist(id: int) -> ResponseReturnValue:
+    """Show the form of a professional filled with the saved data and, on a valid submission, save the changes.
+
+    After a submission with errors the form keeps what was typed instead of going back to the saved data.
+
+    :param id: Id of the professional.
+    :raises NotFound: If the professional does not exist.
+    :return: The form page, or a redirect to the professionals list after saving.
+    """
     if "nutritionist" in [role.name for role in current_user.roles]:
         flash("Acesso negado! Você não tem permissão para acessar essa seção.", "danger")
         return redirect(url_for("specialists.list_specialists"))
@@ -67,17 +86,24 @@ def edit_specialist(id):
             db.session.rollback()
             flash(f"Erro ao editar profissional. Verifique os dados inseridos. {e}", "danger")
 
-    form.name.data = specialist.name
-    form.cpf.data = specialist.cpf
-    form.tel_number.data = specialist.tel_number
-    form.email.data = specialist.email
+    if request.method != "POST":
+        form.name.data = specialist.name
+        form.cpf.data = specialist.cpf
+        form.tel_number.data = specialist.tel_number
+        form.email.data = specialist.email
 
     return render_template("admin/specialists/edit_specialist.html", form=form, specialist=specialist)
 
 
 @specialists_bp.route("/specialists/delete/<int:id>", methods=["POST"])
 @roles_accepted("admin", "secretary", "nutritionist")
-def delete_specialist(id):
+def delete_specialist(id: int) -> ResponseReturnValue:
+    """Delete a professional; nutritionists are sent back to the professionals list.
+
+    :param id: Id of the professional.
+    :raises NotFound: If the professional does not exist.
+    :return: A redirect to the professionals list, with a flashed result.
+    """
     if "nutritionist" in [role.name for role in current_user.roles]:
         flash("Acesso negado! Você não tem permissão para acessar essa seção.", "danger")
         return redirect(url_for("specialists.list_specialists"))

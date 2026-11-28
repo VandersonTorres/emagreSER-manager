@@ -1,28 +1,62 @@
 {% extends "base.html" %}
+{% from "_macros.html" import page_header, empty_state %}
+
+{% block title %}Usuários · EmagreSER{% endblock %}
 
 {% block content %}
+{% set role_labels = {"admin": "Gestor", "secretary": "Secretária", "nutritionist": "Nutricionista"} %} {# pragma: allowlist secret #}
+{% set role_tones = {"admin": "green", "secretary": "blue", "nutritionist": "pink"} %} {# pragma: allowlist secret #}
+{% set total = users|length %}
 
-<h2>Usuários Cadastrados</h2>
-{% if users %}
-<div class="listings">
-    <ul>
-        {% for user in users %}
-        <li>
-            E-mail: {{ user.email }}
-            {% if user.last_login_at %}
-                | Último acesso: {{ user.last_login_at.strftime("%d/%m/%Y") }}
-            {% else %}
-                | Usuário ainda não acessou o sistema
-            {% endif %}
-            &nbsp;
-            <a class="remove-button" href="{{ url_for('admin.delete_user', id=user.id) }}">Remover</a>
-        </li>
-        {% endfor %}
-    </ul>
-    <hr>
+{% call page_header("Usuários", "Quem pode acessar o sistema e com qual função.") %}
+    <a class="btn btn-primary" href="{{ url_for('admin.create_user') }}">
+        <i class="bi bi-person-plus" aria-hidden="true"></i> Novo usuário
+    </a>
+{% endcall %}
+
+{% if not users %}
+<div class="card">
+    {{ empty_state("person-gear", "Ainda não existem usuários cadastrados", "Cadastre o primeiro usuário para liberar o acesso ao sistema.", url_for("admin.create_user"), "Novo usuário") }}
 </div>
 {% else %}
-<h3>Ainda não existem Usuários cadastrados no sistema</h3>
+<section class="card table-card" aria-labelledby="users-title">
+    <div class="card-header app-card-header">
+        <h2 class="app-card-title" id="users-title">{{ total }} {{ "usuário" if total == 1 else "usuários" }}</h2>
+    </div>
+    <table class="table table-hover table-stack record-table user-table align-middle mb-0">
+        <thead>
+            <tr>
+                <th scope="col">Nome</th>
+                <th scope="col">E-mail</th>
+                <th scope="col">Função</th>
+                <th scope="col">Último acesso</th>
+                <th scope="col">Ações</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for user in users|sort(attribute="email") %}
+            <tr>
+                <td data-label="Nome"><span class="fw-semibold">{{ user.username or "—" }}</span></td>
+                <td data-label="E-mail"><span id="user-email-{{ user.id }}">{{ user.email }}</span></td>
+                <td data-label="Função">
+                    <span class="d-inline-flex flex-wrap justify-content-end gap-1">
+                        {% for role in user.roles %}
+                        <span class="badge badge-soft badge-soft-{{ role_tones.get(role.name, 'neutral') }}">{{ role_labels.get(role.name, role.name) }}</span>
+                        {% else %}
+                        <span class="text-body-secondary">Sem função</span>
+                        {% endfor %}
+                    </span>
+                </td>
+                <td data-label="Último acesso"><span>{% if user.last_login_at %}{{ user.last_login_at|clinic_date }}{% else %}Ainda não acessou{% endif %}</span></td>
+                <td data-label="Ações" class="record-actions">
+                    <a class="btn btn-outline-danger btn-sm" href="{{ url_for('admin.delete_user', id=user.id) }}" aria-describedby="user-email-{{ user.id }}">
+                        <i class="bi bi-trash" aria-hidden="true"></i> Remover
+                    </a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</section>
 {% endif %}
-
 {% endblock %}

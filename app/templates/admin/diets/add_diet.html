@@ -1,31 +1,31 @@
 {% extends "base.html" %}
+{% from "_macros.html" import page_header, field, form_errors %}
+
+{% block title %}Nova dieta · EmagreSER{% endblock %}
 
 {% block content %}
+{{ page_header("Nova dieta", "Escolha o nome, descreva a dieta e envie o arquivo em PDF.", url_for("diets.list_diets")) }}
 
-<h2>Adicionar Dieta</h2>
-<form class="add-diet-form" method="POST" enctype="multipart/form-data" action="{{ url_for('diets.add_diet') }}">
-    {{ form.hidden_tag() }}
-    <label for="name">Nome:</label>
-    {{ form.name(id="diet-select") }}
-    <br>
-    <div id="other-name-field" style="display: none;">
-        <label for="other_name">Outro (especifique):</label>
-        {{ form.other_name() }}
+<div class="card form-card">
+    <div class="card-body p-4">
+        <form class="add-diet-form" method="post" enctype="multipart/form-data" action="{{ url_for('diets.add_diet') }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            {{ form_errors(form) }}
+            {{ field(form.name, id="diet-select") }}
+            <div id="other-name-field" hidden>
+                {{ field(form.other_name, placeholder="Especifique o nome da dieta", autocomplete="off") }}
+            </div>
+            {{ field(form.description, rows="4", placeholder="Descrição da dieta") }}
+            {{ field(form.diet_file, accept="application/pdf", help="Somente arquivos em PDF.") }}
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg" aria-hidden="true"></i> Salvar dieta</button>
+                <a class="btn btn-outline-secondary" href="{{ url_for('diets.list_diets') }}">Cancelar</a>
+            </div>
+        </form>
     </div>
-    <br>
-    <label for="description">Descrição:</label>
-    {{ form.description() }}
-    <br>
-    <label for="diet_file">Arquivo da Dieta:</label>
-    {{ form.diet_file() }}
-    <br>
-    <button type="submit">Salvar Dieta</button>
-</form>
-<hr>
-<br>
-<div class="nav-actions">
-    <a href="{{ url_for('diets.list_diets') }}" class="btn btn-secondary back-button">🔙 Voltar</a>
 </div>
-<script src="{{ url_for('static', filename='js/add_diet.js') }}"></script>
+{% endblock %}
 
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/add_diet.js') }}"></script>
 {% endblock %}

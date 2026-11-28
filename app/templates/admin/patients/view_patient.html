@@ -183,6 +183,7 @@
                             <td data-label="Ações" class="record-actions">
                                 <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('patients.edit_anthro', patient_id=patient.id, evaluation_id=evaluation.id) }}" aria-label="Editar avaliação de {{ when }}"><i class="bi bi-pencil-square" aria-hidden="true"></i> Editar</a>
                                 <form method="post" action="{{ url_for('patients.delete_anthropometric_evaluation', patient_id=patient.id, evaluation_id=evaluation.id) }}" data-confirm="Tem certeza que deseja remover esta avaliação?">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                     <button type="submit" class="btn btn-outline-danger btn-sm" aria-label="Excluir avaliação de {{ when }}"><i class="bi bi-trash" aria-hidden="true"></i> Excluir</button>
                                 </form>
                             </td>
@@ -244,6 +245,7 @@
                             <td data-label="Ações" class="record-actions">
                                 <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('patients.edit_skinfold', patient_id=patient.id, skinfold_id=fold.id) }}" aria-label="Editar medição de {{ when }}"><i class="bi bi-pencil-square" aria-hidden="true"></i> Editar</a>
                                 <form method="post" action="{{ url_for('patients.delete_skinfold', patient_id=patient.id, skinfold_id=fold.id) }}" data-confirm="Tem certeza que deseja remover essa medição? (Revise a Antropometria após a remoção)">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                     <button type="submit" class="btn btn-outline-danger btn-sm" aria-label="Excluir medição de {{ when }}"><i class="bi bi-trash" aria-hidden="true"></i> Excluir</button>
                                 </form>
                             </td>
