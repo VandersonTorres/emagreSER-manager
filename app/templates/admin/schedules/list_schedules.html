@@ -1,63 +1,116 @@
 {% extends "base.html" %}
+{% from "_macros.html" import page_header, empty_state %}
+
+{% block title %}Agenda · EmagreSER{% endblock %}
 
 {% block content %}
+{% set weekdays = ["segunda-feira", "terça-feira", "quarta-feira", "quinta-feira", "sexta-feira", "sábado", "domingo"] %}
+{% set status_labels = {"pendente": "Pendente", "finalizado": "Finalizado"} %}
+{% set status_tones = {"pendente": "amber", "finalizado": "green"} %}
+{% set can_manage = not current_user.has_role("nutritionist") %}
 
-<h2>Agenda dos Profissionais</h2>
+{% call page_header("Agenda", "Consultas de cada profissional.") %}
+    <a class="btn btn-primary" href="{{ url_for('schedules.schedule_action') }}">
+        <i class="bi bi-calendar-plus" aria-hidden="true"></i> Agendar consulta
+    </a>
+{% endcall %}
 
-<hr>
-
-<form method="get" action="{{ url_for('schedules.list_schedules') }}">
-    <label for="date">Exibir agendamentos por data:</label>
-    <input type="date" name="date" id="date" value="{{ request.args.get('date', '') }}">
-    <button type="submit">Filtrar</button>
-    {% if request.args.get('date') %}
-        <a href="{{ url_for('schedules.list_schedules') }}">Limpar filtro</a>
-    {% endif %}
-</form>
-<br>
-
-<hr>
+<section class="card schedule-filter" aria-labelledby="schedule-filter-title">
+    <div class="card-body">
+        <h2 class="visually-hidden" id="schedule-filter-title">Filtrar por data</h2>
+        <form class="schedule-filter-form" method="get" action="{{ url_for('schedules.list_schedules') }}">
+            <label class="form-label" for="schedule-date">Exibir agendamentos por data</label>
+            <div class="schedule-filter-row">
+                <input class="form-control" type="date" id="schedule-date" name="date" value="{{ date_filter.isoformat() if date_filter else '' }}">
+                <button class="btn btn-primary" type="submit"><i class="bi bi-funnel" aria-hidden="true"></i> Filtrar</button>
+            </div>
+        </form>
+        <div class="schedule-quick">
+            <a class="btn btn-outline-secondary" href="{{ url_for('schedules.list_schedules', date=today.isoformat()) }}"{% if date_filter == today %} aria-current="date"{% endif %}>Hoje</a>
+            <a class="btn btn-outline-secondary" href="{{ url_for('schedules.list_schedules', date=tomorrow.isoformat()) }}"{% if date_filter == tomorrow %} aria-current="date"{% endif %}>Amanhã</a>
+            {% if date_filter %}
+            <a class="btn btn-link" href="{{ url_for('schedules.list_schedules') }}">Limpar filtro</a>
+            {% endif %}
+        </div>
+        {% if date_filter %}
+        <p class="schedule-filter-summary">Mostrando os agendamentos de <strong>{{ weekdays[date_filter.weekday()] }}, {{ date_filter.strftime("%d/%m/%Y") }}</strong>.</p>
+        {% endif %}
+    </div>
+</section>
 
 {% for specialist, schedules in schedules_by_specialist.items() %}
-<h3>{{ specialist }}</h3>
-
-{% if schedules %}
-<div class="table-scroll">
-<table class="schedules-table" border="1" cellspacing="0" cellpadding="5">
-    <thead>
-        <tr>
-            <th>Paciente</th>
-            <th>Data/Hora</th>
-            <th>Status</th>
-            <th>Ações</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for schedule in schedules %}
-        <tr>
-            <td><a href="{{ url_for('patients.view_patient', id=schedule.patient.id) }}">{{ schedule.patient.name }}</a></td>
-            <td>{{ schedule.date_time.strftime("%d/%m/%Y %H:%M") }}</td>
-            <td>{{ schedule.status }}</td>
-            <td>
-                <form class="cancel-schedule-form" method="POST"
-                    action="{{ url_for('schedules.delete_schedule', id=schedule.id) }}"
-                    onsubmit="return confirm('Confirma o cancelamento?');">
-                    <button class="remove-button" type="submit">Cancelar</button>
-                </form>
-            </td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
-</div>
+<section class="card table-card schedule-card" aria-labelledby="specialist-{{ loop.index }}-title">
+    <div class="card-header app-card-header">
+        <h2 class="app-card-title" id="specialist-{{ loop.index }}-title">{{ specialist }}</h2>
+        <span class="badge badge-soft badge-soft-green">{{ schedules|length }} {{ "consulta" if schedules|length == 1 else "consultas" }}</span>
+    </div>
+    {% if schedules %}
+    <table class="table table-hover table-stack record-table schedule-table align-middle mb-0">
+        <thead>
+            <tr>
+                <th scope="col">Paciente</th>
+                <th scope="col">Data</th>
+                <th scope="col">Horário</th>
+                <th scope="col">Status</th>
+                <th scope="col">Ações</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for schedule in schedules %}
+            {% set when = schedule.date_time %}
+            {% set status = schedule.status %}
+            <tr>
+                <td data-label="Paciente"><a href="{{ url_for('patients.view_patient', id=schedule.patient.id) }}" id="schedule-patient-{{ schedule.id }}">{{ schedule.patient.name }}</a></td>
+                <td data-label="Data"><span><time datetime="{{ when.date().isoformat() }}">{{ when.strftime("%d/%m/%Y") }}</time> <span class="schedule-weekday">{{ weekdays[when.weekday()] }}</span></span></td>
+                <td data-label="Horário"><span>{{ when.strftime("%H:%M") }}</span></td>
+                <td data-label="Status"><span class="badge badge-soft badge-soft-{{ status_tones.get(status, 'neutral') }}">{{ status_labels.get(status, status or "—") }}</span></td>
+                <td data-label="Ações" class="record-actions">
+                    <button type="button" class="btn btn-outline-danger btn-sm" data-bs-toggle="modal" data-bs-target="#cancel-schedule-{{ schedule.id }}" aria-describedby="schedule-patient-{{ schedule.id }}">
+                        <i class="bi bi-x-circle" aria-hidden="true"></i> Cancelar
+                    </button>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% elif date_filter %}
+    {{ empty_state("calendar-x", "Nenhum agendamento em " ~ date_filter.strftime("%d/%m/%Y"), "Este profissional não tem consultas nesta data.") }}
+    {% else %}
+    {{ empty_state("calendar-check", "Nenhum agendamento", "Este profissional não tem consultas pendentes na agenda.") }}
+    {% endif %}
+</section>
 {% else %}
-<p>Nenhum agendamento pendente para este profissional.</p>
-{% endif %}
-<br>
-
-<hr>
-
+<div class="card">
+    {% if can_manage %}
+    {{ empty_state("person-badge", "Ainda não existem profissionais cadastrados", "Cadastre os profissionais para organizar a agenda de cada um.", url_for("specialists.list_specialists"), "Ir para Profissionais") }}
+    {% else %}
+    {{ empty_state("person-badge", "Ainda não existem profissionais cadastrados", "Peça à gestão para cadastrar os profissionais.") }}
+    {% endif %}
+</div>
 {% endfor %}
-<a href="{{ url_for('schedules.schedule_action') }}">➕ Agendar nova consulta</a>
 
+{% for specialist, schedules in schedules_by_specialist.items() %}
+{% for schedule in schedules %}
+{% set when = schedule.date_time %}
+<div class="modal fade" id="cancel-schedule-{{ schedule.id }}" tabindex="-1" aria-labelledby="cancel-schedule-{{ schedule.id }}-title" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <form class="modal-content cancel-schedule-form" method="post" action="{{ url_for('schedules.delete_schedule', id=schedule.id) }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <div class="modal-header">
+                <h2 class="modal-title" id="cancel-schedule-{{ schedule.id }}-title">Cancelar agendamento</h2>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+            </div>
+            <div class="modal-body">
+                <p>Cancelar a consulta de <strong>{{ schedule.patient.name }}</strong> com {{ specialist }} em <strong>{{ when.strftime("%d/%m/%Y") }}</strong> às <strong>{{ when.strftime("%H:%M") }}</strong>?</p>
+                <p class="text-body-secondary mb-0">O agendamento será removido da agenda.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Voltar</button>
+                <button type="submit" class="btn btn-danger">Cancelar agendamento</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endfor %}
+{% endfor %}
 {% endblock %}

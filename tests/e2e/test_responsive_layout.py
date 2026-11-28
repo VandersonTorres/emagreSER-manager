@@ -302,6 +302,7 @@ TABLES_FIT_SCRIPT = """
         ("patients.view_patient", "#bioimpedancia"),
         ("schedules.list_schedules", ""),
         ("specialists.list_specialists", ""),
+        ("admin.list_users", ""),
     ],
 )
 def test_wide_tables_end_inside_the_card_or_scroll_inside_it(
@@ -390,11 +391,42 @@ def _screens(app: Flask, seed: SeedData) -> tuple[list[Screen], list[Screen]]:
             _url(app, "patients.edit_skinfold", patient_id=patient, skinfold_id=int(seed["skinfold"])),
             ready="form.edit-skinfold-form",
         ),
-        Screen("diets-list", "admin", _url(app, "diets.list_diets"), ready="#diet-list"),
-        Screen("schedules-list", "admin", _url(app, "schedules.list_schedules")),
+        Screen("diets-list", "admin", _url(app, "diets.list_diets"), ready="#diet-list .diet-handle"),
+        Screen("diets-search", "admin", _url(app, "diets.list_diets", query="Teste"), ready=".diet-reorder-hint"),
+        Screen("diet-add", "admin", _url(app, "diets.add_diet"), ready="form.add-diet-form"),
+        Screen(
+            "diet-edit", "admin", _url(app, "diets.edit_diet_raw", id=int(seed["diet_a4"])), ready="form.edit-diet-form"
+        ),
+        Screen(
+            "diet-delete",
+            "admin",
+            _url(app, "diets.delete_diet", id=int(seed["diet_backend"])),
+            ready="form.delete-diet-form",
+        ),
+        Screen("schedules-list", "admin", _url(app, "schedules.list_schedules"), ready="section.schedule-card"),
+        Screen(
+            "schedules-day",
+            "admin",
+            _url(app, "schedules.list_schedules", date=str(seed["schedule_future_date"])),
+            ready=".schedule-filter-summary",
+        ),
         Screen("schedule-action", "admin", _url(app, "schedules.schedule_action"), ready=".select2-container"),
-        Screen("specialists-list", "admin", _url(app, "specialists.list_specialists")),
-        Screen("users-list", "admin", _url(app, "admin.list_users")),
+        Screen("specialists-list", "admin", _url(app, "specialists.list_specialists"), ready="table.record-table"),
+        Screen("specialist-add", "admin", _url(app, "specialists.add_specialist"), ready="form.add-specialist-form"),
+        Screen(
+            "specialist-edit",
+            "admin",
+            _url(app, "specialists.edit_specialist", id=int(seed["specialist_other"])),
+            ready="form.edit-specialist-form",
+        ),
+        Screen("users-list", "admin", _url(app, "admin.list_users"), ready="table.record-table"),
+        Screen("user-add", "admin", _url(app, "admin.create_user"), ready="form.create-user-form"),
+        Screen(
+            "user-delete",
+            "admin",
+            _url(app, "admin.delete_user", id=int(seed["user_secretary"])),
+            ready="form.delete-user-form",
+        ),
     ]
     return anonymous, admin
 

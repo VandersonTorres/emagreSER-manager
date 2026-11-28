@@ -85,8 +85,9 @@ both cases the table must be updated. No known bug is recorded at the moment.
 `test_layout.py` covers the shell shared by every page: flash messages as toasts (rendered once, by category), the
 role-aware sidebar and its active item, the home dashboard (upcoming schedules by role, no writes on GET, no form or
 input), the auth pages, the custom 403, 404 and 500 pages, the pt-BR `SECURITY_MSG_*` messages and the previous diet
-editor (`?legacy=1`) keeping `legacy.css` without Bootstrap. Tests that need extra schedules create them in the temporary database and
-delete them afterwards.
+editor (`?legacy=1`) keeping `legacy.css` without Bootstrap, which is pinned by its SHA-256 (the old `style.css` is
+gone). No page renders inside a compatibility wrapper any more. Tests that need extra schedules create them in the
+temporary database and delete them afterwards.
 
 `e2e/test_responsive_layout.py` drives the shell in a browser: no horizontal overflow on the login, home and change
 password pages, the mobile drawer (390x844, touch), the always visible desktop sidebar (1366x900), toast behavior and a
@@ -96,6 +97,27 @@ for visual review; without it nothing is written:
 ```bash
 SCREENSHOT_DIR=/tmp/ui-screens .venv/bin/python -m pytest -m e2e tests/e2e/test_responsive_layout.py
 ```
+
+## Diet, agenda, professional and user page tests
+
+The diet list, the diet forms, the agenda, the booking form, the professionals and the users pages use the same layout
+as the patient pages. `test_diet_list_pages.py` covers, without a browser, the cards of `#diet-list`, the drag handle,
+the "PDF editado" badge, the disabled send button and its hint, the grouped actions, the single send dialog (and the
+nutritionist filter of its patient select), the pinned Sortable script, the search that hides the handles, the empty
+states, the new diet, edit and removal pages. `test_agenda_pages.py` covers the agenda (status badges, the weekday, the
+time exactly as stored, the cancel dialogs, the filter, the empty states, the "Hoje" and "Amanhã" links with the clock
+frozen at 22:30 in São Paulo) and the booking form: a missing or unknown patient, a missing professional and a bad time
+flash a message and store nothing, and the conflict message and suggestions are pinned. `test_staff_pages.py` covers the
+professionals and users pages and the validation of the new user form (each error, the values kept, the password never
+sent back, duplicate e-mail and name, a role outside the three choices, the stored user). Tests that create rows remove
+them through the ORM, so the role links go too.
+
+`e2e/test_staff_pages.py` drives them in Chrome on both viewports: the diet reorder by dragging the handle (mouse on the
+desktop, real touch events at 390x844), by keyboard and the announced result, a swipe outside the handle that scrolls
+without reordering, the search that hides the handles, the send dialog (the search of the select2 inside the modal, the
+mocked WhatsApp and e-mail senders and a double tap that sends once), the cancel and removal dialogs, the booking form,
+the professional and user forms with their server errors, and, for every redesigned page, no sideways scroll and no page
+error. The senders are replaced inside the live server process and are slow on purpose, so a second tap can reach the page.
 
 ## Patient page tests
 
@@ -112,9 +134,9 @@ patient gets; the column stays, so the answers already stored are kept (the edit
 what the page renders in them when the stored row has nothing there. The baselines themselves are never re-recorded.
 
 `test_patient_forms.py` (no browser) checks, for every form page, the submitted field names and the rendered values
-against the baseline (with and without the CSRF token), the round trip of the edit page (open, change one field, save:
-only that column changes), the creation of a patient with every field and the values stored by the evaluation and
-measurement forms. `form_helpers.py` reads what a browser would submit from the HTML. `test_patient_pages.py` covers
+against the baseline (the CSRF token, which every POST form carries, is checked apart), the round trip of the edit
+page (open, change one field, save: only that column changes), the creation of a patient with every field and the
+values stored by the evaluation and measurement forms. `form_helpers.py` reads what a browser would submit from the HTML. `test_patient_pages.py` covers
 the markup: the list (data, "⋯" menu, contact links, `Remover` hidden from nutritionists), the search and its empty
 states, the record (header, accessible tabs and hash keys, 14 and 11 column tables, delete forms with confirmation,
 pinned Chart.js with its integrity hash), the custom history, the delete confirmation, labels, input types, back links,
@@ -146,7 +168,8 @@ São Paulo, and that the record shows "Paciente desde" in the São Paulo time zo
 `app/forms.py` and the base form `AppForm` gives them to every form. The test reads `wtforms/locale/wtforms.pot` of the
 installed WTForms and fails when a message has no translation, so an upgrade that adds messages cannot show English. It
 also checks real errors (required, float, integer, date, choice) on the patient forms and on rendered pages, and that
-the CSRF token is still required and accepted by the forms that validate, with the Portuguese message.
+the CSRF token is still required and accepted by the forms that validate: a request without it is refused by the
+handler of `app/errors.py`, which sends the user back to the page with the Portuguese message in a toast.
 
 `e2e/test_bioimpedance_notes.py` drives the dialog and the notes in Chrome on both viewports: the dialog is visible
 after the load with the focus inside, "Entendi" and Escape close it and the focus returns to the patient name, a reload
@@ -160,6 +183,38 @@ sideways scroll, and covers the phone list, the pagination with more than one pa
 the shortcuts, the new patient form, the edit page, the record tabs with the URL hash, tables turning into cards, the
 weight charts and the delete confirmations. `case_patients` and `complete_patient` (in `conftest.py`) create temporary
 rows and remove them afterwards.
+
+## CSRF protection tests
+
+The whole app is protected by `CSRFProtect` (`app/extensions.py`, started before Flask-Security) and the token never
+expires by itself (`WTF_CSRF_TIME_LIMIT = None`). The suite runs with the check off, as the other tests expect; the
+`csrf_on` fixture of `test_csrf_rendering.py` turns it on for one test, in the unit tests and in the browser tests (the
+live server serves the same app object).
+
+`test_csrf_protection.py` has the route inventory, `POST_ROUTES`: one row for every endpoint that accepts a state
+changing method, with the page or script that sends it, the files that hold the sender, the role that may use it and
+what must stay as it was. It fails when a route is missing from the table or the table lists a route that is gone. For
+each row, a POST without the token (the session already has its token, as after opening a page) must be refused (a 400
+JSON answer with the sentence for scripts, a redirect with the sentence flashed for forms) and must change no row of the
+affected tables, no file of the temporary folder and call no service (Cloudinary, WhatsApp, the PDF download, the backup,
+mail). The `guards` fixture replaces those services and also suppresses the mail: the mail state of the session app is
+built before TESTING is turned on, so it would otherwise try a real SMTP connection. The same file checks that every
+page of the smoke table has the meta token and that every form with method post carries a valid token (including the
+confirmation macro and the previous editor page), that representative forms do their work with the token the page
+rendered (new patient, delete of an evaluation and of a measurement, patient removal, agenda, professional, users, diet
+removal, e-mail and WhatsApp sends), that the reorder script and the editor save need the `X-CSRFToken` header, that an
+old token is still accepted, and the handler: a same-site `Referer` is the redirect target (an https page also counts
+when the request arrives over http, as behind a proxy, but an http page never counts for an https request), anything
+else (another host or port, `//host`, text, nothing) goes to the home page, JSON requests get the 400 answer, and the
+log line has the method, the path and the reason but never the token.
+
+`e2e/test_csrf_flows.py` runs in Chrome with CSRF on: a save in the responsive editor (the result panel opens and the POST
+carried the header), a save in the previous editor (its dialogs accepted), the diet reorder by dragging the handle, the new patient form
+on the desktop and on the phone, the delete of an evaluation from the record, a form whose token input was removed (it
+shows the message in a toast and changes nothing) and a post to the save endpoint with the browser cookies and no header.
+It also drives `app/static/js/csrf.js` through intercepted requests: the header goes only to POST, PUT, PATCH and DELETE
+requests to the page's own origin, for string, relative, `URL` and `Request` inputs and for `Headers`, array and object
+headers, never over a header the caller set, never to GET, HEAD or another origin, with the body untouched.
 
 ## Backup tests
 

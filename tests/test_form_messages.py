@@ -431,7 +431,7 @@ def test_validated_forms_still_refuse_a_post_without_a_valid_token(
     page: str,
     token: str,
 ) -> None:
-    """Check that a post without a valid CSRF token saves nothing and shows one message in Brazilian Portuguese.
+    """Check that a post without a valid CSRF token saves nothing and, back on the page, shows one message in pt-BR.
 
     :param app: Flask application.
     :param client_admin: Test client logged in as admin.
@@ -453,12 +453,13 @@ def test_validated_forms_still_refuse_a_post_without_a_valid_token(
         data["csrf_token"] = "not-a-valid-token"
     before = _stored_counts(app, seed, complete_patient)
 
-    response = client_admin.post(url, data=data)
+    response = client_admin.post(url, data=data, headers={"Referer": f"http://localhost{url}"})
 
-    body = response.get_data(as_text=True)
-    alert = BeautifulSoup(body, "html.parser").select_one(f"{selector} .alert-danger")
-    assert response.status_code == 200
-    assert alert is not None and CSRF_MESSAGE in alert.get_text()
+    assert response.status_code == 302
+    assert response.headers["Location"] == f"http://localhost{url}"
+    body = client_admin.get(url).get_data(as_text=True)
+    toasts = [toast.get_text() for toast in BeautifulSoup(body, "html.parser").select("#toast-region .toast-body")]
+    assert len(toasts) == 1 and CSRF_MESSAGE in toasts[0]
     assert "The CSRF" not in body and "CSRF token" not in body
     assert _stored_counts(app, seed, complete_patient) == before
 

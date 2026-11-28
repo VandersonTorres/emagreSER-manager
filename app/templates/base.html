@@ -23,7 +23,7 @@
                 <img src="{{ url_for('static', filename='img/logo2.png') }}" alt="EmagreSER">
             </a>
             {% endif %}
-            <div class="app-content {% block content_class %}compat{% endblock %}">
+            <div class="app-content{% block content_class %}{% endblock %}">
                 {% block content %}{% endblock %}
             </div>
         </main>

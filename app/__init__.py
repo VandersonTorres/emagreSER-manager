@@ -6,7 +6,7 @@ from flask_security import Security, SQLAlchemyUserDatastore
 from app.auth import register_auth_hooks
 from app.dates import format_clinic_date
 from app.errors import register_error_handlers
-from app.extensions import mail
+from app.extensions import csrf, mail
 from app.models import Role, User, db
 from app.navigation import register_navigation
 from app.views.admin import admin_bp
@@ -23,7 +23,8 @@ def create_app() -> Flask:
     """Build the Flask application with its extensions, blueprints, navigation and error pages.
 
     The User and Role models live in ``app/models.py``; the database tables are created when they do not exist yet.
-    The ``clinic_date`` template filter shows a stored UTC time as a date in the São Paulo time zone.
+    The ``clinic_date`` template filter shows a stored UTC time as a date in the São Paulo time zone. CSRF protection
+    covers every state-changing request of the app, and it is initialized before Flask-Security, which asks for that.
 
     :return: The configured Flask application.
     """
@@ -39,6 +40,7 @@ def create_app() -> Flask:
 
     db.init_app(app)
     mail.init_app(app)
+    csrf.init_app(app)
 
     user_datastore = SQLAlchemyUserDatastore(db, User, Role)
     security = Security(app, user_datastore)

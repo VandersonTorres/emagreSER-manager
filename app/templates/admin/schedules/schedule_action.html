@@ -1,49 +1,64 @@
 {% extends "base.html" %}
+{% from "_macros.html" import page_header %}
+
+{% block title %}Agendar consulta · EmagreSER{% endblock %}
 
 {% block content %}
+{{ page_header("Agendar consulta", "Escolha o paciente, o horário e o profissional.", url_for("schedules.list_schedules")) }}
 
-<h2>Agendar Consulta</h2>
-<form class="add-schedule-form" method="POST" action="{{ url_for('schedules.schedule_action') }}">
-    <label>Paciente:</label>
-    <select name="patient_id">
-        <option value="">Selecione</option>
-        {% for patient in patients %}
-        <option value="{{ patient.id }}">{{ patient.name }}</option>
-        {% endfor %}
-    </select>
-    <br>
-    <label>Data e Hora:</label>
-    <input type="datetime-local" name="date_time" required>
-    <br>
-    {% if specialists %}
-    <label for="specialist">Profissional:</label>
-    <select name="specialist" required>
-        <option value="">Selecione um profissional</option>
-        {% for specialist in specialists %}
-        <option value="{{ specialist.name }}">{{ specialist.name }}</option>
-        {% endfor %}
-    </select>
-    {% else %}
-    <label>Profissional:</label>
-    <input type="text" name="specialist" required>
-    {% endif %}
-    <br>
-    <button type="submit">Agendar</button>
-</form>
-
-<hr>
-<br>
-<div class="nav-actions">
-    <a class="back-button" href="{{ url_for('schedules.list_schedules') }}">🔙 Voltar</a>
+{% if not specialists %}
+<div class="alert alert-warning d-flex align-items-start gap-2" role="note">
+    <i class="bi bi-exclamation-triangle" aria-hidden="true"></i>
+    <div>
+        <strong>Ainda não existem profissionais cadastrados.</strong>
+        A consulta só aparece na agenda de um profissional cadastrado.
+        {% if not current_user.has_role("nutritionist") %}
+        <a href="{{ url_for('specialists.add_specialist') }}">Adicionar novo profissional</a>
+        {% endif %}
+    </div>
 </div>
+{% endif %}
 
-<script>
-$(document).ready(function() {
-    $('select[name="patient_id"]').select2({
-        placeholder: "Selecione ou digite o nome do paciente",
-        allowClear: true
-    });
-});
-</script>
+<div class="card form-card">
+    <div class="card-body p-4">
+        <form class="add-schedule-form" method="post" action="{{ url_for('schedules.schedule_action') }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <div class="mb-3">
+                <label class="form-label" for="schedule-patient">Paciente</label>
+                <select class="form-select" id="schedule-patient" name="patient_id" required aria-describedby="schedule-patient-error">
+                    <option value="">Selecione um paciente</option>
+                    {% for patient in patients|sort(attribute="name") %}
+                    <option value="{{ patient.id }}">{{ patient.name }}</option>
+                    {% endfor %}
+                </select>
+                <div class="invalid-feedback d-block" id="schedule-patient-error" role="alert"></div>
+            </div>
+            <div class="mb-3">
+                <label class="form-label" for="schedule-datetime">Data e hora</label>
+                <input class="form-control" type="datetime-local" id="schedule-datetime" name="date_time" required autocomplete="off">
+            </div>
+            <div class="mb-3">
+                <label class="form-label" for="schedule-specialist">Profissional</label>
+                {% if specialists %}
+                <select class="form-select" id="schedule-specialist" name="specialist" required>
+                    <option value="">Selecione um profissional</option>
+                    {% for specialist in specialists %}
+                    <option value="{{ specialist.name }}">{{ specialist.name }}</option>
+                    {% endfor %}
+                </select>
+                {% else %}
+                <input class="form-control" type="text" id="schedule-specialist" name="specialist" required autocomplete="off">
+                {% endif %}
+            </div>
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary"><i class="bi bi-calendar-check" aria-hidden="true"></i> Agendar consulta</button>
+                <a class="btn btn-outline-secondary" href="{{ url_for('schedules.list_schedules') }}">Cancelar</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
 
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/schedule_form.js') }}"></script>
 {% endblock %}

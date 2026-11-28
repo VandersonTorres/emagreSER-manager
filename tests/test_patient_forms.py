@@ -18,7 +18,6 @@ from tests.patient_baselines import (
     EDIT_PATIENT_DIFFS,
     FORM_FIELD_NAMES,
     FORM_VALUES,
-    PAGES_WITH_CSRF_TOKEN,
     SKINFOLD_ADD_EXPECTED,
     SKINFOLD_EDIT_EXPECTED,
     STORED_NEW_PATIENT,
@@ -60,6 +59,8 @@ SCRIPT_COMPUTED = {
     "edit_anthro": {"idade"},
 }
 ADMIN_NAME = "Usuario Teste admin"
+CSRF_FIELD = "csrf_token"
+GET_FORM_PAGES = frozenset({"search", "quick_anthro", "quick_skinfold"})
 
 
 def _expected_names(page: str) -> list[str]:
@@ -70,6 +71,16 @@ def _expected_names(page: str) -> list[str]:
     """
     recorded = {name for name in FORM_FIELD_NAMES[page] if name not in REMOVED_FIELDS}
     return sorted(recorded | ADDED_FIELDS.get(page, frozenset()))
+
+
+def _field_names(html: str, selector: str) -> list[str]:
+    """List the names a form submits, sorted and without the CSRF token, which every POST form carries.
+
+    :param html: HTML of the page.
+    :param selector: CSS selector of the form.
+    :return: The sorted names of the fields of the form.
+    """
+    return [name for name in form_names(html, selector) if name != CSRF_FIELD]
 
 
 def _url(app: Flask, endpoint: str, **values: int | str) -> str:
@@ -169,17 +180,17 @@ def test_form_submits_the_recorded_field_names(
     """
     url, selector = pages[page]
 
-    names = form_names(_html(client_admin, url), selector)
+    names = _field_names(_html(client_admin, url), selector)
 
     assert names == _expected_names(page), page
 
 
 @pytest.mark.usefixtures("csrf_on")
 @pytest.mark.parametrize("page", sorted(FORM_FIELD_NAMES))
-def test_form_carries_the_csrf_token_as_before(
+def test_every_post_form_carries_the_csrf_token(
     client_admin: FlaskClient, pages: dict[str, tuple[str, str]], page: str
 ) -> None:
-    """Check that, with CSRF protection on, the forms that had the token keep it and the others stay as they were.
+    """Check that, with CSRF protection on, every form that posts carries the token and the GET forms do not.
 
     :param client_admin: Test client logged in as admin.
     :param pages: URL and form selector of each page.
@@ -189,8 +200,8 @@ def test_form_carries_the_csrf_token_as_before(
 
     names = form_names(_html(client_admin, url), selector)
 
-    assert ("csrf_token" in names) is (page in PAGES_WITH_CSRF_TOKEN), page
-    assert [name for name in names if name != "csrf_token"] == _expected_names(page)
+    assert (CSRF_FIELD in names) is (page not in GET_FORM_PAGES), page
+    assert [name for name in names if name != CSRF_FIELD] == _expected_names(page)
 
 
 def test_only_the_measurement_forms_submit_the_observation(
@@ -204,7 +215,7 @@ def test_only_the_measurement_forms_submit_the_observation(
     assert set(ADDED_FIELDS) <= set(FORM_FIELD_NAMES)
     assert ADDED_FIELDS == {"add_skinfold": {"observacoes"}, "edit_skinfold": {"observacoes"}}
     for page, (url, selector) in pages.items():
-        names = form_names(_html(client_admin, url), selector)
+        names = _field_names(_html(client_admin, url), selector)
 
         assert ("observacoes" in names) is (page in ADDED_FIELDS), page
         assert all(name in FORM_FIELD_NAMES[page] for name in names if name not in ADDED_FIELDS.get(page, ())), page
@@ -244,7 +255,7 @@ def _rendered_values(
     :return: The rendered values by field name.
     """
     url, selector = pages[page]
-    skipped = SCRIPT_COMPUTED.get(page_key, set())
+    skipped = SCRIPT_COMPUTED.get(page_key, set()) | {CSRF_FIELD}
     return {name: value for name, value in form_entries(_html(client, url), selector) if name not in skipped}
 
 

@@ -17,6 +17,11 @@ class Config:
 
     ``SUPERUSER_EMAILS`` lists, separated by commas, semicolons or spaces, the e-mails allowed to download the database
     backup. It is empty by default, so nobody has access until it is set.
+
+    Every POST, PUT, PATCH and DELETE request must carry the CSRF token of the session (Flask-WTF).
+    ``WTF_CSRF_TIME_LIMIT`` is ``None``, so a token never expires by itself and lives as long as the login session: a
+    diet edited for more than an hour, or a form left open on a desk, can still be saved instead of failing with a
+    stale token.
     """
 
     SECRET_KEY = os.getenv("FLASK_SECRET_KEY", "your-secret-key")
@@ -59,6 +64,8 @@ class Config:
     SECURITY_MSG_REAUTHENTICATION_REQUIRED = ("Confirme sua identidade para acessar esta página.", "warning")
     SECURITY_MSG_REAUTHENTICATION_SUCCESSFUL = ("Identidade confirmada com sucesso.", "success")
     SECURITY_MSG_GENERIC_AUTHN_FAILED = ("Falha na autenticação: e-mail ou senha inválidos.", "error")
+
+    WTF_CSRF_TIME_LIMIT = None
 
     SUPERUSER_EMAILS = os.getenv("SUPERUSER_EMAILS", "")
 

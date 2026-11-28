@@ -1,10 +1,12 @@
 """Tests of the application shell: flash toasts, role-aware menu, home dashboard, auth pages and error pages."""
 
+import hashlib
 import re
 import uuid
 from collections.abc import Iterator
 from datetime import datetime, timedelta
 from pathlib import Path
+from urllib.parse import urlparse
 
 import pytest
 from bs4 import BeautifulSoup
@@ -27,7 +29,25 @@ FORBIDDEN_MESSAGE = "Acesso negado! Você não tem permissão para acessar essa 
 MANAGEMENT_ENDPOINTS = ("specialists.list_specialists", "admin.list_users")
 OTHER_SPECIALIST = "Profissional Teste 2"
 WRONG_PASSWORD = "wrong-password"  # pragma: allowlist secret
+CREATED_USER_PASSWORD = "Created-User-1!"  # pragma: allowlist secret
 PLACEHOLDER = re.compile(r"%\((\w+)\)s")
+LEGACY_STYLESHEET_SHA256 = (
+    "1cfcde86c05c40cfd7afb506bd04ef5ff60c38fb14f86dc127f94f3f58f64faa"  # pragma: allowlist secret
+)
+STAFF_PAGES = (
+    ("admin.create_user", {}),
+    ("admin.list_users", {}),
+    ("admin.delete_user", {"id": "@user_secretary"}),
+    ("specialists.list_specialists", {}),
+    ("specialists.add_specialist", {}),
+    ("specialists.edit_specialist", {"id": "@specialist_other"}),
+    ("diets.list_diets", {}),
+    ("diets.add_diet", {}),
+    ("diets.edit_diet_raw", {"id": "@diet_a4"}),
+    ("diets.delete_diet", {"id": "@diet_a4"}),
+    ("schedules.list_schedules", {}),
+    ("schedules.schedule_action", {}),
+)
 
 
 def _soup(html: str) -> BeautifulSoup:
@@ -415,18 +435,40 @@ def test_user_menu_links(app: Flask, client_admin: FlaskClient) -> None:
     assert EMAILS["admin"] in soup.select_one(".dropdown-menu").get_text()
 
 
-def test_compat_wrapper_only_on_pages_not_redesigned(app: Flask, client_admin: FlaskClient) -> None:
-    """Check that the home does not use the compatibility wrapper and a legacy page does.
+@pytest.mark.parametrize("endpoint, values", STAFF_PAGES, ids=[endpoint for endpoint, _ in STAFF_PAGES])
+def test_no_page_uses_the_compatibility_wrapper(
+    app: Flask, seed: SeedData, client_admin: FlaskClient, endpoint: str, values: dict[str, int | str]
+) -> None:
+    """Check that no page renders inside a compatibility wrapper any more, and that the shell has no such class.
 
     :param app: Flask application.
+    :param seed: Ids of the fake records.
     :param client_admin: Test client logged in as admin.
+    :param endpoint: Endpoint of the page.
+    :param values: Arguments of the page URL; strings starting with "@" reference the seed.
     """
-    home = _soup(client_admin.get("/").get_data(as_text=True))
-    schedules = _soup(client_admin.get(_url(app, "schedules.list_schedules")).get_data(as_text=True))
+    resolved = {
+        key: seed[value[1:]] if isinstance(value, str) and value.startswith("@") else value
+        for key, value in values.items()
+    }
+    response = client_admin.get(_url(app, endpoint, **resolved))
 
-    assert home.select_one(".app-content.compat") is None
-    assert home.select_one(".app-content") is not None
-    assert schedules.select_one(".app-content.compat") is not None
+    soup = _soup(response.get_data(as_text=True))
+    assert response.status_code == 200
+    assert soup.select_one(".app-content") is not None
+    assert soup.select_one(".app-content.compat") is None
+    assert "compat" not in " ".join(soup.select_one(".app-content")["class"])
+
+
+def test_stylesheets_and_layout_have_no_compatibility_layer() -> None:
+    """Check that the base layout, the stylesheet and the old stylesheet file are gone from the app."""
+    css_dir = TEMPLATES_DIR.parent / "static" / "css"
+
+    assert "compat" not in (TEMPLATES_DIR / "base.html").read_text(encoding="utf-8")
+    assert ".compat" not in (css_dir / "app.css").read_text(encoding="utf-8")
+    assert not (css_dir / "style.css").exists()
+    assert not (TEMPLATES_DIR / "admin" / "diets" / "send_diet.html").exists()
+    assert not (TEMPLATES_DIR.parent / "static" / "js" / "validate_register.js").exists()
 
 
 def test_login_page(app: Flask, client: FlaskClient) -> None:
@@ -968,24 +1010,26 @@ def test_previous_editor_keeps_the_legacy_stylesheet(app: Flask, seed: SeedData,
     assert "app-topbar" not in html
 
 
-def test_legacy_stylesheet_is_a_byte_copy_of_style_css() -> None:
-    """Check that legacy.css is byte-identical to style.css."""
+def test_legacy_stylesheet_is_pinned() -> None:
+    """Check that legacy.css, the stylesheet of the previous diet editor, never changes."""
     css_dir = TEMPLATES_DIR.parent / "static" / "css"
 
-    assert (css_dir / "legacy.css").read_bytes() == (css_dir / "style.css").read_bytes()
+    assert hashlib.sha256((css_dir / "legacy.css").read_bytes()).hexdigest() == LEGACY_STYLESHEET_SHA256
 
 
 def test_legacy_base_only_changes_the_stylesheet() -> None:
-    """Check that base_legacy.html differs from the old base only by the stylesheet it links."""
+    """Check that base_legacy.html differs from the old base only by its stylesheet and the CSRF token lines."""
     legacy = (TEMPLATES_DIR / "base_legacy.html").read_text(encoding="utf-8")
 
     assert "css/legacy.css" in legacy
     assert "css/style.css" not in legacy
     assert "app.css" not in legacy
+    assert '<meta name="csrf-token" content="{{ csrf_token() }}">' in legacy
+    assert "js/csrf.js" in legacy
 
 
 def test_redesigned_pages_load_the_new_stylesheets(app: Flask, client_admin: FlaskClient) -> None:
-    """Check that a page that was not redesigned still gets the framework and the compatibility wrapper.
+    """Check that the diet list gets the framework and the stylesheet of the app, and no compatibility wrapper.
 
     :param app: Flask application.
     :param client_admin: Test client logged in as admin.
@@ -995,7 +1039,8 @@ def test_redesigned_pages_load_the_new_stylesheets(app: Flask, client_admin: Fla
     assert "bootstrap@5.3.3" in html
     assert "css/app.css" in html
     assert "select2-bootstrap-5-theme@1.3.0" in html
-    assert 'class="app-content compat"' in html
+    assert 'class="app-content"' in html
+    assert "compat" not in html
 
 
 def test_select2_defaults_are_set_before_the_page_content(client_admin: FlaskClient, app: Flask) -> None:
@@ -1009,12 +1054,12 @@ def test_select2_defaults_are_set_before_the_page_content(client_admin: FlaskCli
     jquery = html.index("jquery-3.6.0.min.js")
     select2 = html.index("select2@4.1.0-rc.0/dist/js/select2.min.js")
     defaults = html.index('defaults.set("theme", "bootstrap-5")')
-    content = html.index('class="app-content compat"')
+    content = html.index('class="app-content"')
     assert jquery < select2 < defaults < content
 
 
-def test_create_user_post_renders_the_home_without_dashboard_variables(app: Flask, client_admin: FlaskClient) -> None:
-    """Check that the user creation still answers 200 by rendering the home page without its dashboard variables.
+def test_create_user_post_goes_to_the_users_list_with_the_success_toast(app: Flask, client_admin: FlaskClient) -> None:
+    """Check that creating a user redirects to the users list, which shows the success message as a toast.
 
     :param app: Flask application.
     :param client_admin: Test client logged in as admin.
@@ -1023,9 +1068,10 @@ def test_create_user_post_renders_the_home_without_dashboard_variables(app: Flas
     try:
         response = client_admin.post(
             "/admin/create_user",
-            data={"name": "Created User", "email": email, "password": TEST_PASSWORD, "role": "secretary"},
+            data={"name": "Created User", "email": email, "password": CREATED_USER_PASSWORD, "role": "secretary"},
         )
-        html = response.get_data(as_text=True)
+        followed = client_admin.get(response.headers["Location"])
+        html = followed.get_data(as_text=True)
     finally:
         with app.app_context():
             created = User.query.filter_by(email=email).first()
@@ -1033,12 +1079,11 @@ def test_create_user_post_renders_the_home_without_dashboard_variables(app: Flas
                 db.session.delete(created)
                 db.session.commit()
 
-    soup = _soup(html)
-    assert response.status_code == 200
-    assert soup.select_one(".page-header-title") is not None
-    assert soup.select_one("section[aria-labelledby=upcoming-title]") is None
+    assert response.status_code == 302
+    assert urlparse(response.headers["Location"]).path == _url(app, "admin.list_users")
+    assert followed.status_code == 200
     assert [text for text in _toast_texts(html) if email in text] == [
-        f"Usuário {email} cadastrado com sucesso com a função secretary."
+        f"Usuário {email} cadastrado com sucesso com a função Secretária."
     ]
 
 

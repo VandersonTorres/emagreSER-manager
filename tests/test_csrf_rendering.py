@@ -4,6 +4,7 @@ import io
 import zipfile
 from collections.abc import Callable, Iterator
 from typing import Any
+from urllib.parse import urlparse
 
 import pytest
 from _pytest.mark.structures import ParameterSet
@@ -11,6 +12,7 @@ from bs4 import BeautifulSoup
 from flask import Flask, url_for
 from flask_security.recoverable import generate_reset_password_token
 
+from app.errors import CSRF_EXPIRED_MESSAGE
 from app.models import User
 from tests.aliases import ClientFactory, SeedData
 from tests.constants import EMAILS, TEST_PASSWORD
@@ -19,6 +21,17 @@ from tests.test_smoke_pages import EXPECTED, ROLES, Bug, _resolve_params
 
 CSRF_INPUT = 'name="csrf_token"'
 CSRF_MESSAGE = "Esta página ficou aberta por muito tempo."
+LOCAL_HOST = "http://localhost"
+
+
+def _toast_texts(html: str) -> list[str]:
+    """Read the texts of the toasts of a page.
+
+    :param html: HTML of the page.
+    :return: The text of each toast of the toast region.
+    """
+    soup = BeautifulSoup(html, "html.parser")
+    return [toast.get_text().strip() for toast in soup.select("#toast-region .toast-body")]
 
 
 @pytest.fixture
@@ -117,16 +130,24 @@ def test_reset_password_form_renders_the_csrf_token(app: Flask, client_for: Clie
 
 @pytest.mark.usefixtures("csrf_on")
 def test_login_without_csrf_token_shows_the_session_message(client_for: ClientFactory) -> None:
-    """Check that a login posted without CSRF token shows the pt-BR session message instead of failing.
+    """Check that a login posted without CSRF token goes back to the login page with the pt-BR message in a toast.
 
     :param client_for: Factory of test clients by role.
     """
-    response = client_for("anonymous").post("/login", data={"email": EMAILS["admin"], "password": TEST_PASSWORD})
+    client = client_for("anonymous")
+
+    response = client.post(
+        "/login",
+        data={"email": EMAILS["admin"], "password": TEST_PASSWORD},
+        headers={"Referer": f"{LOCAL_HOST}/login"},
+        follow_redirects=True,
+    )
 
     body = response.get_data(as_text=True)
     assert response.status_code == 200
-    assert 'role="alert"' in body
-    assert CSRF_MESSAGE in body
+    assert BeautifulSoup(body, "html.parser").select_one("form.login-form") is not None
+    assert _toast_texts(body) == [CSRF_EXPIRED_MESSAGE]
+    assert client.get("/").status_code == 302
 
 
 @pytest.mark.usefixtures("csrf_on")
@@ -167,17 +188,19 @@ def test_backup_download_is_refused_without_the_csrf_token(
 
     with monkeypatch.context() as patch:
         patch.setattr("app.views.backup.build_backup", _forbidden_build)
-        refused = client.post(url)
-        wrong = client.post(url, data={"csrf_token": "not-a-valid-token"})
+        refused = client.post(url, headers={"Referer": f"{LOCAL_HOST}{url}"})
+        refused_page = client.get(refused.headers["Location"]).get_data(as_text=True)
+        wrong = client.post(url, data={"csrf_token": "not-a-valid-token"}, headers={"Referer": f"{LOCAL_HOST}{url}"})
+        wrong_page = client.get(wrong.headers["Location"]).get_data(as_text=True)
     page = client.get(url).get_data(as_text=True)
     token = BeautifulSoup(page, "html.parser").select_one("input[name=csrf_token]")["value"]
     accepted = client.post(url, data={"csrf_token": token})
 
-    for response in (refused, wrong):
+    for response, followed in ((refused, refused_page), (wrong, wrong_page)):
         assert response.status_code == 302
-        assert response.headers["Location"] == url
+        assert urlparse(response.headers["Location"]).path == url
         assert response.mimetype != "application/zip"
+        assert _toast_texts(followed) == [CSRF_EXPIRED_MESSAGE]
     assert accepted.status_code == 200 and accepted.mimetype == "application/zip"
     with zipfile.ZipFile(io.BytesIO(accepted.data)) as archive:
         assert "manifest.json" in archive.namelist()
-    assert "Atualize a página e tente novamente." in page

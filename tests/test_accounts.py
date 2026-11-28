@@ -1,6 +1,7 @@
 """Accounts: self-registration is closed, and the staff still creates accounts in the users page."""
 
 from collections.abc import Iterator
+from urllib.parse import urlparse
 
 import pytest
 from flask import Flask
@@ -12,6 +13,7 @@ from tests.constants import TEST_PASSWORD
 
 STRANGER_EMAIL = "estranho@test.local"
 NEW_ACCOUNT_EMAIL = "nova.conta@test.local"
+NEW_ACCOUNT_PASSWORD = "Nova-Conta-123!"  # pragma: allowlist secret
 
 
 @pytest.fixture
@@ -64,14 +66,15 @@ def test_staff_still_creates_accounts_that_can_log_in(
     :param new_account_email: E-mail of the account to create.
     :param role: Role of the staff member who creates the account.
     """
-    form = {"name": "Nova Conta", "email": new_account_email, "password": TEST_PASSWORD, "role": "secretary"}
+    form = {"name": "Nova Conta", "email": new_account_email, "password": NEW_ACCOUNT_PASSWORD, "role": "secretary"}
 
     response = client_for(role).post("/admin/create_user", data=form)
 
-    assert response.status_code == 200
+    assert response.status_code == 302
+    assert urlparse(response.headers["Location"]).path == "/admin/users"
     with app.app_context():
         user = User.query.filter_by(email=new_account_email).one()
         assert user.active is True
         assert [item.name for item in user.roles] == ["secretary"]
-    login = client_for("anonymous").post("/login", data={"email": new_account_email, "password": TEST_PASSWORD})
+    login = client_for("anonymous").post("/login", data={"email": new_account_email, "password": NEW_ACCOUNT_PASSWORD})
     assert login.status_code == 302

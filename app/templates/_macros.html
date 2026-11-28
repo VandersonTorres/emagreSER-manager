@@ -16,27 +16,28 @@
 </div>
 {% endmacro %}
 
-{# field(form_field, label=none, help=none, **attrs): label, control, help text and errors of a WTForms field; extra keyword arguments become HTML attributes. #}
+{# field(form_field, label=none, help=none, **attrs): label, control, help text and errors of a WTForms field; extra keyword arguments become HTML attributes, and an id replaces the one of the field everywhere. #}
 {% macro field(form_field, label=none, help=none) %}
+{% set control_id = kwargs.get("id") or form_field.id %}
 {% set has_errors = form_field.errors|length > 0 %}
 {% set is_check = form_field.type == "BooleanField" %}
 {% set control_class = "form-check-input" if is_check else ("form-select" if form_field.type == "SelectField" else "form-control") %}
 {% set classes = [control_class, kwargs.get("class", ""), "is-invalid" if has_errors else ""]|select|join(" ") %}
-{% set described_by = [form_field.id ~ "-help" if help else "", form_field.id ~ "-feedback" if has_errors else ""]|select|join(" ") %}
+{% set described_by = [control_id ~ "-help" if help else "", control_id ~ "-feedback" if has_errors else ""]|select|join(" ") %}
 {% set attrs = dict(kwargs, **{"class": classes, "aria-describedby": described_by or false, "aria-invalid": "true" if has_errors else false}) %}
 <div class="{{ 'form-check mb-3' if is_check else 'mb-3' }}">
     {% if is_check %}
     {{ form_field(**attrs) }}
-    <label class="form-check-label" for="{{ form_field.id }}">{{ label or form_field.label.text }}</label>
+    <label class="form-check-label" for="{{ control_id }}">{{ label or form_field.label.text }}</label>
     {% else %}
-    <label class="form-label" for="{{ form_field.id }}">{{ label or form_field.label.text }}</label>
+    <label class="form-label" for="{{ control_id }}">{{ label or form_field.label.text }}</label>
     {{ form_field(**attrs) }}
     {% endif %}
     {% if help %}
-    <div class="form-text" id="{{ form_field.id }}-help">{{ help }}</div>
+    <div class="form-text" id="{{ control_id }}-help">{{ help }}</div>
     {% endif %}
     {% if has_errors %}
-    <div class="invalid-feedback d-block" id="{{ form_field.id }}-feedback">
+    <div class="invalid-feedback d-block" id="{{ control_id }}-feedback">
         {% for error in form_field.errors %}<div>{{ error }}</div>{% endfor %}
     </div>
     {% endif %}
@@ -69,13 +70,14 @@
 </div>
 {% endmacro %}
 
-{# confirm_card(title, message, confirm_label, cancel_url): confirmation card that posts to the current URL; the caller body holds the hidden fields of the form. #}
-{% macro confirm_card(title, message, confirm_label, cancel_url) %}
+{# confirm_card(title, message, confirm_label, cancel_url, form_class=none): confirmation card that posts to the current URL with the CSRF token; the caller body holds the notes and the other hidden fields of the form. #}
+{% macro confirm_card(title, message, confirm_label, cancel_url, form_class=none) %}
 <div class="card confirm-card">
     <div class="card-body">
         <h1 class="confirm-card-title">{{ title }}</h1>
         <p>{{ message }}</p>
-        <form method="post">
+        <form method="post"{% if form_class %} class="{{ form_class }}"{% endif %}>
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             {% if caller %}{{ caller() }}{% endif %}
             <div class="d-flex flex-wrap gap-2">
                 <button type="submit" class="btn btn-danger">{{ confirm_label }}</button>

@@ -109,10 +109,6 @@ FORM_FIELD_NAMES: dict[str, tuple[str, ...]] = {
     "search": ("search",),
 }
 
-PAGES_WITH_CSRF_TOKEN: frozenset[str] = frozenset(
-    {"edit_patient", "edit_skinfold", "add_skinfold", "edit_anthro", "add_anthro"}
-)
-
 FORM_VALUES: dict[str, dict[str, str]] = {
     "add_anthro_filled": {
         "altura": "1.7",
