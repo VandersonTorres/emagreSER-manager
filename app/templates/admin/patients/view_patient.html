@@ -1,218 +1,324 @@
 {% extends "base.html" %}
+{% from "_macros.html" import empty_state %}
+{% from "admin/patients/_patient_macros.html" import contact_buttons, detail_item %}
+
+{% block title %}{{ patient.name }} · EmagreSER{% endblock %}
+
+{% block content_class %}{% endblock %}
 
 {% block content %}
-
-{% with messages = get_flashed_messages(with_categories=true) %}
-{% if messages %}
-{% for category, message in messages %}
-<div class="alert alert-{{ category }}">
-    <strong>{{ message }}</strong>
-</div>
+{% set can_remove = not current_user.has_role("nutritionist") %}
+{% set evaluations = patient.anthropometric_evaluations|sort(attribute="data_avaliacao", reverse=true) %}
+{% set folds = patient.skinfolds|sort(attribute="data_medicao", reverse=true) %}
+{% set series = patient.skinfolds|sort(attribute="data_medicao") %}
+{% set latest_note = (latest_skinfold.observacoes or "")|trim if latest_skinfold else "" %}
+{% set chart = namespace(dates=[], weights=[]) %}
+{% for fold in series %}
+{% set chart.dates = chart.dates + [fold.data_medicao.strftime("%d/%m/%Y")] %}
+{% set chart.weights = chart.weights + [fold.peso] %}
 {% endfor %}
-{% set _ = session.pop("_flashes", None) %}
-{% endif %}
-{% endwith %}
 
-<h2>Histórico do Paciente</h2>
+<a class="page-header-back" href="{{ url_for('patients.list_patients') }}"><i class="bi bi-arrow-left" aria-hidden="true"></i> Voltar</a>
 
-{% if patient %}
-<div style="text-align: right; margin-bottom: 10px;">
-    <a class="view-custom-history-button" href="{{ url_for('patients.view_custom_history', id=patient.id, pat_name=patient.name) }}">Ver Histórico Personalizado</a>
-</div>
+<section class="card patient-header" aria-labelledby="patient-name">
+    <div class="card-body">
+        <div class="patient-header-top">
+            <span class="patient-avatar" aria-hidden="true">{{ (patient.name or "?")[:1]|upper }}</span>
+            <div class="patient-header-text">
+                <h1 class="page-header-title" id="patient-name" tabindex="-1">{{ patient.name }}</h1>
+                <p class="patient-header-sub">
+                    Nascimento: {{ patient.birth_date.strftime("%d/%m/%Y") }}<span class="patient-age" data-birth-date="{{ patient.birth_date.isoformat() }}"></span>
+                </p>
+            </div>
+        </div>
+        <dl class="patient-facts">
+            <div class="patient-fact">
+                <dt>Telefone</dt>
+                <dd>
+                    <span class="me-2">{{ patient.tel_number or "Não informado" }}</span>
+                    <span class="patient-contact">{{ contact_buttons(patient) }}</span>
+                </dd>
+            </div>
+            <div class="patient-fact">
+                <dt>E-mail</dt>
+                <dd>{% if patient.email %}<a href="mailto:{{ patient.email }}">{{ patient.email }}</a>{% else %}Não informado{% endif %}</dd>
+            </div>
+            <div class="patient-fact">
+                <dt>Profissional</dt>
+                <dd>{% if patient.specialist %}{{ patient.specialist.name }}{% else %}Não informado{% endif %}</dd>
+            </div>
+            <div class="patient-fact">
+                <dt>Paciente desde</dt>
+                <dd>{{ patient.started_at|clinic_date or "Não informado" }}</dd>
+            </div>
+        </dl>
+        <div class="patient-header-actions">
+            <a class="btn btn-outline-primary" href="{{ url_for('patients.edit_patient', id=patient.id) }}"><i class="bi bi-pencil-square" aria-hidden="true"></i> Editar</a>
+            <a class="btn btn-primary" href="{{ url_for('patients.add_anthro', patient_id=patient.id) }}"><i class="bi bi-clipboard2-pulse" aria-hidden="true"></i> Nova avaliação</a>
+            <a class="btn btn-primary" href="{{ url_for('patients.add_skinfold', patient_id=patient.id) }}"><i class="bi bi-activity" aria-hidden="true"></i> Nova bioimpedância</a>
+            <a class="btn btn-outline-secondary" href="{{ url_for('patients.view_custom_history', id=patient.id, pat_name=patient.name) }}"><i class="bi bi-graph-up" aria-hidden="true"></i> Histórico personalizado</a>
+            {% if can_remove %}
+            <a class="btn btn-outline-danger" href="{{ url_for('patients.delete_patient', id=patient.id) }}"><i class="bi bi-trash" aria-hidden="true"></i> Remover</a>
+            {% endif %}
+        </div>
+    </div>
+</section>
 
-<div class="patient-card">
-    <p><strong>Nome:</strong> {{ patient.name }}</p>
-    <p><strong>Sexo:</strong> {{ patient.gender }}</p>
-    <p><strong>Data de Nascimento:</strong> {{ patient.birth_date.strftime("%d/%m/%Y") }}</p>
-    <p><strong>CPF:</strong> {{ patient.cpf }}</p>
-    <p><strong>Número de telefone:</strong> {{ patient.tel_number }}</p>
-    <p><strong>E-mail:</strong> {{ patient.email }}</p>
-    {% if patient.specialist %}
-    <p><strong>Profissional:</strong> {{ patient.specialist.name }} - {{ patient.specialist.email }}</p>
-    {% endif %}
-    <br>
+<ul class="nav nav-tabs patient-tabs" id="patient-tabs" role="tablist" aria-label="Seções da ficha do paciente">
+    <li class="nav-item" role="presentation">
+        <button class="nav-link active" id="tab-dados" type="button" role="tab" data-bs-toggle="tab" data-bs-target="#pane-dados" data-tab-key="dados" aria-controls="pane-dados" aria-selected="true">Dados</button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" id="tab-avaliacoes" type="button" role="tab" data-bs-toggle="tab" data-bs-target="#pane-avaliacoes" data-tab-key="avaliacoes" aria-controls="pane-avaliacoes" aria-selected="false" tabindex="-1">
+            Avaliações <span class="badge rounded-pill tab-count">{{ evaluations|length }}</span>
+        </button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" id="tab-bioimpedancia" type="button" role="tab" data-bs-toggle="tab" data-bs-target="#pane-bioimpedancia" data-tab-key="bioimpedancia" aria-controls="pane-bioimpedancia" aria-selected="false" tabindex="-1">
+            Bioimpedância <span class="badge rounded-pill tab-count">{{ folds|length }}</span>
+        </button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" id="tab-evolucao" type="button" role="tab" data-bs-toggle="tab" data-bs-target="#pane-evolucao" data-tab-key="evolucao" aria-controls="pane-evolucao" aria-selected="false" tabindex="-1">Evolução</button>
+    </li>
+</ul>
 
-    <h3>Avaliação Antropométrica:</h3>
-    {% if patient.anthropometric_evaluations|length > 0 %}
-    {% set evaluations = patient.anthropometric_evaluations|sort(attribute="data_avaliacao", reverse=true) %}
-    <table class="anthro-table" border="1">
-        <thead>
-            <tr>
-                <th>Data Avaliação</th>
-                <th>Nome da Guia</th>
-                <th>Idade</th>
-                <th>Evolução</th>
-                <th>Peso Max</th>
-                <th>Peso Ideal</th>
-                <th>Peso Mínimo</th>
-                <th>Classificação Nutricional <i>(peso atual)</i></th>
-                <th>IMC</th>
-                <th>Necessidade Calórica</th>
-                <th>Ingestão de Líquido</th>
-                <th>Grau Atv. Física</th>
-                <th>Última Avaliação</th>
-                <th>Remover</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for evaluation in evaluations %}
-            <tr class="anthro-row {% if loop.index > 5 %}hidden-anthro{% endif %}">
-                <td>{{ evaluation.data_avaliacao.strftime("%d/%m/%Y") }}</td>
-                <td>{{ evaluation.ultima_guia }}</td>
-                <td>{{ evaluation.idade }}</td>
-                <td>{{ evaluation.evolucao }}</td>
-                <td>{{ evaluation.p_max }}</td>
-                <td>{{ evaluation.p_ide }}</td>
-                <td>{{ evaluation.p_min }}</td>
-                <td>
-                    {{ evaluation.nutri_class }}
-                    <br>
-                    <small>
-                        <b>
-                        Peso atual:
-                        {% if weight_per_evaluation[evaluation.id] %}
-                            {{ weight_per_evaluation[evaluation.id] }} kg
-                        {% else %}
-                            <i>não disponível</i>
+<div class="tab-content patient-tab-content">
+    <div class="tab-pane active" id="pane-dados" role="tabpanel" aria-labelledby="tab-dados" tabindex="0">
+        <div class="row g-4">
+            <div class="col-12 col-lg-6">
+                <section class="card h-100" aria-labelledby="personal-title">
+                    <div class="card-header app-card-header"><h2 class="app-card-title" id="personal-title">Dados pessoais</h2></div>
+                    <div class="card-body">
+                        <dl class="detail-grid">
+                            {{ detail_item("Sexo", patient.gender|capitalize if patient.gender else none) }}
+                            {{ detail_item("Data de nascimento", patient.birth_date.strftime("%d/%m/%Y")) }}
+                            {{ detail_item("CPF", patient.cpf) }}
+                            {{ detail_item("Telefone", patient.tel_number) }}
+                            {{ detail_item("E-mail", patient.email) }}
+                            {{ detail_item("Profissional", (patient.specialist.name ~ " - " ~ patient.specialist.email) if patient.specialist else none) }}
+                        </dl>
+                    </div>
+                </section>
+            </div>
+            <div class="col-12 col-lg-6">
+                <section class="card h-100" aria-labelledby="goal-title">
+                    <div class="card-header app-card-header"><h2 class="app-card-title" id="goal-title">Objetivo da consulta</h2></div>
+                    <div class="card-body">
+                        <p class="mb-0">{{ patient.objective or "Não informado" }}</p>
+                    </div>
+                </section>
+            </div>
+            <div class="col-12">
+                <section class="card" aria-labelledby="health-title">
+                    <div class="card-header app-card-header"><h2 class="app-card-title" id="health-title">Saúde e hábitos</h2></div>
+                    <div class="card-body">
+                        <dl class="detail-grid">
+                            {{ detail_item("Faz uso de medicação?", patient.medication) }}
+                            {% if patient.medication == "sim" %}{{ detail_item("Quais medicações?", patient.medications_details) }}{% endif %}
+                            {{ detail_item("Funcionamento intestinal", patient.intestine, "vezes por semana") }}
+                            {{ detail_item("Alergias / intolerâncias?", patient.allergies) }}
+                            {% if patient.allergies == "sim" %}{{ detail_item("Quais alergias?", patient.allergies_details) }}{% endif %}
+                            {{ detail_item("Consumo de água", patient.water, "litros por dia") }}
+                            {{ detail_item("Faz atividade física?", patient.physical_activities) }}
+                            {% if patient.physical_activities == "sim" %}{{ detail_item("Quais atividades?", patient.physical_details) }}{% endif %}
+                            {{ detail_item("Horário das atividades", patient.hours.strftime("%H:%M") if patient.hours else none) }}
+                            {{ detail_item("Frequência das atividades", patient.frequency, "vezes por semana") }}
+                        </dl>
+                    </div>
+                </section>
+            </div>
+        </div>
+    </div>
+
+    <div class="tab-pane" id="pane-avaliacoes" role="tabpanel" aria-labelledby="tab-avaliacoes" tabindex="0">
+        <section class="card" aria-labelledby="evaluations-title">
+            <div class="card-header app-card-header">
+                <h2 class="app-card-title" id="evaluations-title">Avaliação antropométrica</h2>
+                <a class="btn btn-primary btn-sm" href="{{ url_for('patients.add_anthro', patient_id=patient.id) }}"><i class="bi bi-plus-lg" aria-hidden="true"></i> Nova avaliação</a>
+            </div>
+            {% if evaluations %}
+            <div class="table-responsive">
+                <table class="table table-hover table-stack record-table anthro-table align-middle mb-0" id="anthro-table">
+                    <thead>
+                        <tr>
+                            <th scope="col">Data Avaliação</th>
+                            <th scope="col">Nome da Guia</th>
+                            <th scope="col">Idade</th>
+                            <th scope="col">Evolução</th>
+                            <th scope="col">Peso Max</th>
+                            <th scope="col">Peso Ideal</th>
+                            <th scope="col">Peso Mínimo</th>
+                            <th scope="col">Classificação Nutricional <i>(peso atual)</i></th>
+                            <th scope="col">IMC</th>
+                            <th scope="col">Necessidade Calórica</th>
+                            <th scope="col">Ingestão de Líquido</th>
+                            <th scope="col">Grau Atv. Física</th>
+                            <th scope="col">Última Avaliação</th>
+                            <th scope="col">Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for evaluation in evaluations %}
+                        {% set when = evaluation.data_avaliacao.strftime("%d/%m/%Y") %}
+                        <tr class="anthro-row{{ ' record-row-extra' if loop.index > 5 }}">
+                            <td data-label="Data Avaliação">{{ when }}</td>
+                            <td data-label="Nome da Guia">{{ evaluation.ultima_guia }}</td>
+                            <td data-label="Idade">{{ evaluation.idade }}</td>
+                            <td data-label="Evolução">{{ evaluation.evolucao }}</td>
+                            <td data-label="Peso Max">{{ evaluation.p_max }}</td>
+                            <td data-label="Peso Ideal">{{ evaluation.p_ide }}</td>
+                            <td data-label="Peso Mínimo">{{ evaluation.p_min }}</td>
+                            <td data-label="Classificação Nutricional">
+                                {{ evaluation.nutri_class }}
+                                <small class="d-block text-body-secondary">
+                                    Peso atual: {% if weight_per_evaluation[evaluation.id] %}{{ weight_per_evaluation[evaluation.id] }} kg{% else %}<i>não disponível</i>{% endif %}
+                                </small>
+                            </td>
+                            <td data-label="IMC">{{ evaluation.imc }}</td>
+                            <td data-label="Necessidade Calórica">{{ evaluation.necessidade_calorica }}</td>
+                            <td data-label="Ingestão de Líquido">{{ evaluation.ingestao_liquido }}</td>
+                            <td data-label="Grau Atv. Física">{{ evaluation.grau_atv_fisica }}</td>
+                            <td data-label="Última Avaliação">{{ evaluation.specialist_name }}</td>
+                            <td data-label="Ações" class="record-actions">
+                                <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('patients.edit_anthro', patient_id=patient.id, evaluation_id=evaluation.id) }}" aria-label="Editar avaliação de {{ when }}"><i class="bi bi-pencil-square" aria-hidden="true"></i> Editar</a>
+                                <form method="post" action="{{ url_for('patients.delete_anthropometric_evaluation', patient_id=patient.id, evaluation_id=evaluation.id) }}" data-confirm="Tem certeza que deseja remover esta avaliação?">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                    <button type="submit" class="btn btn-outline-danger btn-sm" aria-label="Excluir avaliação de {{ when }}"><i class="bi bi-trash" aria-hidden="true"></i> Excluir</button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% if evaluations|length > 5 %}
+            <div class="card-footer text-center">
+                <button type="button" class="btn btn-outline-secondary btn-sm" id="toggleAnthro" data-table="anthro-table" data-more="Mostrar mais avaliações" data-less="Mostrar menos avaliações" aria-expanded="false" aria-controls="anthro-table">Mostrar mais avaliações</button>
+            </div>
+            {% endif %}
+            {% else %}
+            {{ empty_state("clipboard2-pulse", "Não há avaliações antropométricas registradas", none, url_for("patients.add_anthro", patient_id=patient.id), "Adicionar avaliação antropométrica") }}
+            {% endif %}
+        </section>
+    </div>
+
+    <div class="tab-pane" id="pane-bioimpedancia" role="tabpanel" aria-labelledby="tab-bioimpedancia" tabindex="0">
+        <section class="card" aria-labelledby="skinfolds-title">
+            <div class="card-header app-card-header">
+                <h2 class="app-card-title" id="skinfolds-title">Bioimpedância</h2>
+                <a class="btn btn-primary btn-sm" href="{{ url_for('patients.add_skinfold', patient_id=patient.id) }}"><i class="bi bi-plus-lg" aria-hidden="true"></i> Nova bioimpedância</a>
+            </div>
+            {% if folds %}
+            <div class="table-responsive">
+                <table class="table table-hover table-stack record-table skinfolds-table align-middle mb-0" id="skinfold-table">
+                    <thead>
+                        <tr>
+                            <th scope="col">Data Medição</th>
+                            <th scope="col">Altura</th>
+                            <th scope="col">Peso</th>
+                            <th scope="col">Massa Muscular</th>
+                            <th scope="col">Gordura</th>
+                            <th scope="col">Abdominal</th>
+                            <th scope="col">Cintura</th>
+                            <th scope="col">Quadril</th>
+                            <th scope="col">Idade Metabólica</th>
+                            <th scope="col">Pressão Arterial</th>
+                            <th scope="col">Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for fold in folds %}
+                        {% set when = fold.data_medicao.strftime("%d/%m/%Y") %}
+                        {% set note = (fold.observacoes or "")|trim %}
+                        <tr class="skinfold-row{{ ' has-note' if note }}{{ ' record-row-extra' if loop.index > 5 }}">
+                            <td data-label="Data Medição">{{ when }}</td>
+                            <td data-label="Altura">{{ fold.altura }}</td>
+                            <td data-label="Peso">{{ fold.peso }}</td>
+                            <td data-label="Massa Muscular">{{ fold.massa_muscular }}</td>
+                            <td data-label="Gordura">{{ fold.gordura }}</td>
+                            <td data-label="Abdominal">{{ fold.abdominal }}</td>
+                            <td data-label="Cintura">{{ fold.cintura }}</td>
+                            <td data-label="Quadril">{{ fold.quadril }}</td>
+                            <td data-label="Idade Metabólica">{{ fold.idade_metabolica }}</td>
+                            <td data-label="Pressão Arterial">{{ fold.pa }}</td>
+                            <td data-label="Ações" class="record-actions">
+                                <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('patients.edit_skinfold', patient_id=patient.id, skinfold_id=fold.id) }}" aria-label="Editar medição de {{ when }}"><i class="bi bi-pencil-square" aria-hidden="true"></i> Editar</a>
+                                <form method="post" action="{{ url_for('patients.delete_skinfold', patient_id=patient.id, skinfold_id=fold.id) }}" data-confirm="Tem certeza que deseja remover essa medição? (Revise a Antropometria após a remoção)">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                    <button type="submit" class="btn btn-outline-danger btn-sm" aria-label="Excluir medição de {{ when }}"><i class="bi bi-trash" aria-hidden="true"></i> Excluir</button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% if note %}
+                        <tr class="skinfold-note-row{{ ' record-row-extra' if loop.index > 5 }}">
+                            <td colspan="11">
+                                <div class="skinfold-note">
+                                    <span class="skinfold-note-label"><i class="bi bi-chat-left-text" aria-hidden="true"></i> Observações<span class="visually-hidden"> da medição de {{ when }}</span></span>
+                                    <p class="skinfold-note-text">{{ note }}</p>
+                                </div>
+                            </td>
+                        </tr>
                         {% endif %}
-                        </b>
-                    </small>
-                </td>
-                <td>{{ evaluation.imc }}</td>
-                <td>{{ evaluation.necessidade_calorica }}</td>
-                <td>{{ evaluation.ingestao_liquido }}</td>
-                <td>{{ evaluation.grau_atv_fisica }}</td>
-                <td>{{ evaluation.specialist_name }}</td>
-                <td>
-                    <!-- Delete Anthro -->
-                    <form action="{{ url_for('patients.delete_anthropometric_evaluation', patient_id=patient.id, evaluation_id=evaluation.id) }}" method="POST" onsubmit="return confirm('Tem certeza que deseja remover esta avaliação?');">
-                        <button type="submit" class="btn btn-danger">Excluir Avaliação</button>
-                    </form>
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-    {% if evaluations|length > 5 %}
-    <div style="text-align: center; margin-top: 10px;">
-        <button id="toggleAnthro" class="btn btn-secondary">Mostrar mais avaliações</button>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% if folds|length > 5 %}
+            <div class="card-footer text-center">
+                <button type="button" class="btn btn-outline-secondary btn-sm" id="toggleSkinfold" data-table="skinfold-table" data-more="Mostrar mais medições" data-less="Mostrar menos medições" aria-expanded="false" aria-controls="skinfold-table">Mostrar mais medições</button>
+            </div>
+            {% endif %}
+            {% else %}
+            {{ empty_state("activity", "Não há registros de bioimpedância", none, url_for("patients.add_skinfold", patient_id=patient.id), "Adicionar bioimpedância") }}
+            {% endif %}
+        </section>
     </div>
-    {% endif %}
 
-    <br>
-
-    <a href="{{ url_for('patients.add_anthro', patient_id=patient.id) }}">Adicionar Avaliação Antropométrica</a>
-    {% else %}
-    <p>Não há avaliações antropométricas registradas.</p>
-    <a href="{{ url_for('patients.add_anthro', patient_id=patient.id) }}">Adicionar Avaliação Antropométrica</a>
-
-    {% endif %}
-
-    <hr>
-    <br>
-
-    <h3>Bioimpedância:</h3>
-    {% if patient.skinfolds|length > 0 %}
-    {% set skinfolds = patient.skinfolds|sort(attribute="data_medicao", reverse=true) %}
-    <table class="skinfolds-table" border="1">
-        <thead>
-            <tr>
-                <th>Data Medição</th>
-                <th>Altura</th>
-                <th>Peso</th>
-                <th>Massa Muscular</th>
-                <th>Gordura</th>
-                <th>Abdominal</th>
-                <th>Cintura</th>
-                <th>Quadril</th>
-                <th>Idade Metabólica</th>
-                <th>Pressão Arterial</th>
-                <th>Remover</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for fold in skinfolds %}
-            <tr class="skinfold-row {% if loop.index > 5 %}hidden-skinfold{% endif %}">
-                <td>{{ fold.data_medicao.strftime("%d/%m/%Y") }}</td>
-                <td>{{ fold.altura }}</td>
-                <td>{{ fold.peso }}</td>
-                <td>{{ fold.massa_muscular }}</td>
-                <td>{{ fold.gordura }}</td>
-                <td>{{ fold.abdominal }}</td>
-                <td>{{ fold.cintura }}</td>
-                <td>{{ fold.quadril }}</td>
-                <td>{{ fold.idade_metabolica }}</td>
-                <td>{{ fold.pa }}</td>
-                <td>
-                    <!-- Delete Skinfold -->
-                    <form action="{{ url_for('patients.delete_skinfold', patient_id=patient.id, skinfold_id=fold.id) }}" method="POST" onsubmit="return confirm('Tem certeza que deseja remover essa medição? (Revise a Antropometria após a remoção)');">
-                        <button type="submit" class="btn btn-danger">Excluir Medição</button>
-                    </form>
-                </td>
-            </tr>
-            {% endfor %}
-
-        </tbody>
-    </table>
-    {% if skinfolds|length > 5 %}
-    <div style="text-align: center; margin-top: 10px;">
-        <button id="toggleSkinfold" class="btn btn-secondary">Mostrar mais medições</button>
-    </div>
-    {% endif %}
-
-    <br>
-
-    <a href="{{ url_for('patients.add_skinfold', patient_id=patient.id) }}">Adicionar Bioimpedância</a>
-    {% else %}
-    <p>Não há registros de Bioimpedância.</p>
-    <a href="{{ url_for('patients.add_skinfold', patient_id=patient.id) }}">Adicionar Bioimpedância</a>
-    {% endif %}
-
-    <br><br>
-    <hr>
-
-    <div class="patient-details">
-        <h3>Mais detalhes sobre {{ patient.name }}</h3>
-        <br>
-        <h4>História Clínica:</h4>
-        <p><strong>Faz uso de medicação?</strong> {{ patient.medication }}</p>
-        {% if patient.medication == 'sim' %}
-        <p><strong>Quais?</strong> {{ patient.medications_details }}</p>
-        {% endif %}
-        <p><strong>Funcionamento intestinal:</strong> {{ patient.intestine }} vezes por semana</p>
-        <p><strong>Alergias / Intolerâncias?</strong> {{ patient.allergies }}</p>
-        {% if patient.allergies == 'sim' %}
-        <p><strong>Quais?</strong> {{ patient.allergies_details }}</p>
-        {% endif %}
-        <p><strong>Consumo de água:</strong> {{ patient.water }} litros/dia</p>
-        <p><strong>Azia / Refluxo:</strong> {{ patient.heartburn }}</p>
-        <br>
-
-        <h4>História Comportamental:</h4>
-        <p><strong>Faz atividade física?</strong> {{ patient.physical_activities }}</p>
-        {% if patient.physical_activities == 'sim' %}
-        <p><strong>Quais?</strong> {{ patient.physical_details }}</p>
-        {% endif %}
-        <p><strong>Horário das atividades:</strong> {{ patient.hours }}</p>
-        <p><strong>Frequência das atividades:</strong> {{ patient.frequency }} vezes por semana</p>
-        <p><strong>Objetivo da consulta:</strong> {{ patient.objective }}</p>
-        <br>
+    <div class="tab-pane" id="pane-evolucao" role="tabpanel" aria-labelledby="tab-evolucao" tabindex="0">
+        <section class="card" aria-labelledby="evolution-title">
+            <div class="card-header app-card-header">
+                <h2 class="app-card-title" id="evolution-title">Evolução do peso</h2>
+                <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('patients.view_custom_history', id=patient.id, pat_name=patient.name) }}"><i class="bi bi-graph-up" aria-hidden="true"></i> Ver histórico personalizado</a>
+            </div>
+            {% if series %}
+            <div class="card-body">
+                <div class="chart-wrap">
+                    <canvas id="weightChart" role="img" aria-label="Gráfico da evolução do peso em quilos ao longo das medições de bioimpedância" data-dates='{{ chart.dates|tojson }}' data-weights='{{ chart.weights|tojson }}'></canvas>
+                </div>
+            </div>
+            {% else %}
+            {{ empty_state("graph-up", "Ainda não há medições para o gráfico", "O gráfico do peso aparece depois da primeira bioimpedância.", url_for("patients.add_skinfold", patient_id=patient.id), "Adicionar bioimpedância") }}
+            {% endif %}
+        </section>
     </div>
 </div>
-{% else %}
-<p>Nenhum paciente cadastrado.</p>
+
+{% if latest_note %}
+<div class="modal fade note-modal" id="note-modal" tabindex="-1" aria-labelledby="note-modal-title" aria-describedby="note-modal-text" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title" id="note-modal-title"><i class="bi bi-exclamation-circle" aria-hidden="true"></i> Este paciente possui observações adicionais</h2>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+            </div>
+            <div class="modal-body" tabindex="0">
+                <p class="note-modal-date">Bioimpedância de <time datetime="{{ latest_skinfold.data_medicao.isoformat() }}">{{ latest_skinfold.data_medicao.strftime("%d/%m/%Y") }}</time></p>
+                <p class="note-modal-text" id="note-modal-text">{{ latest_note }}</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Entendi</button>
+            </div>
+        </div>
+    </div>
+</div>
 {% endif %}
+{% endblock %}
 
-<hr>
-<br>
-<div class="nav-actions">
-    <a class="back-button" href="{{ url_for('patients.list_patients') }}">🔙 Voltar</a>
-    &nbsp;
-    <a class="edit-button" href="{{ url_for('patients.edit_patient', id=patient.id) }}">Editar</a>
-    &nbsp;
-    <a class="remove-button" href="{{ url_for('patients.delete_patient', id=patient.id) }}">Remover</a>
-</div>
-
+{% block scripts %}
+{% if patient.skinfolds %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js" integrity="sha384-bs/nf9FbdNouRbMiFcrcZfLXYPKiPaGVGplVbv7dLGECccEXDW+S3zjqSKR5ZEaD" crossorigin="anonymous"></script> {# pragma: allowlist secret #}
+<script src="{{ url_for('static', filename='js/chart_config.js') }}"></script>
+{% endif %}
 <script src="{{ url_for('static', filename='js/patient_view.js') }}"></script>
-
 {% endblock %}

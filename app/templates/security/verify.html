@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% from "_macros.html" import page_header, field, form_errors %}
+{% from "security/_macros.html" import prop_next %}
+
+{% block title %}Confirmar identidade · EmagreSER{% endblock %}
+
+{% block content_class %}{% endblock %}
+
+{% block content %}
+{{ page_header("Confirme sua identidade", "Por segurança, informe sua senha novamente para continuar.") }}
+<div class="card auth-card form-narrow">
+    <div class="card-body p-4">
+        <form class="verify-form" method="post" action="{{ url_for_security('verify') }}{{ prop_next() }}">
+            {{ verify_form.hidden_tag() }}
+            {{ form_errors(verify_form) }}
+            {{ field(verify_form.password, label="Senha", autocomplete="current-password") }}
+            <button type="submit" class="btn btn-primary">Confirmar</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

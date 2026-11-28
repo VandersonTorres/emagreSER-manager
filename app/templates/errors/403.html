@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+
+{% block title %}Acesso negado · EmagreSER{% endblock %}
+
+{% block content_class %}{% endblock %}
+
+{% block content %}
+<div class="card auth-card">
+    <div class="card-body p-4 error-page">
+        <div class="error-page-code" aria-hidden="true">403</div>
+        <h1 class="error-page-title">Acesso negado</h1>
+        {% if current_user.is_authenticated %}
+        <p class="error-page-text">Você não tem permissão para acessar esta página.</p>
+        <a class="btn btn-primary" href="{{ url_for('main.index') }}">Voltar ao início</a>
+        {% else %}
+        <p class="error-page-text">Entre com a sua conta para acessar esta página.</p>
+        <a class="btn btn-primary" href="{{ url_for_security('login', next=request.path) if request.method == 'GET' else url_for_security('login') }}">Entrar</a>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

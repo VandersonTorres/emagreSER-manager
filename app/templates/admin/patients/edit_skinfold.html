@@ -1,65 +1,50 @@
 {% extends "base.html" %}
+{% from "_macros.html" import page_header, field, form_errors %}
+{% from "admin/patients/_patient_macros.html" import form_section %}
+
+{% block title %}Editar bioimpedância · EmagreSER{% endblock %}
+
+{% block content_class %}{% endblock %}
 
 {% block content %}
+{% set record_url = url_for("patients.view_patient", id=skinfold.patient_id) ~ "#bioimpedancia" %}
+{{ page_header("Editar bioimpedância", skinfold.patient.name, record_url) }}
 
-{% with messages = get_flashed_messages(with_categories=true) %}
-{% if messages %}
-{% for category, message in messages %}
-<div class="alert alert-{{ category }}">
-    <strong>{{ message }}</strong>
-</div>
-{% endfor %}
-{% set _ = session.pop('_flashes', None) %}
-{% endif %}
-{% endwith %}
+<form class="edit-skinfold-form" method="post" action="{{ url_for('patients.edit_skinfold', patient_id=skinfold.patient_id, skinfold_id=skinfold.id) }}">
+    {{ form.hidden_tag() }}
+    {{ form_errors(form) }}
 
-<h2>Editar Bioimpedância</h2>
-<section class="editing">
-    <p><strong>Paciente:</strong> {{ skinfold.patient.name }}</p>
-    <form class="edit-skinfold-form" method="POST"
-        action="{{ url_for('patients.edit_skinfold', patient_id=skinfold.patient_id, skinfold_id=skinfold.id) }}">
-        {{ form.hidden_tag() }}
-        <label for="data_medicao">Data de Medição:</label>
-        {{ form.data_medicao() }}
-        <br>
-        <label for="altura">Altura (m):</label>
-        {{ form.altura(step="0.001", class="form-control", id="altura", placeholder="1.60") }}
-        <br>
-        <label for="peso">Peso (Kg):</label>
-        {{ form.peso(step="0.01") }}
-        <br>
-        <label for="massa_muscular">Massa Muscular:</label>
-        {{ form.massa_muscular(step="0.01") }}
-        <br>
-        <label for="gordura">Gordura:</label>
-        {{ form.gordura(step="0.01") }}
-        <br>
-        <label for="abdominal">Abdominal:</label>
-        {{ form.abdominal(step="0.01") }}
-        <br>
-        <label for="cintura">Cintura:</label>
-        {{ form.cintura(step="0.01") }}
-        <br>
-        <label for="quadril">Quadril:</label>
-        {{ form.quadril(step="0.01") }}
-        <br>
-        <label for="idade_metabolica">Idade Metabólica:</label>
-        {{ form.idade_metabolica(step="0", class="form-control", id="idade_metabolica") }}
-        <input type="hidden" id="idade_metabolica" value="{{ idade_metabolica }}">
-        <br>
-        <label for="pa">Pressão Arterial:</label>
-        {{ form.pa(id="pa", placeholder="ex: 120/80 ou 12/8") }}
-        <span id="paError" style="color: red;"></span>
-        <br><br>
-        <button type="submit">Salvar Pregas</button>
-    </form>
-</section>
+    {% call form_section("Medição", "measure") %}
+    <div class="col-12 col-md-6">{{ field(form.data_medicao) }}</div>
+    <div class="col-12 col-md-6">{{ field(form.altura, id="altura", placeholder="1.60", inputmode="decimal", autocomplete="off") }}</div>
+    <div class="col-12 col-md-6">{{ field(form.peso, inputmode="decimal", autocomplete="off") }}</div>
+    <div class="col-12 col-md-6">
+        {{ field(form.pa, id="pa", placeholder="ex: 120/80 ou 12/8", autocomplete="off") }}
+        <div class="text-danger small pa-error" id="paError" role="alert"></div>
+    </div>
+    {% endcall %}
+
+    {% call form_section("Composição e medidas", "composition") %}
+    <div class="col-12 col-md-6">{{ field(form.massa_muscular, inputmode="decimal", autocomplete="off") }}</div>
+    <div class="col-12 col-md-6">{{ field(form.gordura, inputmode="decimal", autocomplete="off") }}</div>
+    <div class="col-12 col-md-6">{{ field(form.abdominal, inputmode="decimal", autocomplete="off") }}</div>
+    <div class="col-12 col-md-6">{{ field(form.cintura, inputmode="decimal", autocomplete="off") }}</div>
+    <div class="col-12 col-md-6">{{ field(form.quadril, inputmode="decimal", autocomplete="off") }}</div>
+    <div class="col-12 col-md-6">{{ field(form.idade_metabolica, id="idade_metabolica", step="1", inputmode="numeric", autocomplete="off") }}</div>
+    {% endcall %}
+
+    {% call form_section("Observações", "notes") %}
+    <div class="col-12">{{ field(form.observacoes, rows="4", maxlength="1000", autocomplete="off", help="Opcional, até 1000 caracteres. Se esta for a bioimpedância mais recente, a observação aparece em destaque ao abrir a ficha do paciente.") }}</div>
+    {% endcall %}
+
+    <div class="form-actions">
+        <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg" aria-hidden="true"></i> Salvar bioimpedância</button>
+        <a class="btn btn-outline-secondary" href="{{ record_url }}">Cancelar</a>
+    </div>
+</form>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/decimal_fields.js') }}"></script>
 <script src="{{ url_for('static', filename='js/automate_anthro_fields.js') }}"></script>
-
-<hr>
-<br>
-<div class="nav-actions">
-    <a class="back-button" href="{{ url_for('patients.edit_patient', id=skinfold.patient_id) }}">🔙 Voltar</a>
-</div>
-
 {% endblock %}

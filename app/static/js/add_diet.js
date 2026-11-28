@@ -1,21 +1,52 @@
-// Allow defining other name to diets
+/**
+ * Toggles the custom diet name field of the evaluation and diet forms.
+ * @returns {void}
+ */
+(function () {
+    "use strict";
 
-document.addEventListener("DOMContentLoaded", function() {
-    const selectField = document.getElementById("diet-select");
-    const otherNameField = document.getElementById("other-name-field");
-
+    /**
+     * Shows the field for a custom diet name only while "Outro" is the chosen diet.
+     * @returns {void}
+     */
     function toggleOtherField() {
-        if (selectField.value.toLowerCase() === "outro") {
-            otherNameField.style.display = "block";
-        } else {
-            otherNameField.style.display = "none";
+        const selectField = /** @type {HTMLSelectElement | null} */ (document.getElementById("diet-select"));
+        const otherNameField = document.getElementById("other-name-field");
+        if (!selectField || !otherNameField) {
+            return;
+        }
+        const other = selectField.value.toLowerCase() === "outro";
+        otherNameField.hidden = !other;
+        otherNameField.style.display = other ? "block" : "none";
+    }
+
+    /**
+     * Re-enables the diet name field before the form is sent, when the page has one that was disabled.
+     * @returns {void}
+     */
+    function enableDietName() {
+        const dietName = /** @type {HTMLInputElement | null} */ (document.getElementById("ultima_guia"));
+        if (dietName) {
+            dietName.disabled = false;
         }
     }
 
-    selectField.addEventListener("change", toggleOtherField);
-    toggleOtherField();
-});
+    /**
+     * Wires the diet select and the submit handler once the page is ready.
+     * @returns {void}
+     */
+    function init() {
+        const selectField = document.getElementById("diet-select");
+        if (selectField) {
+            selectField.addEventListener("change", toggleOtherField);
+            toggleOtherField();
+        }
+        document.addEventListener("submit", enableDietName);
+    }
 
-document.addEventListener("submit", function(event) {
-    document.getElementById("ultima_guia").disabled = false;
-});
+    if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", init);
+    } else {
+        init();
+    }
+})();

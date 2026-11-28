@@ -1,37 +1,41 @@
 {% extends "base.html" %}
+{% from "_macros.html" import page_header, field, form_errors %}
+
+{% block title %}Novo usuário · EmagreSER{% endblock %}
 
 {% block content %}
+{{ page_header("Novo usuário", "Cadastre quem poderá acessar o sistema.", url_for("admin.list_users")) }}
 
-<h2>CADASTRAMENTO DE USUÁRIOS NO SISTEMA</h2>
-<br>
-<form class="create-user-form" method="POST" action="{{ url_for('admin.create_user') }}">
-    <div class="email-board">
-        <label for="name">Name:</label>
-        <input type="text" name="name" required>
-        <label for="email">Email:</label>
-        <input type="text" name="email" required>
+<div class="card form-card">
+    <div class="card-body p-4">
+        <form class="create-user-form" method="post" action="{{ url_for('admin.create_user') }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            {{ form_errors(form) }}
+            {{ field(form.name, label="Nome", autocomplete="off", autocapitalize="words") }}
+            {{ field(form.email, type="email", inputmode="email", autocomplete="off", autocapitalize="none") }}
+            {{ field(form.password, autocomplete="new-password", help=form.password.description) }}
+            {% set role_errors = form.role.errors %}
+            <fieldset class="mb-3"{% if role_errors %} aria-describedby="role-feedback"{% endif %}>
+                <legend class="form-label">Função</legend>
+                <div class="choice-list">
+                    {% for option in form.role %}
+                    <label class="choice-option" for="{{ option.id }}">
+                        {{ option(class="form-check-input" ~ (" is-invalid" if role_errors else ""), required=True) }}
+                        <span>{{ option.label.text }}</span>
+                    </label>
+                    {% endfor %}
+                </div>
+                {% if role_errors %}
+                <div class="invalid-feedback d-block" id="role-feedback">
+                    {% for error in role_errors %}<div>{{ error }}</div>{% endfor %}
+                </div>
+                {% endif %}
+            </fieldset>
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary"><i class="bi bi-person-plus" aria-hidden="true"></i> Cadastrar usuário</button>
+                <a class="btn btn-outline-secondary" href="{{ url_for('admin.list_users') }}">Cancelar</a>
+            </div>
+        </form>
     </div>
-    <br>
-    <div class="password-board">
-        <label for="password">Senha:</label>
-        <input type="password" name="password" required>
-        <h4>A senha deve conter:</h4>
-        <p class="instruction">&nbsp;<i>- Pelo menos 6 caracteres</i></p>
-        <p class="instruction">&nbsp;<i>- Um caractere maiúsculo</i></p>
-        <p class="instruction">&nbsp;<i>- Um caractere minúsculo</i></p>
-        <p class="instruction">&nbsp;<i>- Um símbolo</i></p>
-    </div>
-    <br>
-    <hr>
-    <div class="role-setup">
-        <label for="role">Qual é a função desse usuário?</label>
-        <input type="radio" name="role" value="admin" required> Gestor
-        <input type="radio" name="role" value="secretary" required> Secretária
-        <input type="radio" name="role" value="nutritionist" required> Nutricionista
-        <br><br>
-    </div>
-    <button type="submit">Cadastrar Usuário</button>
-</form>
-<script src="{{ url_for('static', filename='js/validate_register.js') }}"></script>
-
+</div>
 {% endblock %}

@@ -1,86 +1,113 @@
 {% extends "base.html" %}
+{% from "_macros.html" import page_header, field, empty_state %}
+{% from "admin/patients/_patient_macros.html" import form_section %}
+
+{% block title %}Editar {{ patient.name }} · EmagreSER{% endblock %}
+
+{% block content_class %}{% endblock %}
 
 {% block content %}
+{{ page_header("Editar paciente", patient.name, url_for("patients.view_patient", id=patient.id)) }}
 
-{% with messages = get_flashed_messages(with_categories=true) %}
-{% if messages %}
-{% for category, message in messages %}
-<div class="alert alert-{{ category }}">
-    <strong>{{ message }}</strong>
-</div>
-{% endfor %}
-{% set _ = session.pop("_flashes", None) %}
-{% endif %}
-{% endwith %}
+<form class="edit-patient-form" method="post" action="{{ url_for('patients.edit_patient', id=patient.id) }}">
+    {{ form.hidden_tag() }}
 
-<h2>Editar dados do paciente</h2>
-<section class="editing">
-    <form class="edit-patient-form" method="POST" action="{{ url_for('patients.edit_patient', id=patient.id) }}">
-        {{ form.hidden_tag() }}
+    {% call form_section("Dados pessoais", "personal") %}
+    <div class="col-12">{{ field(form.name, autocomplete="off", autocapitalize="words") }}</div>
+    <div class="col-12 col-md-6">{{ field(form.gender, autocomplete="off") }}</div>
+    <div class="col-12 col-md-6">{{ field(form.birth_date, autocomplete="off") }}</div>
+    <div class="col-12 col-md-6">{{ field(form.cpf, inputmode="numeric", maxlength="14", placeholder="Digite apenas números", autocomplete="off") }}</div>
+    <div class="col-12 col-md-6">{{ field(form.specialist_id, autocomplete="off") }}</div>
+    {% endcall %}
 
-        <label>Escolha os campos que deseja editar:</label>
-        <br>
-        <!-- Listing of editable fields (patient data) -->
-        {% for field in form if field.label.field_id not in ["csrf_token", "submit"] %}
-        <div class="edit-field-row">
-            <div class="checkbox">
-                <input type="checkbox" id="check_{{ field.id }}" name="edit_fields" value="{{ field.id }}"
-                    onclick="toggleField('{{ field.id }}')">
-            </div>
-            <label for="check_{{ field.id }}">{{ field.label.text }}</label>
-            <div id="field_{{ field.id }}" class="field-container" style="display: none;">
-                <!-- Show editable field -->
-                {{ field(class_="form-control", readonly=True) }}
-            </div>
+    {% call form_section("Contato", "contact") %}
+    <div class="col-12 col-md-6">{{ field(form.tel_number, type="tel", inputmode="tel", maxlength="15", placeholder="Digite apenas números", autocomplete="off") }}</div>
+    <div class="col-12 col-md-6">{{ field(form.email, type="email", inputmode="email", autocomplete="off", autocapitalize="none") }}</div>
+    {% endcall %}
+
+    {% call form_section("Saúde e hábitos", "health") %}
+    <div class="col-12 col-md-6">{{ field(form.medication, autocomplete="off") }}</div>
+    <div class="col-12 col-md-6" data-depends-on="medication">{{ field(form.medications_details, autocomplete="off") }}</div>
+    <div class="col-12 col-md-6">{{ field(form.intestine, min="0", inputmode="numeric", autocomplete="off") }}</div>
+    <div class="col-12 col-md-6">{{ field(form.allergies, autocomplete="off") }}</div>
+    <div class="col-12 col-md-6" data-depends-on="allergies">{{ field(form.allergies_details, autocomplete="off") }}</div>
+    <div class="col-12 col-md-6">{{ field(form.water, inputmode="decimal", autocomplete="off") }}</div>
+    <div class="col-12 col-md-6">{{ field(form.physical_activities, autocomplete="off") }}</div>
+    <div class="col-12 col-md-6" data-depends-on="physical_activities">{{ field(form.physical_details, autocomplete="off") }}</div>
+    <div class="col-12" data-depends-on="physical_activities">
+        <div class="row gx-3">
+            <div class="col-12 col-md-6">{{ field(form.hours, autocomplete="off") }}</div>
+            <div class="col-12 col-md-6">{{ field(form.frequency, min="0", inputmode="numeric", autocomplete="off") }}</div>
         </div>
-        {% endfor %}
-        <br>
-        <button type="submit">Salvar Alterações</button>
-    </form>
-
-    <hr>
-    <h3>Avaliações Antropométricas</h3>
-    {% if patient.anthropometric_evaluations %}
-    <ul>
-        {% for evaluation in anthropometric_evals %}
-        <li>
-            Data: {{ evaluation.data_avaliacao.strftime("%d/%m/%Y") }} | IMC: {{ evaluation.imc }}
-            &nbsp;
-            <a href="{{ url_for('patients.edit_anthro', patient_id=patient.id, evaluation_id=evaluation.id) }}">Editar
-                Avaliação</a>
-        </li>
-        {% endfor %}
-    </ul>
-    {% else %}
-    <p>Nenhuma avaliação registrada.</p>
-    <a href="{{ url_for('patients.add_anthro', patient_id=patient.id) }}">Adicionar avaliação</a>
-    {% endif %}
-
-    <hr>
-    <h3>Dados de Bioimpedância</h3>
-    {% if patient.skinfolds %}
-    <ul>
-        {% for skinfold in skinfolds %}
-        <li>
-            Data: {{ skinfold.data_medicao.strftime("%d/%m/%Y") }} | Peso: {{ skinfold.peso }}
-            &nbsp;
-            <a href="{{ url_for('patients.edit_skinfold', patient_id=patient.id, skinfold_id=skinfold.id) }}">Editar Pregas
-                Cutâneas</a>
-        </li>
-        {% endfor %}
-    </ul>
-    {% else %}
-    <p>Nenhum registro de Bioimpedância.</p>
-    <a href="{{ url_for('patients.add_skinfold', patient_id=patient.id) }}">Adicionar registro</a>
-    {% endif %}
-    <hr>
-    <br>
-    <div class="nav-actions">
-        <a href="{{ url_for('patients.list_patients') }}" class="btn btn-secondary back-button">🔙 Voltar</a>
     </div>
-</section>
+    {% endcall %}
 
+    {% call form_section("Objetivo", "goal") %}
+    <div class="col-12">{{ field(form.objective, autocomplete="off") }}</div>
+    {% endcall %}
+
+    <div class="form-actions">
+        <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg" aria-hidden="true"></i> Salvar alterações</button>
+        <a class="btn btn-outline-secondary" href="{{ url_for('patients.view_patient', id=patient.id) }}">Cancelar</a>
+    </div>
+</form>
+
+<div class="row g-4 mt-1">
+    <div class="col-12 col-lg-6">
+        <section class="card h-100" aria-labelledby="edit-evaluations-title">
+            <div class="card-header app-card-header">
+                <h2 class="app-card-title" id="edit-evaluations-title">Avaliações antropométricas</h2>
+                <a class="btn btn-link" href="{{ url_for('patients.add_anthro', patient_id=patient.id) }}">Nova avaliação</a>
+            </div>
+            {% if anthropometric_evals %}
+            <ul class="list-group list-group-flush">
+                {% for evaluation in anthropometric_evals %}
+                <li class="list-group-item record-link-item">
+                    <span>
+                        <strong>{{ evaluation.data_avaliacao.strftime("%d/%m/%Y") }}</strong>
+                        <span class="text-body-secondary">IMC: {{ evaluation.imc }}</span>
+                    </span>
+                    <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('patients.edit_anthro', patient_id=patient.id, evaluation_id=evaluation.id) }}" aria-label="Editar avaliação de {{ evaluation.data_avaliacao.strftime('%d/%m/%Y') }}">
+                        <i class="bi bi-pencil-square" aria-hidden="true"></i> Editar avaliação
+                    </a>
+                </li>
+                {% endfor %}
+            </ul>
+            {% else %}
+            {{ empty_state("clipboard2-pulse", "Nenhuma avaliação registrada", none, url_for("patients.add_anthro", patient_id=patient.id), "Adicionar avaliação") }}
+            {% endif %}
+        </section>
+    </div>
+    <div class="col-12 col-lg-6">
+        <section class="card h-100" aria-labelledby="edit-skinfolds-title">
+            <div class="card-header app-card-header">
+                <h2 class="app-card-title" id="edit-skinfolds-title">Bioimpedância</h2>
+                <a class="btn btn-link" href="{{ url_for('patients.add_skinfold', patient_id=patient.id) }}">Nova bioimpedância</a>
+            </div>
+            {% if skinfolds %}
+            <ul class="list-group list-group-flush">
+                {% for skinfold in skinfolds %}
+                <li class="list-group-item record-link-item">
+                    <span>
+                        <strong>{{ skinfold.data_medicao.strftime("%d/%m/%Y") }}</strong>
+                        <span class="text-body-secondary">Peso: {{ skinfold.peso }} kg</span>
+                    </span>
+                    <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('patients.edit_skinfold', patient_id=patient.id, skinfold_id=skinfold.id) }}" aria-label="Editar bioimpedância de {{ skinfold.data_medicao.strftime('%d/%m/%Y') }}">
+                        <i class="bi bi-pencil-square" aria-hidden="true"></i> Editar bioimpedância
+                    </a>
+                </li>
+                {% endfor %}
+            </ul>
+            {% else %}
+            {{ empty_state("activity", "Nenhum registro de bioimpedância", none, url_for("patients.add_skinfold", patient_id=patient.id), "Adicionar registro") }}
+            {% endif %}
+        </section>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
 <script src="{{ url_for('static', filename='js/edit_patient.js') }}"></script>
+<script src="{{ url_for('static', filename='js/decimal_fields.js') }}"></script>
 <script src="{{ url_for('static', filename='js/normalize_fields.js') }}"></script>
-
 {% endblock %}

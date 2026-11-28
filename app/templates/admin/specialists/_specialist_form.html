@@ -1,0 +1,19 @@
+{% from "_macros.html" import field, form_errors %}
+<div class="card form-card">
+    <div class="card-body p-4">
+        <form class="{{ form_class }}" method="post" action="{{ form_action }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            {{ form_errors(form) }}
+            {{ field(form.name, label="Nome", autocomplete="off", autocapitalize="words") }}
+            <div class="row gx-3">
+                <div class="col-12 col-md-6">{{ field(form.cpf, id="cpf", type="text", inputmode="numeric", pattern="\d{3}\.\d{3}\.\d{3}-\d{2}", maxlength="14", placeholder="Digite apenas números", autocomplete="off") }}</div>
+                <div class="col-12 col-md-6">{{ field(form.tel_number, id="phone", type="tel", inputmode="tel", pattern="\(\d{2}\) \d{4,5}-\d{4}", maxlength="15", placeholder="Digite apenas números", autocomplete="off") }}</div>
+            </div>
+            {{ field(form.email, id="email", type="email", inputmode="email", autocomplete="off", autocapitalize="none") }}
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg" aria-hidden="true"></i> {{ submit_label }}</button>
+                <a class="btn btn-outline-secondary" href="{{ url_for('specialists.list_specialists') }}">Cancelar</a>
+            </div>
+        </form>
+    </div>
+</div>

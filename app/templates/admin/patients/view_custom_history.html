@@ -1,75 +1,98 @@
 {% extends "base.html" %}
+{% from "_macros.html" import page_header, empty_state %}
+{% from "admin/patients/_patient_macros.html" import detail_item, stat_item %}
+
+{% block title %}Histórico personalizado · EmagreSER{% endblock %}
+
+{% block content_class %}{% endblock %}
 
 {% block content %}
+{% set record_url = url_for("patients.view_patient", id=patient.id) ~ "#evolucao" %}
+{% if has_evaluations %}
+{% call page_header("Histórico personalizado", patient.name, record_url) %}
+    <button type="button" class="btn btn-outline-secondary no-print" data-print><i class="bi bi-printer" aria-hidden="true"></i> Imprimir histórico</button>
+{% endcall %}
 
-{% with messages = get_flashed_messages(with_categories=true) %}
-{% if messages %}
-{% for category, message in messages %}
-<div class="alert alert-{{ category }}">
-    <strong>{{ message }}</strong>
-</div>
-{% endfor %}
-{% set _ = session.pop("_flashes", None) %}
-{% endif %}
-{% endwith %}
+<div class="row g-4">
+    <div class="col-12 col-lg-8">
+        {% if not has_skinfolds %}
+        <div class="alert alert-info d-flex align-items-start gap-2 mb-4" role="status">
+            <i class="bi bi-info-circle" aria-hidden="true"></i>
+            <div>
+                <strong>Ainda não há bioimpedância registrada.</strong>
+                A altura, os pesos, os percentuais, o resultado final e o gráfico de evolução aparecem depois da primeira bioimpedância.
+                <a class="no-print" href="{{ url_for('patients.add_skinfold', patient_id=patient.id) }}">Adicionar bioimpedância</a>
+            </div>
+        </div>
+        {% endif %}
+        <section class="card mb-4" aria-labelledby="history-summary-title">
+            <div class="card-header app-card-header"><h2 class="app-card-title" id="history-summary-title">Paciente</h2></div>
+            <div class="card-body">
+                <dl class="detail-grid">
+                    {{ detail_item("Nome", patient.name) }}
+                    {{ detail_item("CPF", patient.cpf) }}
+                    {{ detail_item("Idade", patient_age) }}
+                    {{ detail_item("1ª avaliação física", initial_evaluation_date) }}
+                    {% if patient.specialist %}
+                    {{ detail_item("Profissional", patient.specialist.name ~ " - " ~ patient.specialist.email) }}
+                    {% endif %}
+                </dl>
+            </div>
+        </section>
 
-<h2 class="page-title">Histórico do Paciente</h2>
+        <section class="card mb-4" aria-labelledby="history-details-title">
+            <div class="card-header app-card-header"><h2 class="app-card-title" id="history-details-title">Detalhamento</h2></div>
+            <div class="card-body">
+                {% if has_skinfolds %}
+                <dl class="stat-grid">
+                    {{ stat_item("IMC atual", last_imc) }}
+                    {{ stat_item("Altura", height) }}
+                    {{ stat_item("Percentual de gordura", fat_percentual) }}
+                    {{ stat_item("Percentual de massa magra", muscle_percentual) }}
+                    {{ stat_item("Peso inicial", initial_weight_evaluated) }}
+                    {{ stat_item("Peso atual", last_weight_evaluated) }}
+                    {{ stat_item("Peso ideal", ideal_weight) }}
+                    {{ stat_item("Resultado final", final_weight_result) }}
+                </dl>
+                {% else %}
+                <dl class="stat-grid">
+                    {{ stat_item("IMC atual", last_imc) }}
+                    {{ stat_item("Peso ideal", ideal_weight) }}
+                    {{ stat_item("Peso máximo", max_weight) }}
+                </dl>
+                {% endif %}
+            </div>
+        </section>
 
-{% if patient %}
-<div class="action-bar" style="text-align: right; margin-bottom: 10px;">
-    <button onclick="window.print()" class="print-button">🖨️ Imprimir Histórico</button>
-</div>
-
-<div class="patient-card modern-card">
-    <div class="patient-info">
-        <p><strong>Nome:</strong> {{ patient.name }}</p>
-        <p><strong>CPF:</strong> {{ patient.cpf }}</p>
-        <p><strong>Idade:</strong> {{ patient_age }}</p>
-        <p><strong>1ª Avaliação Física:</strong> {{ initial_evaluation_date }}</p>
-        {% if patient.specialist %}
-        <p><strong>Profissional:</strong> {{ patient.specialist.name }} - {{ patient.specialist.email }}</p>
+        {% if has_skinfolds %}
+        <section class="card" aria-labelledby="history-chart-title">
+            <div class="card-header app-card-header"><h2 class="app-card-title" id="history-chart-title">Histórico de evoluções</h2></div>
+            <div class="card-body">
+                <div class="chart-wrap">
+                    <canvas id="evolutionsChart" role="img" aria-label="Gráfico da evolução do peso em quilos ao longo das medições" data-dates='{{ evaluation_dates|tojson }}' data-weights='{{ evaluation_weights|tojson }}'></canvas>
+                </div>
+                <p class="history-message" role="status">{{ final_message }}</p>
+            </div>
+        </section>
         {% endif %}
     </div>
-
-    <div class="details-container">
-        <div class="patient-details">
-            <h3 style="color: rgb(1, 134, 6);">Detalhamento</h3>
-            <fieldset style="padding: 10px; width: 60%; height: auto;">
-                <p><strong>IMC Atual:</strong> {{ last_imc }}</p>
-                <p><strong>Altura:</strong> {{ height }}</p>
-                <p><strong>Percentual de Gordura:</strong> {{ fat_percentual }}</p>
-                <p><strong>Percentual de Massa Magra:</strong> {{ muscle_percentual }}</p>
-                <p><strong>Peso Inicial:</strong> {{ initial_weight_evaluated }}</p>
-                <p><strong>Peso Atual:</strong> {{ last_weight_evaluated }}</p>
-                <p><strong>Peso Ideal:</strong> {{ ideal_weight }}</p>
-                <p><strong>Resultado Final:</strong> {{ final_weight_result }}</p>
-                <br>
-                <p>
-                    <strong>Histórico de Evoluções:</strong>
-                    <canvas id="evolutionsChart"
-                            data-dates='{{ evaluation_dates|tojson }}'
-                            data-weights='{{ evaluation_weights|tojson }}'
-                            style="display: block; margin: 0 auto;">
-                    </canvas>
-                </p>
-                <p class="final-message"><strong>{{ final_message }}</strong></p>
-            </fieldset>
-        </div>
-        <div class="image-container">
-            <img class="header-image" src="{{ url_for('static', filename='img/body_contour.jpeg') }}"
-                alt="Imagem de Cabeçalho">
-        </div>
-        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-        <script src="{{ url_for('static', filename='js/chart_config.js') }}"></script>
+    <div class="col-12 col-lg-4 d-none d-lg-block">
+        <img class="history-image" src="{{ url_for('static', filename='img/body_contour.jpeg') }}" alt="" width="398" height="360">
     </div>
 </div>
 {% else %}
-<h3>O paciente ainda não possui avaliações.</h3>
-{% endif %}
-
-<br>
-<div class="nav-actions">
-    <a class="back-button" href="{{ url_for('patients.list_patients') }}">🔙 Voltar</a>
+{{ page_header("Histórico personalizado", patient.name, record_url) }}
+<div class="card">
+    {{ empty_state("clipboard-x", "O paciente ainda não possui avaliações", "O histórico personalizado aparece depois da primeira avaliação antropométrica.", url_for("patients.add_anthro", patient_id=patient.id), "Nova avaliação") }}
 </div>
+{% endif %}
+{% endblock %}
 
+{% block scripts %}
+{% if has_skinfolds %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js" integrity="sha384-bs/nf9FbdNouRbMiFcrcZfLXYPKiPaGVGplVbv7dLGECccEXDW+S3zjqSKR5ZEaD" crossorigin="anonymous"></script> {# pragma: allowlist secret #}
+{% endif %}
+{% if has_evaluations %}
+<script src="{{ url_for('static', filename='js/chart_config.js') }}"></script>
+{% endif %}
 {% endblock %}

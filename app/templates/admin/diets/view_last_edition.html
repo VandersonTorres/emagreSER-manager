@@ -1,46 +1,39 @@
 {% extends "base.html" %}
+{% from "_macros.html" import page_header, empty_state %}
+
+{% block title %}Última edição · {{ diet.name }} · EmagreSER{% endblock %}
 
 {% block head %}
-<link rel="stylesheet" href="{{ url_for('static', filename='css/pdf_editor.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/pdf_viewer.css') }}">
 {% endblock %}
 
+{% block content_class %}{% endblock %}
+
 {% block content %}
+{% call page_header(diet.name, diet.description or none, url_for("diets.list_diets")) %}
+    {% if pdf_url %}
+    <a class="btn btn-outline-secondary" href="{{ url_for('diets.download_temp_diet', filename=diet.temp_diet_file) }}" target="_blank" rel="noopener">
+        <i class="bi bi-download" aria-hidden="true"></i> Baixar Arquivo Editado
+    </a>
+    {% endif %}
+{% endcall %}
 
-<h2>{{ diet.name }}</h2>
-<br>
-<p><strong>Descrição:</strong> {{ diet.description }}</p>
+<section class="card pdfv-surface" aria-label="Última edição da dieta">
+    {% if pdf_url %}
+    <div data-pdf-viewer="{{ pdf_url }}"></div>
+    <p class="form-text mb-0 mt-3">
+        Se o arquivo não aparecer, a edição expirou.
+        {% if diet.diet_file %}<a href="{{ url_for('diets.edit_diet', id=diet.id) }}">Edite o PDF novamente</a>.{% else %}Edite o PDF novamente.{% endif %}
+    </p>
+    {% else %}
+    {{ empty_state("file-earmark-text", "Esta dieta ainda não foi editada", "Edite o PDF para gerar a versão que será enviada ao paciente.", url_for("diets.edit_diet", id=diet.id) if diet.diet_file else none, "Editar PDF") }}
+    {% endif %}
+</section>
+{% endblock %}
 
-<span style="font-size: 12px; margin-left: 10px; color: #6a6a6a;">
-  <i>Se não estiver visualizando o arquivo, as alterações expiraram. Edite novamente</i>
-</span>
-
-<div id="pdf-container">
-    <canvas id="pdf-canvas"></canvas>
-</div>
-<div style="text-align: center; margin: 10px 0;">
-    <button id="prev-page">⬅ Página anterior</button>
-    <span id="page-info">Página 1</span>
-    <button id="next-page">Próxima página ➡</button>
-</div>
-
-{% if diet.diet_file %}
-<p><a href="{{ url_for('diets.download_temp_diet', filename=diet.temp_diet_file) }}" target="_blank">📄 Baixar Arquivo Editado</a></p>
+{% block scripts %}
+{% if pdf_url %}
+{% include "_pdfjs_assets.html" %}
+<script type="module" src="{{ url_for('static', filename='js/pdf_viewer.js') }}"></script>
 {% endif %}
-
-<hr>
-<br>
-<div class="nav-actions">
-    <a class="back-button" href="{{ url_for('diets.list_diets') }}">🔙 Voltar</a>
-</div>
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js"></script>
-<script>
-  pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js";
-</script>
-
-<script>
-  const pdfUrl = "{{ pdf_url }}";
-</script>
-
-<script src="{{ url_for('static', filename='js/render_diet.js') }}" defer></script>
 {% endblock %}

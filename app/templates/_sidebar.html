@@ -1,0 +1,22 @@
+<div class="app-sidebar-col">
+    <div class="offcanvas-lg offcanvas-start app-sidebar" tabindex="-1" id="app-sidebar" aria-labelledby="app-sidebar-title">
+        <div class="offcanvas-header">
+            <h2 class="offcanvas-title" id="app-sidebar-title">Menu</h2>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#app-sidebar" aria-label="Fechar menu de navegação"></button>
+        </div>
+        <div class="offcanvas-body">
+            <nav class="app-nav" aria-label="Navegação principal">
+                <ul class="nav flex-column">
+                    {% for link in nav_links %}
+                    <li class="nav-item">
+                        <a class="nav-link{{ ' active' if link.active }}" href="{{ link.url }}"{% if link.active %} aria-current="page"{% endif %}>
+                            <i class="bi bi-{{ link.icon }}" aria-hidden="true"></i>
+                            <span>{{ link.label }}</span>
+                        </a>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </nav>
+        </div>
+    </div>
+</div>

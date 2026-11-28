@@ -1,16 +1,10 @@
 {% extends "base.html" %}
+{% from "_macros.html" import confirm_card %}
+
+{% block title %}Remover {{ diet.name }} · EmagreSER{% endblock %}
 
 {% block content %}
-
-<h2>Remover Dieta</h2>
-<p>Tem certeza de que deseja remover {{ diet.name }}?</p>
-<form class="delete-diet-form" method="POST" action="{{ url_for('diets.delete_diet', id=diet.id) }}">
-    <button type="submit">Confirmar Remoção</button>
-    <a class="remove-button" href="{{ url_for('diets.list_diets') }}">Cancelar</a>
-</form>
-<hr>
-<br>
-<div class="nav-actions">
-    <a href="{{ url_for('diets.list_diets') }}" class="btn btn-secondary back-button">🔙 Voltar</a>
-</div>
+{% call confirm_card("Remover dieta", "Tem certeza de que deseja remover " ~ diet.name ~ "?", "Confirmar remoção", url_for("diets.list_diets"), form_class="delete-diet-form") %}
+<p class="text-body-secondary">O arquivo PDF e a última edição desta dieta também serão removidos. Esta ação não pode ser desfeita.</p>
+{% endcall %}
 {% endblock %}

@@ -1,57 +1,78 @@
 {% extends "base.html" %}
+{% from "_macros.html" import page_header, empty_state %}
+
+{% block title %}Profissionais · EmagreSER{% endblock %}
 
 {% block content %}
+{% set total = specialists|length %}
 
-{% with messages = get_flashed_messages(with_categories=true) %}
-{% if messages %}
-{% for category, message in messages %}
-<div class="alert alert-{{ category }}">
-    <strong>{{ message }}</strong>
-</div>
-{% endfor %}
-{% set _ = session.pop('_flashes', None) %}
-{% endif %}
-{% endwith %}
-
-<h2>LISTA DE PROFISSIONAIS</h2>
-<a href="{{ url_for('specialists.add_specialist') }}">+ Adicionar novo(a) profissional</a>
-<hr>
+{% call page_header("Profissionais", "Cadastre e mantenha os profissionais da clínica.") %}
+    <a class="btn btn-primary" href="{{ url_for('specialists.add_specialist') }}">
+        <i class="bi bi-person-plus" aria-hidden="true"></i> Novo profissional
+    </a>
+{% endcall %}
 
 {% if not specialists %}
-<p>Não há profissionais cadastrados.</p>
+<div class="card">
+    {{ empty_state("person-badge", "Ainda não existem profissionais cadastrados", "Cadastre o primeiro profissional para vincular pacientes e organizar a agenda.", url_for("specialists.add_specialist"), "Novo profissional") }}
+</div>
 {% else %}
-<div class="show-specialists">
-    <table class="specialists-table">
+<section class="card table-card" aria-labelledby="specialists-title">
+    <div class="card-header app-card-header">
+        <h2 class="app-card-title" id="specialists-title">{{ total }} {{ "profissional" if total == 1 else "profissionais" }}</h2>
+    </div>
+    <table class="table table-hover table-stack record-table specialist-table align-middle mb-0">
         <thead>
             <tr>
-                <th>Nome</th>
-                <th>CPF</th>
-                <th>Telefone</th>
-                <th>Email</th>
-                <th>Ações</th>
+                <th scope="col">Nome</th>
+                <th scope="col">CPF</th>
+                <th scope="col">Telefone</th>
+                <th scope="col">E-mail</th>
+                <th scope="col">Ações</th>
             </tr>
         </thead>
         <tbody>
-            {% for specialist in specialists %}
+            {% for specialist in specialists|sort(attribute="name") %}
+            {% set digits = (specialist.tel_number or "")|list|select("in", "0123456789")|join %}
             <tr>
-                <td>{{ specialist.name }}</td>
-                <td>{{ specialist.cpf }}</td>
-                <td>{{ specialist.tel_number }}</td>
-                <td>{{ specialist.email }}</td>
-                <td>
-                    <a class="edit-button" href="{{ url_for('specialists.edit_specialist', id=specialist.id) }}">Editar</a>
-                    <form class="delete-specialist-form"
-                        action="{{ url_for('specialists.delete_specialist', id=specialist.id) }}" method="POST"
-                        style="display:inline;">
-                        <button class="remove-button" type="submit"
-                            onclick="return confirm('Tem certeza que deseja remover este profissional?')">Remover</button>
-                    </form>
+                <td data-label="Nome"><span class="fw-semibold" id="specialist-name-{{ specialist.id }}">{{ specialist.name }}</span></td>
+                <td data-label="CPF" class="text-nowrap"><span>{{ specialist.cpf }}</span></td>
+                <td data-label="Telefone" class="text-nowrap">{% if digits %}<a href="tel:{{ digits }}">{{ specialist.tel_number }}</a>{% else %}—{% endif %}</td>
+                <td data-label="E-mail">{% if specialist.email %}<a href="mailto:{{ specialist.email }}">{{ specialist.email }}</a>{% else %}—{% endif %}</td>
+                <td data-label="Ações" class="record-actions">
+                    <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('specialists.edit_specialist', id=specialist.id) }}" aria-describedby="specialist-name-{{ specialist.id }}">
+                        <i class="bi bi-pencil-square" aria-hidden="true"></i> Editar
+                    </a>
+                    <button type="button" class="btn btn-outline-danger btn-sm" data-bs-toggle="modal" data-bs-target="#remove-specialist-{{ specialist.id }}" aria-describedby="specialist-name-{{ specialist.id }}">
+                        <i class="bi bi-trash" aria-hidden="true"></i> Remover
+                    </button>
                 </td>
             </tr>
             {% endfor %}
         </tbody>
     </table>
-</div>
-{% endif %}
+</section>
 
+{% for specialist in specialists %}
+<div class="modal fade" id="remove-specialist-{{ specialist.id }}" tabindex="-1" aria-labelledby="remove-specialist-{{ specialist.id }}-title" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <form class="modal-content delete-specialist-form" method="post" action="{{ url_for('specialists.delete_specialist', id=specialist.id) }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <div class="modal-header">
+                <h2 class="modal-title" id="remove-specialist-{{ specialist.id }}-title">Remover profissional</h2>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+            </div>
+            <div class="modal-body">
+                <p>Tem certeza de que deseja remover <strong>{{ specialist.name }}</strong>?</p>
+                <p class="text-body-secondary mb-0">Esta ação não pode ser desfeita.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="submit" class="btn btn-danger">Confirmar remoção</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endfor %}
+{% endif %}
 {% endblock %}
